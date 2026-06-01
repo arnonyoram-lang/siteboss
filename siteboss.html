@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a3a5c">
+<title>SiteBoss – מנהל עבודה פלוס</title>
+<style>
+/* ===== RESET & ROOT ===== */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --green:#27ae60;--green-d:#1e8449;--green-bg:#eafaf1;
+  --orange:#e67e22;--orange-d:#ca6f1e;--orange-bg:#fef5ec;
+  --red:#e74c3c;--red-d:#c0392b;--red-bg:#fdf0ef;
+  --blue:#2980b9;--blue-d:#1a3a5c;--blue-bg:#e8f4fd;
+  --gray:#7f8c8d;--light:#f0f3f4;--dark:#2c3e50;--white:#fff;
+  --radius:14px;--shadow:0 3px 14px rgba(0,0,0,.1);
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--light);color:var(--dark);min-height:100vh;direction:rtl;font-size:16px;overflow-x:hidden}
+
+/* ===== SCREEN SYSTEM ===== */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* ===== TOP BAR ===== */
+.topbar{
+  background:var(--blue-d);color:white;
+  padding:0 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;min-height:58px;
+  box-shadow:0 2px 10px rgba(0,0,0,.25);
+}
+.topbar-center{flex:1;text-align:center}
+.topbar-title{font-size:17px;font-weight:800}
+.topbar-sub{font-size:11px;opacity:.75}
+.icon-btn{
+  background:rgba(255,255,255,.18);border:none;color:white;
+  width:44px;height:44px;border-radius:10px;font-size:18px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.icon-btn:active{opacity:.7}
+
+/* ===== CONTENT ===== */
+.content{flex:1;padding:16px;overflow-y:auto;padding-bottom:80px}
+
+/* ===== HOME ===== */
+.home-hero{
+  background:linear-gradient(150deg,var(--blue-d) 0%,#1e6091 100%);
+  color:white;padding:24px 20px 30px;text-align:center;
+}
+.home-logo{font-size:36px;font-weight:900;letter-spacing:2px}
+.home-logo span{color:#f39c12}
+.home-tagline{font-size:13px;opacity:.85;margin-top:6px}
+
+.project-pill{
+  background:white;border-radius:12px;
+  margin:0 16px;margin-top:-14px;
+  padding:14px 16px;
+  box-shadow:var(--shadow);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.pill-name{font-size:16px;font-weight:800}
+.pill-date{font-size:12px;color:var(--gray)}
+
+.main-buttons{padding:18px 16px 0;display:flex;flex-direction:column;gap:14px}
+
+.main-btn{
+  border:none;border-radius:var(--radius);padding:20px 18px;
+  display:flex;align-items:center;gap:14px;cursor:pointer;
+  box-shadow:var(--shadow);transition:transform .12s;width:100%;
+  text-align:right;position:relative;overflow:hidden;
+}
+.main-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(255,255,255,.1),transparent);
+  pointer-events:none;
+}
+.main-btn:active{transform:scale(.97)}
+.btn-icon{font-size:44px;flex-shrink:0}
+.btn-texts{flex:1}
+.btn-title{font-size:20px;font-weight:900;color:white;display:block;line-height:1.1}
+.btn-desc{font-size:12px;color:rgba(255,255,255,.85);display:block;margin-top:5px;line-height:1.4}
+.btn-badge{
+  background:rgba(255,255,255,.25);color:white;
+  font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;
+  flex-shrink:0;align-self:flex-start;margin-top:2px;
+}
+.btn-journal{background:linear-gradient(135deg,#27ae60,#1a7a43)}
+.btn-defects{background:linear-gradient(135deg,#e67e22,#a85311)}
+.btn-safety{background:linear-gradient(135deg,#e74c3c,#922b21)}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px 0}
+.stat-box{
+  background:white;border-radius:12px;padding:12px 10px;text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);
+}
+.stat-num{font-size:28px;font-weight:900;line-height:1}
+.stat-label{font-size:11px;color:var(--gray);margin-top:4px}
+.stat-green .stat-num{color:var(--green)}
+.stat-orange .stat-num{color:var(--orange)}
+.stat-red .stat-num{color:var(--red)}
+
+/* ===== SETTINGS ===== */
+.settings-section{margin-bottom:24px}
+.settings-label{font-size:13px;font-weight:700;color:var(--gray);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ===== FORM ===== */
+.form-group{margin-bottom:18px}
+.form-label{display:block;font-size:14px;font-weight:700;color:var(--dark);margin-bottom:8px}
+.form-input,.form-textarea,.form-select{
+  width:100%;border:2px solid #dce3e9;border-radius:10px;
+  padding:12px 14px;font-size:16px;font-family:inherit;color:var(--dark);
+  background:white;direction:rtl;transition:border-color .2s;
+}
+.form-input:focus,.form-textarea:focus,.form-select:focus{outline:none;border-color:var(--blue)}
+.form-textarea{min-height:90px;resize:vertical;line-height:1.5}
+
+/* ===== BUTTONS ===== */
+.btn{
+  border:none;border-radius:10px;padding:14px 20px;
+  font-size:16px;font-weight:800;cursor:pointer;width:100%;
+  font-family:inherit;transition:opacity .15s;letter-spacing:.3px;
+}
+.btn:active{opacity:.8}
+.btn-primary{background:var(--blue);color:white}
+.btn-green{background:var(--green);color:white}
+.btn-orange{background:var(--orange);color:white}
+.btn-red{background:var(--red);color:white}
+.btn-ghost{background:white;color:var(--dark);border:2px solid #dce3e9}
+.btn-sm{padding:8px 14px;font-size:13px;width:auto;border-radius:8px;font-weight:700}
+.btn-row{display:flex;gap:10px}
+.btn-row .btn{flex:1}
+
+/* ===== VOICE ===== */
+.voice-card{
+  background:white;border-radius:var(--radius);padding:22px;
+  text-align:center;box-shadow:var(--shadow);margin-bottom:18px;
+}
+.voice-btn{
+  width:88px;height:88px;border-radius:50%;border:none;
+  background:var(--green);color:white;font-size:38px;
+  cursor:pointer;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 20px rgba(39,174,96,.4);transition:all .2s;
+}
+.voice-btn.recording{background:var(--red);animation:pulse 1.1s infinite;box-shadow:0 6px 20px rgba(231,76,60,.5)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.voice-status{font-size:13px;color:var(--gray);font-weight:600}
+.voice-transcript{
+  background:#f8f9fa;border-radius:10px;padding:12px;
+  min-height:50px;font-size:14px;line-height:1.6;text-align:right;
+  margin-top:10px;color:var(--dark);white-space:pre-wrap;
+}
+
+/* ===== WORKER TABLE ===== */
+.worker-table{width:100%;border-collapse:collapse}
+.worker-table th,.worker-table td{padding:10px 8px;text-align:right;border-bottom:1px solid #eef;font-size:14px}
+.worker-table th{background:#f8fafd;font-weight:700;font-size:13px;color:var(--gray)}
+.worker-table input[type=number]{
+  width:64px;text-align:center;border:2px solid #dce3e9;border-radius:8px;
+  padding:8px 4px;font-size:18px;font-weight:700;
+}
+.worker-table input[type=number]:focus{outline:none;border-color:var(--blue)}
+.worker-total{background:var(--blue-bg);font-weight:800;font-size:15px}
+
+/* ===== WEATHER ===== */
+.weather-row{display:flex;gap:8px;flex-wrap:wrap}
+.w-opt{
+  flex:1;min-width:64px;padding:10px 6px;border:2px solid #dce3e9;
+  border-radius:10px;background:white;text-align:center;cursor:pointer;transition:all .2s;
+}
+.w-opt.active{border-color:var(--blue);background:var(--blue-bg)}
+.w-emoji{font-size:26px;display:block}
+.w-label{font-size:11px;color:var(--gray);display:block;margin-top:3px}
+
+/* ===== PHOTOS ===== */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.p-thumb{
+  aspect-ratio:1;border-radius:8px;overflow:hidden;
+  position:relative;background:#e9ecef;
+}
+.p-thumb img{width:100%;height:100%;object-fit:cover}
+.p-del{
+  position:absolute;top:4px;left:4px;
+  background:rgba(231,76,60,.9);color:white;border:none;
+  border-radius:50%;width:26px;height:26px;font-size:13px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.p-add{
+  aspect-ratio:1;border:2px dashed #bdc3c7;border-radius:8px;
+  background:#fafafa;display:flex;align-items:center;justify-content:center;
+  font-size:30px;color:#bdc3c7;cursor:pointer;
+}
+
+/* ===== DEFECTS ===== */
+.defect-card{
+  background:white;border-radius:var(--radius);margin-bottom:12px;
+  overflow:hidden;box-shadow:var(--shadow);
+}
+.def-top{
+  padding:13px 16px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid #f0f3f4;
+}
+.status-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.s-open{background:var(--red)}
+.s-progress{background:var(--orange)}
+.s-done{background:var(--green)}
+.def-title{font-size:15px;font-weight:800;flex:1;line-height:1.3}
+.def-contractor{
+  font-size:11px;color:var(--orange);background:var(--orange-bg);
+  padding:3px 8px;border-radius:20px;font-weight:700;white-space:nowrap;
+}
+.def-body{padding:10px 16px 14px}
+.def-location{font-size:13px;color:var(--blue);font-weight:700;margin-bottom:5px}
+.def-desc{font-size:14px;line-height:1.5;color:var(--dark);margin-bottom:8px}
+.def-footer{display:flex;justify-content:space-between;align-items:center}
+.def-deadline{font-size:12px;color:var(--gray)}
+.def-deadline.late{color:var(--red);font-weight:700}
+.def-photo{width:100%;max-height:160px;object-fit:cover;margin-bottom:10px;border-radius:8px}
+.def-actions{display:flex;gap:8px;margin-top:10px}
+
+/* ===== FILTER TABS ===== */
+.filter-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.ftab{
+  padding:7px 16px;border-radius:20px;border:2px solid #dce3e9;
+  background:white;font-size:13px;font-weight:700;cursor:pointer;
+  white-space:nowrap;color:var(--gray);
+}
+.ftab.active{border-color:var(--blue);background:var(--blue);color:white}
+
+/* ===== SAFETY ===== */
+.safety-progress-wrap{margin-bottom:16px}
+.progress-bar{background:#dce3e9;border-radius:20px;height:10px;overflow:hidden}
+.progress-fill{height:100%;border-radius:20px;background:var(--green);transition:width .4s}
+.progress-label{font-size:12px;color:var(--gray);margin-top:5px;text-align:left}
+
+.sq-card{
+  background:white;border-radius:12px;margin-bottom:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden;
+}
+.sq-main{padding:14px 16px;display:flex;align-items:center;gap:12px}
+.sq-num{
+  width:28px;height:28px;border-radius:50%;background:var(--light);
+  font-size:12px;font-weight:800;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;color:var(--gray);
+}
+.sq-text{flex:1;font-size:15px;font-weight:600;line-height:1.4}
+.sq-btns{display:flex;gap:6px;flex-shrink:0}
+.sq-btn{
+  width:50px;height:50px;border-radius:10px;border:2px solid #dce3e9;
+  background:white;font-size:22px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:all .15s;
+}
+.sq-btn:active{transform:scale(.95)}
+.sq-ok{border-color:var(--green);background:var(--green-bg)}
+.sq-fail{border-color:var(--red);background:var(--red-bg)}
+.sq-alert{
+  background:#fff9e6;padding:10px 16px;font-size:13px;
+  color:#856404;display:none;border-top:1px solid #ffd;
+}
+.sq-alert.show{display:block}
+.sq-card.answered-ok .sq-num{background:var(--green-bg);color:var(--green)}
+.sq-card.answered-fail .sq-num{background:var(--red-bg);color:var(--red)}
+
+/* ===== SIGNATURE ===== */
+.sig-wrap{
+  border:2px solid #dce3e9;border-radius:10px;overflow:hidden;
+  background:#fafafa;position:relative;
+}
+.sig-hint{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:13px;color:#bdc3c7;pointer-events:none;
+  white-space:nowrap;font-weight:600;
+}
+canvas.sig-canvas{display:block;touch-action:none;width:100%;height:110px}
+.sig-clear{
+  width:100%;padding:8px;background:#f8f9fa;border:none;
+  border-top:1px solid #eee;font-size:13px;color:var(--gray);
+  cursor:pointer;font-weight:700;
+}
+
+/* ===== FAB ===== */
+.fab{
+  position:fixed;bottom:22px;left:16px;
+  width:62px;height:62px;border-radius:50%;
+  background:var(--orange);color:white;border:none;font-size:30px;
+  cursor:pointer;box-shadow:0 5px 18px rgba(230,126,34,.55);
+  display:flex;align-items:center;justify-content:center;z-index:50;
+}
+.fab:active{transform:scale(.93)}
+
+/* ===== CARDS / MISC ===== */
+.card{background:white;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.section-label{font-size:13px;font-weight:800;color:var(--gray);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.divider{height:1px;background:#eef0f3;margin:18px 0}
+.empty-state{text-align:center;padding:50px 20px;color:var(--gray)}
+.empty-icon{font-size:54px;margin-bottom:14px}
+.empty-text{font-size:15px;line-height:1.6}
+
+/* ===== TOAST ===== */
+#toast{
+  position:fixed;bottom:86px;left:50%;
+  transform:translateX(-50%) translateY(20px);opacity:0;
+  background:#2c3e50;color:white;padding:12px 22px;
+  border-radius:25px;font-size:14px;font-weight:700;
+  z-index:999;transition:all .3s;pointer-events:none;white-space:nowrap;
+}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ===== MODAL BOTTOM SHEET ===== */
+.modal-wrap{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;
+}
+.modal-wrap.open{display:flex}
+.modal-sheet{
+  background:white;border-radius:20px 20px 0 0;
+  padding:20px 16px 30px;width:100%;
+  max-height:92vh;overflow-y:auto;
+}
+.modal-handle{
+  width:40px;height:4px;background:#dce3e9;
+  border-radius:4px;margin:0 auto 18px;
+}
+.modal-title{font-size:19px;font-weight:900;text-align:center;margin-bottom:20px}
+
+/* ===== JOURNAL VIEW ===== */
+.log-card{
+  background:white;border-radius:var(--radius);
+  margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow);
+}
+.log-header{
+  padding:12px 16px;background:var(--green-bg);
+  display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid #d5f5e3;
+}
+.log-date{font-size:15px;font-weight:800;color:var(--green-d)}
+.log-workers{font-size:13px;color:var(--green)}
+.log-body{padding:14px 16px}
+.log-text{font-size:14px;line-height:1.6;color:var(--dark);margin-bottom:8px}
+.log-weather{font-size:13px;color:var(--gray)}
+
+/* ===== CONTRACTOR ITEM IN SETTINGS ===== */
+.contractor-item{
+  background:white;border-radius:10px;padding:12px 14px;
+  margin-bottom:8px;display:flex;align-items:center;gap:10px;
+  box-shadow:0 1px 5px rgba(0,0,0,.06);
+}
+.contractor-item .c-name{flex:1;font-weight:700}
+.contractor-item .c-trade{font-size:12px;color:var(--orange);background:var(--orange-bg);padding:3px 8px;border-radius:20px;font-weight:700}
+.contractor-item .c-del{background:none;border:none;color:#bdc3c7;font-size:18px;cursor:pointer;padding:4px}
+
+/* ===== REPORT PRINT ===== */
+@media print{
+  .no-print{display:none!important}
+  body{background:white}
+  .screen{display:block!important;min-height:unset}
+  .topbar{display:none}
+  .print-report{padding:20px;font-family:Arial,sans-serif;direction:rtl}
+  .pr-header{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding-bottom:14px;border-bottom:3px solid #1a3a5c;margin-bottom:18px;
+  }
+  .pr-logo{font-size:22px;font-weight:900;color:#1a3a5c}
+  .pr-meta{font-size:12px;color:#666;text-align:left}
+  .pr-section{margin-bottom:18px;page-break-inside:avoid}
+  .pr-st{
+    background:#1a3a5c;color:white;padding:6px 12px;
+    border-radius:4px;font-size:13px;font-weight:700;margin-bottom:10px;
+  }
+  .pr-row{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;padding:4px 0;border-bottom:1px solid #f0f3f4}
+  .pr-row strong{min-width:120px;display:inline-block;color:#555}
+  .pr-table{width:100%;border-collapse:collapse;font-size:13px}
+  .pr-table th,.pr-table td{padding:6px 10px;text-align:right;border:1px solid #ddd}
+  .pr-table th{background:#f0f3f4;font-weight:700}
+  .pr-q{padding:5px 0;font-size:13px;border-bottom:1px solid #f5f5f5}
+  .pr-q .r{color:#27ae60;font-weight:700}
+  .pr-q .x{color:#e74c3c;font-weight:700}
+  img.pr-img{max-width:180px;max-height:140px;border-radius:6px;margin:4px;object-fit:cover}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== TOAST ===================== -->
+<div id="toast"></div>
+
+<!-- ===================== SCREEN: HOME ===================== -->
+<div id="s-home" class="screen active">
+  <div class="home-hero">
+    <div class="home-logo">Site<span>Boss</span></div>
+    <div class="home-tagline">מנהל עבודה פלוס — כל הכלים, כפתור אחד</div>
+  </div>
+
+  <div class="project-pill" onclick="showScreen('s-settings')">
+    <div>
+      <div class="pill-name" id="home-project-name">לחץ להגדרת פרויקט ⚙️</div>
+      <div class="pill-date" id="home-date"></div>
+    </div>
+    <div style="font-size:22px;color:#bdc3c7">›</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box stat-green">
+      <div class="stat-num" id="stat-journal">0</div>
+      <div class="stat-label">ימי יומן</div>
+    </div>
+    <div class="stat-box stat-orange">
+      <div class="stat-num" id="stat-open">0</div>
+      <div class="stat-label">ליקויים פתוחים</div>
+    </div>
+    <div class="stat-box stat-red">
+      <div class="stat-num" id="stat-safety">0</div>
+      <div class="stat-label">בטיחות השבוע</div>
+    </div>
+  </div>
+
+  <div class="main-buttons">
+    <button class="main-btn btn-journal" onclick="showScreen('s-journal')">
+      <span class="btn-icon">📋</span>
+      <span class="btn-texts">
+        <span class="btn-title">יומן עבודה יומי</span>
+        <span class="btn-desc">דבר דקה אחת ← יומן חוקי מסודר ישלח לוואטסאפ</span>
+      </span>
+      <span class="btn-badge">מ-1</span>
+    </button>
+
+    <button class="main-btn btn-defects" onclick="showScreen('s-defects')">
+      <span class="btn-icon">📸</span>
+      <span class="btn-texts">
+        <span class="btn-title">ליקויים ומשימות</span>
+        <span class="btn-desc">צלם ← הקצה לקבלן ← עקוב אחרי סטטוס</span>
+      </span>
+      <span class="btn-badge">מ-2</span>
+    </button>
+
+    <button class="main-btn btn-safety" onclick="showScreen('s-safety')">
+      <span class="btn-icon">🦺</span>
+      <span class="btn-texts">
+        <span class="btn-title">בטיחות יומית</span>
+        <span class="btn-desc">12 שאלות בטיחות ← דוח חתום עם GPS ← הגנה משפטית</span>
+      </span>
+      <span class="btn-badge">מ-3</span>
+    </button>
+  </div>
+
+  <div style="text-align:center;padding:18px 16px 0;color:#bdc3c7;font-size:12px">
+    כל הנתונים שמורים בטלפון שלך בלבד · עובד ללא אינטרנט
+  </div>
+</div>
+
+<!-- ===================== SCREEN: SETTINGS ===================== -->
+<div id="s-settings" class="screen">
+  <div class="topbar no-print">
+    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <div class="topbar-center">
+      <div class="topbar-title">הגדרות פרויקט</div>
+    </div>
+    <button class="icon-btn" onclick="saveSettings()">💾</button>
+  </div>
+  <div class="content">
+
+    <div class="settings-section">
+      <div class="section-label">פרטי האתר</div>
+      <div class="form-group">
+        <label class="form-label">שם הפרויקט / האתר</label>
+        <input class="form-input" id="cfg-project" placeholder="לדוגמה: מגדל רמות קומות 1-12" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">שם מנהל העבודה</label>
+        <input class="form-input" id="cfg-manager" placeholder="שם מלא" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">מספר טלפון מנהל</label>
+        <input class="form-input" id="cfg-phone" type="tel" placeholder="05X-XXXXXXX" />
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="section-label">משרד / פיקוח (לקבל דוחות)</div>
+      <div class="form-group">
+        <label class="form-label">שם איש הקשר במשרד</label>
+        <input class="form-input" id="cfg-office-name" placeholder="שם מנהל הפרויקט / מפקח" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">טלפון משרד / פיקוח</label>
+        <input class="form-input" id="cfg-office-phone" type="tel" placeholder="05X-XXXXXXX" />
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="section-label">קבלני משנה באתר</div>
+      <div id="contractors-list"></div>
+      <button class="btn btn-ghost" onclick="openAddContractor()">+ הוסף קבלן משנה</button>
+    </div>
+
+    <div style="margin-top:24px">
+      <button class="btn btn-primary" onclick="saveSettings()">שמור הגדרות</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN: JOURNAL ===================== -->
+<div id="s-journal" class="screen">
+  <div class="topbar no-print">
+    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <div class="topbar-center">
+      <div class="topbar-title">יומן עבודה יומי</div>
+      <div class="topbar-sub" id="jnl-date-sub"></div>
+    </div>
+    <button class="icon-btn" onclick="showScreen('s-journal-history')">📂</button>
+  </div>
+  <div class="content">
+
+    <!-- VOICE -->
+    <div class="voice-card">
+      <div class="section-label">הקלטת קול (מדבר ← מתמלל)</div>
+      <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎙️</button>
+      <div class="voice-status" id="voice-status">לחץ לדבר בחופשיות על מה שהיה היום</div>
+      <div class="voice-transcript" id="voice-text" style="display:none"></div>
+      <div style="margin-top:12px">
+        <label class="form-label">או הקלד ידנית</label>
+        <textarea class="form-textarea" id="jnl-text" placeholder="מה קרה היום באתר? מי עבד, מה בוצע, מה עוכב..."></textarea>
+      </div>
+    </div>
+
+    <!-- WORKERS -->
+    <div class="card">
+      <div class="section-label">כוח אדם היום</div>
+      <table class="worker-table">
+        <thead>
+          <tr><th>מקצוע</th><th style="text-align:center;width:70px">כמות</th></tr>
+        </thead>
+        <tbody id="workers-body">
+          <tr><td>טייחים</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="טייחים"></td></tr>
+          <tr><td>חשמלאים</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="חשמלאים"></td></tr>
+          <tr><td>אינסטלטורים</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="אינסטלטורים"></td></tr>
+          <tr><td>פועלים כלליים</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="פועלים כלליים"></td></tr>
+          <tr><td>נגרים / קופסאי</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="נגרים"></td></tr>
+          <tr><td>אחר</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="אחר"></td></tr>
+          <tr class="worker-total"><td>סה"כ פועלים</td><td id="worker-total" style="text-align:center">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="card">
+      <div class="section-label">מזג אוויר</div>
+      <div class="weather-row">
+        <div class="w-opt active" data-w="☀️" onclick="selectWeather(this)"><span class="w-emoji">☀️</span><span class="w-label">שמש</span></div>
+        <div class="w-opt" data-w="⛅" onclick="selectWeather(this)"><span class="w-emoji">⛅</span><span class="w-label">מעונן חלק</span></div>
+        <div class="w-opt" data-w="🌧️" onclick="selectWeather(this)"><span class="w-emoji">🌧️</span><span class="w-label">גשם</span></div>
+        <div class="w-opt" data-w="🌬️" onclick="selectWeather(this)"><span class="w-emoji">🌬️</span><span class="w-label">רוח</span></div>
+        <div class="w-opt" data-w="🥵" onclick="selectWeather(this)"><span class="w-emoji">🥵</span><span class="w-label">חום קיצוני</span></div>
+      </div>
+    </div>
+
+    <!-- DELAYS -->
+    <div class="card">
+      <div class="section-label">עיכובים / חריגים</div>
+      <textarea class="form-textarea" id="jnl-delays" placeholder="האם היו עיכובים? חוסר בחומרים? בעיות ציוד? השאר ריק אם הכל רץ חלק" style="min-height:70px"></textarea>
+    </div>
+
+    <!-- TASKS TOMORROW -->
+    <div class="card">
+      <div class="section-label">משימות למחר</div>
+      <textarea class="form-textarea" id="jnl-tasks" placeholder="מה מתוכנן למחר?" style="min-height:70px"></textarea>
+    </div>
+
+    <!-- PHOTOS -->
+    <div class="card">
+      <div class="section-label">תמונות מהיום</div>
+      <div class="photo-grid" id="jnl-photos">
+        <label class="p-add">
+          <input type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="addPhotos(this,'jnl')">
+          📷
+        </label>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-green" onclick="saveJournal()">✅ שמור יומן והפק דוח PDF</button>
+      <button class="btn btn-ghost" onclick="sendJournalWhatsApp()">📲 שלח לוואטסאפ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN: JOURNAL HISTORY ===================== -->
+<div id="s-journal-history" class="screen">
+  <div class="topbar no-print">
+    <button class="icon-btn" onclick="showScreen('s-journal')">→</button>
+    <div class="topbar-center">
+      <div class="topbar-title">ארכיון יומנים</div>
+    </div>
+    <div style="width:44px"></div>
+  </div>
+  <div class="content" id="journal-history-list">
+    <div class="empty-state">
+      <div class="empty-icon">📂</div>
+      <div class="empty-text">עדיין אין יומנים שמורים.<br>צור את הראשון!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN: DEFECTS ===================== -->
+<div id="s-defects" class="screen">
+  <div class="topbar no-print">
+    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <div class="topbar-center">
+      <div class="topbar-title">ליקויים ומשימות</div>
+    </div>
+    <div style="width:44px"></div>
+  </div>
+  <div class="content">
+    <div class="filter-tabs">
+      <div class="ftab active" data-filter="all" onclick="filterDefects(this)">הכל</div>
+      <div class="ftab" data-filter="open" onclick="filterDefects(this)">🔴 פתוח</div>
+      <div class="ftab" data-filter="progress" onclick="filterDefects(this)">🟠 בטיפול</div>
+      <div class="ftab" data-filter="done" onclick="filterDefects(this)">🟢 בוצע</div>
+    </div>
+    <div id="defects-list"></div>
+  </div>
+  <button class="fab no-print" onclick="openAddDefect()">＋</button>
+</div>
+
+<!-- ===================== SCREEN: SAFETY ===================== -->
+<div id="s-safety" class="screen">
+  <div class="topbar no-print">
+    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <div class="topbar-center">
+      <div class="topbar-title">בטיחות יומית</div>
+      <div class="topbar-sub" id="safety-date-sub"></div>
+    </div>
+    <button class="icon-btn" onclick="showScreen('s-safety-history')">📂</button>
+  </div>
+  <div class="content">
+
+    <div class="safety-progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="sf-progress" style="width:0%"></div></div>
+      <div class="progress-label" id="sf-progress-label">0 / 12 שאלות נענו</div>
+    </div>
+
+    <div id="safety-questions"></div>
+
+    <!-- SIGNATURE -->
+    <div class="card" style="margin-top:4px">
+      <div class="section-label">חתימת מנהל העבודה</div>
+      <div class="sig-wrap">
+        <div class="sig-hint" id="sig-hint">חתום כאן עם האצבע</div>
+        <canvas id="sig-canvas" class="sig-canvas" height="110"></canvas>
+        <button class="sig-clear" onclick="clearSig()">🗑️ נקה חתימה</button>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+      <button class="btn btn-red" onclick="saveSafety()">✅ אשר ושלח דוח בטיחות</button>
+      <button class="btn btn-ghost" onclick="showScreen('s-safety-history')">📂 דוחות קודמים</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN: SAFETY HISTORY ===================== -->
+<div id="s-safety-history" class="screen">
+  <div class="topbar no-print">
+    <button class="icon-btn" onclick="showScreen('s-safety')">→</button>
+    <div class="topbar-center"><div class="topbar-title">ארכיון בטיחות</div></div>
+    <div style="width:44px"></div>
+  </div>
+  <div class="content" id="safety-history-list">
+    <div class="empty-state">
+      <div class="empty-icon">🦺</div>
+      <div class="empty-text">עדיין אין דוחות בטיחות.<br>בצע את הבדיקה הראשונה!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCREEN: PRINT REPORT ===================== -->
+<div id="s-report" class="screen">
+  <div class="topbar no-print">
+    <button class="icon-btn" onclick="closePrintScreen()">→</button>
+    <div class="topbar-center"><div class="topbar-title">תצוגה לפני הדפסה</div></div>
+    <button class="icon-btn" onclick="window.print()">🖨️</button>
+  </div>
+  <div class="content no-print" style="margin-bottom:0;padding-bottom:16px">
+    <button class="btn btn-primary" onclick="window.print()">🖨️ הדפס / שמור PDF</button>
+  </div>
+  <div id="report-content" class="print-report"></div>
+</div>
+
+<!-- ===================== MODAL: ADD CONTRACTOR ===================== -->
+<div id="modal-contractor" class="modal-wrap" onclick="closeModalIfOutside(event,'modal-contractor')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">הוסף קבלן משנה</div>
+    <div class="form-group">
+      <label class="form-label">שם הקבלן / חברה</label>
+      <input class="form-input" id="mc-name" placeholder="שם מלא" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">מקצוע / תחום</label>
+      <select class="form-select" id="mc-trade">
+        <option>טיח</option><option>חשמל</option><option>אינסטלציה</option>
+        <option>נגרות</option><option>ריצוף</option><option>גבס</option>
+        <option>צבע</option><option>אלומיניום / חלונות</option>
+        <option>מיזוג אוויר</option><option>פיגומים</option><option>אחר</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">טלפון (לשליחת וואטסאפ)</label>
+      <input class="form-input" id="mc-phone" type="tel" placeholder="05X-XXXXXXX" />
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('modal-contractor')">ביטול</button>
+      <button class="btn btn-orange" onclick="addContractor()">הוסף קבלן</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: ADD DEFECT ===================== -->
+<div id="modal-defect" class="modal-wrap" onclick="closeModalIfOutside(event,'modal-defect')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">ליקוי / משימה חדשה</div>
+
+    <div class="form-group">
+      <label class="form-label">תמונה (מומלץ)</label>
+      <div class="photo-grid" id="defect-photo-grid" style="grid-template-columns:repeat(2,1fr)">
+        <label class="p-add" style="aspect-ratio:16/9">
+          <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotos(this,'defect')">
+          📷 צלם
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">תיאור הליקוי</label>
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <textarea class="form-textarea" id="def-desc" placeholder="תאר מה צריך תיקון..." style="flex:1;min-height:70px"></textarea>
+        <button onclick="toggleVoiceDefect()" id="def-voice-btn" style="width:50px;height:50px;border-radius:10px;border:2px solid #dce3e9;background:white;font-size:22px;cursor:pointer;flex-shrink:0">🎙️</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">מיקום באתר</label>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="def-floor" placeholder="קומה" style="width:80px;flex-shrink:0" />
+        <input class="form-input" id="def-location" placeholder="דירה / אזור" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">קבלן אחראי</label>
+      <select class="form-select" id="def-contractor"></select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">תאריך יעד לתיקון</label>
+      <input class="form-input" id="def-deadline" type="date" />
+    </div>
+
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-defect')">ביטול</button>
+      <button class="btn btn-orange" onclick="saveDefect()">שמור ← שלח לקבלן</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== STATE =====================
+let APP = {
+  settings: loadJSON('sb_settings') || {
+    projectName:'',managerName:'',managerPhone:'',
+    officeName:'',officePhone:'',contractors:[]
+  },
+  journal: loadJSON('sb_journal') || [],
+  defects: loadJSON('sb_defects') || [],
+  safety:  loadJSON('sb_safety')  || [],
+
+  // transient
+  jnlPhotos: [],
+  defectPhoto: null,
+  currentFilter: 'all',
+  weather: '☀️',
+  safetyAnswers: {},
+  sigCanvas: null,
+  sigCtx: null,
+  sigDrawing: false,
+  recognition: null,
+  voiceActive: false,
+  voiceTarget: 'journal'
+};
+
+// ===================== UTILS =====================
+function loadJSON(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
+function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{toast('שגיאה בשמירה — אחסון מלא?')}}
+
+function toast(msg,dur=2600){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+function heDate(d){
+  if(!d)d=new Date();
+  const days=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  const months=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  return `יום ${days[d.getDay()]}, ${d.getDate()} ב${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+function isoDate(d){if(!d)d=new Date();return d.toISOString().slice(0,10)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+// ===================== NAVIGATION =====================
+let _screenStack=['s-home'];
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id!==_screenStack[_screenStack.length-1]) _screenStack.push(id);
+
+  // hooks
+  if(id==='s-home') refreshHome();
+  if(id==='s-settings') loadSettingsForm();
+  if(id==='s-journal') initJournal();
+  if(id==='s-journal-history') renderJournalHistory();
+  if(id==='s-defects') renderDefects();
+  if(id==='s-safety') initSafety();
+  if(id==='s-safety-history') renderSafetyHistory();
+}
+
+function closePrintScreen(){
+  _screenStack.pop();
+  showScreen(_screenStack[_screenStack.length-1]||'s-home');
+}
+
+// ===================== HOME =====================
+function refreshHome(){
+  const s=APP.settings;
+  document.getElementById('home-project-name').textContent=s.projectName||'לחץ להגדרת פרויקט ⚙️';
+  document.getElementById('home-date').textContent=heDate();
+
+  // stats
+  document.getElementById('stat-journal').textContent=APP.journal.length;
+  const openDef=APP.defects.filter(d=>d.status!=='done').length;
+  document.getElementById('stat-open').textContent=openDef;
+  const now=new Date();
+  const weekAgo=new Date(now-7*864e5);
+  const weekSafety=APP.safety.filter(s=>{try{return new Date(s.date)>=weekAgo}catch{return false}}).length;
+  document.getElementById('stat-safety').textContent=weekSafety;
+}
+
+// ===================== SETTINGS =====================
+function loadSettingsForm(){
+  const s=APP.settings;
+  document.getElementById('cfg-project').value=s.projectName||'';
+  document.getElementById('cfg-manager').value=s.managerName||'';
+  document.getElementById('cfg-phone').value=s.managerPhone||'';
+  document.getElementById('cfg-office-name').value=s.officeName||'';
+  document.getElementById('cfg-office-phone').value=s.officePhone||'';
+  renderContractorsList();
+}
+
+function saveSettings(){
+  APP.settings.projectName=document.getElementById('cfg-project').value.trim();
+  APP.settings.managerName=document.getElementById('cfg-manager').value.trim();
+  APP.settings.managerPhone=document.getElementById('cfg-phone').value.trim();
+  APP.settings.officeName=document.getElementById('cfg-office-name').value.trim();
+  APP.settings.officePhone=document.getElementById('cfg-office-phone').value.trim();
+  saveJSON('sb_settings',APP.settings);
+  toast('✅ ההגדרות נשמרו בהצלחה');
+  showScreen('s-home');
+}
+
+function renderContractorsList(){
+  const el=document.getElementById('contractors-list');
+  if(!APP.settings.contractors.length){el.innerHTML='<p style="color:#bdc3c7;font-size:14px;margin-bottom:12px">עוד לא הוספת קבלנים</p>';return}
+  el.innerHTML=APP.settings.contractors.map((c,i)=>`
+    <div class="contractor-item">
+      <span class="c-trade">${c.trade}</span>
+      <span class="c-name">${c.name}</span>
+      <span style="font-size:12px;color:#bdc3c7">${c.phone||''}</span>
+      <button class="c-del" onclick="removeContractor(${i})">✕</button>
+    </div>`).join('');
+}
+
+function openAddContractor(){
+  document.getElementById('mc-name').value='';
+  document.getElementById('mc-phone').value='';
+  openModal('modal-contractor');
+}
+function addContractor(){
+  const name=document.getElementById('mc-name').value.trim();
+  const trade=document.getElementById('mc-trade').value;
+  const phone=document.getElementById('mc-phone').value.trim();
+  if(!name){toast('יש להזין שם קבלן');return}
+  APP.settings.contractors.push({name,trade,phone});
+  saveJSON('sb_settings',APP.settings);
+  renderContractorsList();
+  closeModal('modal-contractor');
+  toast('✅ הקבלן נוסף');
+}
+function removeContractor(i){
+  APP.settings.contractors.splice(i,1);
+  saveJSON('sb_settings',APP.settings);
+  renderContractorsList();
+}
+
+// ===================== VOICE =====================
+function initRecognition(target){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){return null}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const r=new SR();
+  r.lang='he-IL';r.continuous=true;r.interimResults=true;
+  r.onresult=(e)=>{
+    let t='';
+    for(let i=0;i<e.results.length;i++) t+=e.results[i][0].transcript+(e.results[i].isFinal?'\n':'');
+    if(target==='journal'){
+      document.getElementById('voice-text').style.display='block';
+      document.getElementById('voice-text').textContent=t;
+      document.getElementById('jnl-text').value=t;
+    } else if(target==='defect'){
+      document.getElementById('def-desc').value=t;
+    }
+  };
+  r.onerror=(e)=>{if(e.error!=='aborted')toast('שגיאת הקלטה: '+e.error)};
+  return r;
+}
+
+function toggleVoice(){
+  if(APP.voiceActive){
+    APP.recognition&&APP.recognition.stop();
+    APP.voiceActive=false;
+    document.getElementById('voice-btn').innerHTML='🎙️';
+    document.getElementById('voice-btn').classList.remove('recording');
+    document.getElementById('voice-status').textContent='לחץ לדבר בחופשיות על מה שהיה היום';
+  } else {
+    APP.recognition=initRecognition('journal');
+    if(!APP.recognition){toast('הדפדפן לא תומך בהקלטה — הקלד ידנית');return}
+    APP.recognition.start();
+    APP.voiceActive=true;
+    document.getElementById('voice-btn').innerHTML='⏹️';
+    document.getElementById('voice-btn').classList.add('recording');
+    document.getElementById('voice-status').textContent='מקליט... דבר בחופשיות. לחץ שוב לסיום.';
+  }
+}
+
+let defVoiceActive=false;
+function toggleVoiceDefect(){
+  if(defVoiceActive){
+    APP.recognition&&APP.recognition.stop();
+    defVoiceActive=false;
+    document.getElementById('def-voice-btn').innerHTML='🎙️';
+  } else {
+    APP.recognition=initRecognition('defect');
+    if(!APP.recognition){toast('הדפדפן לא תומך בהקלטה');return}
+    APP.recognition.start();
+    defVoiceActive=true;
+    document.getElementById('def-voice-btn').innerHTML='⏹️';
+  }
+}
+
+// ===================== PHOTOS =====================
+function addPhotos(input,target){
+  const files=Array.from(input.files);
+  files.forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const src=e.target.result;
+      if(target==='jnl'){
+        APP.jnlPhotos.push(src);
+        renderPhotoGrid('jnl-photos',APP.jnlPhotos,'jnl');
+      } else if(target==='defect'){
+        APP.defectPhoto=src;
+        renderDefectPhoto();
+      }
+    };
+    reader.readAsDataURL(f);
+  });
+  input.value='';
+}
+
+function renderPhotoGrid(gridId,arr,target){
+  const g=document.getElementById(gridId);
+  g.innerHTML=arr.map((src,i)=>`
+    <div class="p-thumb">
+      <img src="${src}">
+      <button class="p-del" onclick="removePhoto('${target}',${i})">✕</button>
+    </div>`).join('')+`
+    <label class="p-add">
+      <input type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="addPhotos(this,'${target}')">
+      📷
+    </label>`;
+}
+
+function removePhoto(target,i){
+  if(target==='jnl'){APP.jnlPhotos.splice(i,1);renderPhotoGrid('jnl-photos',APP.jnlPhotos,'jnl')}
+}
+
+function renderDefectPhoto(){
+  const g=document.getElementById('defect-photo-grid');
+  if(APP.defectPhoto){
+    g.innerHTML=`<div class="p-thumb" style="aspect-ratio:16/9">
+      <img src="${APP.defectPhoto}" style="width:100%;height:100%;object-fit:cover">
+      <button class="p-del" onclick="APP.defectPhoto=null;renderDefectPhoto()">✕</button>
+    </div>
+    <label class="p-add" style="aspect-ratio:16/9">
+      <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotos(this,'defect')">📷 חלף
+    </label>`;
+  } else {
+    g.innerHTML=`<label class="p-add" style="aspect-ratio:16/9;grid-column:1/-1">
+      <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotos(this,'defect')">
+      📷 צלם את הליקוי
+    </label>`;
+  }
+}
+
+// ===================== JOURNAL =====================
+function initJournal(){
+  document.getElementById('jnl-date-sub').textContent=heDate();
+  document.querySelectorAll('.w-input').forEach(i=>i.value=0);
+  document.getElementById('worker-total').textContent=0;
+  document.getElementById('jnl-delays').value='';
+  document.getElementById('jnl-tasks').value='';
+  document.getElementById('jnl-text').value='';
+  document.getElementById('voice-text').style.display='none';
+  document.getElementById('voice-text').textContent='';
+  document.getElementById('voice-status').textContent='לחץ לדבר בחופשיות על מה שהיה היום';
+  document.getElementById('voice-btn').innerHTML='🎙️';
+  document.getElementById('voice-btn').classList.remove('recording');
+  APP.jnlPhotos=[];
+  APP.voiceActive=false;
+  renderPhotoGrid('jnl-photos',APP.jnlPhotos,'jnl');
+  document.querySelectorAll('.w-input').forEach(inp=>inp.addEventListener('input',updateWorkerTotal));
+}
+
+function updateWorkerTotal(){
+  let sum=0;
+  document.querySelectorAll('.w-input').forEach(i=>sum+=parseInt(i.value)||0);
+  document.getElementById('worker-total').textContent=sum;
+}
+
+function selectWeather(el){
+  document.querySelectorAll('.w-opt').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  APP.weather=el.dataset.w;
+}
+
+function getWorkers(){
+  const w={};
+  document.querySelectorAll('.w-input').forEach(i=>{
+    const n=parseInt(i.value)||0;
+    if(n>0)w[i.dataset.trade]=n;
+  });
+  return w;
+}
+
+function saveJournal(){
+  const text=document.getElementById('jnl-text').value.trim();
+  if(!text){toast('יש להוסיף תיאור — דבר או הקלד');return}
+  const entry={
+    id:uid(),date:isoDate(),dateHe:heDate(),
+    text,workers:getWorkers(),weather:APP.weather,
+    delays:document.getElementById('jnl-delays').value.trim(),
+    tasks:document.getElementById('jnl-tasks').value.trim(),
+    photos:APP.jnlPhotos.slice(),
+    manager:APP.settings.managerName,
+    project:APP.settings.projectName
+  };
+  APP.journal.unshift(entry);
+  saveJSON('sb_journal',APP.journal);
+  toast('✅ יומן נשמר!');
+  printJournalReport(entry);
+}
+
+function sendJournalWhatsApp(){
+  const text=document.getElementById('jnl-text').value.trim();
+  if(!text){toast('יש להוסיף תיאור תחילה');return}
+  const workers=getWorkers();
+  const wList=Object.entries(workers).map(([k,v])=>`• ${k}: ${v}`).join('\n');
+  const total=Object.values(workers).reduce((a,b)=>a+b,0);
+  const delays=document.getElementById('jnl-delays').value.trim();
+  const tasks=document.getElementById('jnl-tasks').value.trim();
+  const s=APP.settings;
+  let msg=`📋 *יומן עבודה — ${s.projectName||'אתר'}*\n`;
+  msg+=`📅 ${heDate()}\n`;
+  msg+=`👷 מנהל עבודה: ${s.managerName||''}\n\n`;
+  msg+=`*תיאור יום העבודה:*\n${text}\n\n`;
+  if(total>0){msg+=`*כוח אדם (סה"כ ${total}):*\n${wList}\n\n`}
+  msg+=`*מזג אוויר:* ${APP.weather}\n\n`;
+  if(delays) msg+=`*עיכובים/חריגים:*\n${delays}\n\n`;
+  if(tasks) msg+=`*משימות למחר:*\n${tasks}\n\n`;
+  msg+=`_נשלח מ-SiteBoss_`;
+  const phone=s.officePhone.replace(/[-\s]/g,'');
+  const target=phone?`https://wa.me/972${phone.replace(/^0/,'')}?text=`:`https://wa.me/?text=`;
+  window.open(target+encodeURIComponent(msg),'_blank');
+}
+
+function printJournalReport(entry){
+  const s=APP.settings;
+  const wList=Object.entries(entry.workers).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  const total=Object.values(entry.workers).reduce((a,b)=>a+b,0);
+  const imgs=entry.photos.map(p=>`<img class="pr-img" src="${p}">`).join('');
+
+  let html=`<div class="print-report">
+    <div class="pr-header">
+      <div>
+        <div class="pr-logo">SiteBoss – יומן עבודה</div>
+        <div style="font-size:13px;color:#555;margin-top:4px">${s.projectName||'שם הפרויקט'}</div>
+      </div>
+      <div class="pr-meta">
+        <div>${entry.dateHe}</div>
+        <div>מנהל עבודה: ${entry.manager||s.managerName||''}</div>
+        <div>הופק: ${new Date().toLocaleTimeString('he-IL')}</div>
+      </div>
+    </div>
+
+    <div class="pr-section">
+      <div class="pr-st">תיאור יום העבודה</div>
+      <p style="font-size:14px;line-height:1.7;white-space:pre-wrap">${entry.text}</p>
+    </div>
+
+    ${total>0?`<div class="pr-section">
+      <div class="pr-st">כוח אדם (סה"כ: ${total})</div>
+      <table class="pr-table">
+        <thead><tr><th>מקצוע</th><th>כמות</th></tr></thead>
+        <tbody>${wList}</tbody>
+      </table>
+    </div>`:''}
+
+    <div class="pr-section">
+      <div class="pr-st">תנאים ועיכובים</div>
+      <div class="pr-row"><strong>מזג אוויר:</strong> ${entry.weather}</div>
+      ${entry.delays?`<div class="pr-row"><strong>עיכובים/חריגים:</strong> <span style="white-space:pre-wrap">${entry.delays}</span></div>`:''}
+      ${entry.tasks?`<div class="pr-row"><strong>משימות למחר:</strong> <span style="white-space:pre-wrap">${entry.tasks}</span></div>`:''}
+    </div>
+
+    ${imgs?`<div class="pr-section"><div class="pr-st">תמונות מהיום</div>${imgs}</div>`:''}
+
+    <div style="margin-top:30px;border-top:1px solid #ddd;padding-top:12px;font-size:11px;color:#aaa;text-align:center">
+      מסמך זה הופק ע"י SiteBoss — מנהל עבודה פלוס · ${new Date().toLocaleString('he-IL')}
+    </div>
+  </div>`;
+
+  document.getElementById('report-content').innerHTML=html;
+  showScreen('s-report');
+}
+
+function renderJournalHistory(){
+  const el=document.getElementById('journal-history-list');
+  if(!APP.journal.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-text">עדיין אין יומנים שמורים.<br>צור את הראשון!</div></div>';
+    return;
+  }
+  el.innerHTML=APP.journal.map(e=>{
+    const total=Object.values(e.workers).reduce((a,b)=>a+b,0);
+    return `<div class="log-card">
+      <div class="log-header">
+        <span class="log-date">${e.dateHe}</span>
+        <span class="log-workers">${total>0?`👷 ${total} פועלים`:''}</span>
+      </div>
+      <div class="log-body">
+        <div class="log-text">${e.text.slice(0,200)}${e.text.length>200?'...':''}</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-ghost btn-sm" onclick="printJournalReport(APP.journal.find(x=>x.id==='${e.id}'))">🖨️ הדפס</button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteJournal('${e.id}')">🗑️ מחק</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteJournal(id){
+  if(!confirm('למחוק יומן זה?')) return;
+  APP.journal=APP.journal.filter(e=>e.id!==id);
+  saveJSON('sb_journal',APP.journal);
+  renderJournalHistory();
+  toast('יומן נמחק');
+}
+
+// ===================== DEFECTS =====================
+function renderDefects(){
+  const el=document.getElementById('defects-list');
+  let arr=APP.defects;
+  if(APP.currentFilter!=='all') arr=arr.filter(d=>d.status===APP.currentFilter);
+  if(!arr.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">👍</div><div class="empty-text">'+
+      (APP.currentFilter==='all'?'אין ליקויים פתוחים!<br>לחץ + להוסיף':'אין ליקויים בסטטוס זה')+'</div></div>';
+    return;
+  }
+  el.innerHTML=arr.map(function(d){
+    var dClass=d.status==='done'?'s-done':d.status==='progress'?'s-progress':'s-open';
+    var isLate=d.deadline&&new Date(d.deadline)<new Date()&&d.status!=='done';
+    var photoHtml=d.photo?'<img class="def-photo" src="'+d.photo+'">'  :'';
+    var deadlineClass='def-deadline'+(isLate?' late':'');
+    var deadlineText=d.deadline?'יעד: '+d.deadline+(isLate?' ⚠️ באיחור':''):'ללא יעד';
+    var actionBtns='';
+    if(d.status!=='done'){
+      actionBtns+='<button class="btn btn-green btn-sm" onclick="updateDefectStatus(\''+d.id+'\',\'done\')">✅ בוצע</button>';
+      if(d.status==='open') actionBtns+='<button class="btn btn-ghost btn-sm" onclick="updateDefectStatus(\''+d.id+'\',\'progress\')">⏳ בטיפול</button>';
+    }
+    actionBtns+='<button class="btn btn-ghost btn-sm" onclick="sendDefectWhatsApp(\''+d.id+'\')">📲 וואטסאפ</button>';
+    actionBtns+='<button class="btn btn-ghost btn-sm" onclick="deleteDefect(\''+d.id+'\')">🗑️</button>';
+    var shortDesc=d.desc.slice(0,50)+(d.desc.length>50?'...':'');
+    return '<div class="defect-card">'
+      +'<div class="def-top">'
+        +'<span class="status-dot '+dClass+'"></span>'
+        +'<span class="def-title">'+shortDesc+'</span>'
+        +'<span class="def-contractor">'+d.contractor+'</span>'
+      +'</div>'
+      +'<div class="def-body">'
+        +photoHtml
+        +'<div class="def-location">📍 קומה '+(d.floor||'?')+(d.location?' — '+d.location:'')+'</div>'
+        +'<div class="def-desc">'+d.desc+'</div>'
+        +'<div class="def-footer">'
+          +'<span class="'+deadlineClass+'">'+deadlineText+'</span>'
+          +'<span style="font-size:12px;color:#bdc3c7">'+d.date+'</span>'
+        +'</div>'
+        +'<div class="def-actions">'+actionBtns+'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function filterDefects(el){
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  APP.currentFilter=el.dataset.filter;
+  renderDefects();
+}
+
+function openAddDefect(){
+  APP.defectPhoto=null;
+  renderDefectPhoto();
+  document.getElementById('def-desc').value='';
+  document.getElementById('def-floor').value='';
+  document.getElementById('def-location').value='';
+  document.getElementById('def-deadline').value='';
+  // populate contractors
+  const sel=document.getElementById('def-contractor');
+  sel.innerHTML=(APP.settings.contractors.length?
+    APP.settings.contractors.map(c=>`<option value="${c.name}|${c.phone}">${c.name} (${c.trade})</option>`).join(''):
+    '<option value="|">ללא קבלן — הוסף בהגדרות</option>');
+  openModal('modal-defect');
+}
+
+function saveDefect(){
+  const desc=document.getElementById('def-desc').value.trim();
+  if(!desc){toast('יש לתאר את הליקוי');return}
+  const cVal=document.getElementById('def-contractor').value;
+  const[cName,cPhone]=cVal.split('|');
+  const d={
+    id:uid(),date:isoDate(),
+    desc,floor:document.getElementById('def-floor').value.trim(),
+    location:document.getElementById('def-location').value.trim(),
+    contractor:cName,contractorPhone:cPhone,
+    deadline:document.getElementById('def-deadline').value,
+    status:'open',photo:APP.defectPhoto
+  };
+  APP.defects.unshift(d);
+  saveJSON('sb_defects',APP.defects);
+  closeModal('modal-defect');
+  renderDefects();
+  toast('✅ ליקוי נשמר');
+  // auto whatsapp
+  if(cPhone) setTimeout(()=>sendDefectWhatsApp(d.id),500);
+}
+
+function sendDefectWhatsApp(id){
+  const d=APP.defects.find(x=>x.id===id);
+  if(!d)return;
+  const s=APP.settings;
+  let msg=`🔧 *דרישה לתיקון ליקוי — ${s.projectName||'האתר'}*\n\n`;
+  msg+=`📋 *תיאור:* ${d.desc}\n`;
+  msg+=`📍 *מיקום:* קומה ${d.floor||'?'} ${d.location?'— '+d.location:''}\n`;
+  if(d.deadline) msg+=`⏰ *יעד לתיקון:* ${d.deadline}\n`;
+  msg+=`\n👷 ${s.managerName||'מנהל העבודה'}\n_נשלח מ-SiteBoss_`;
+  if(d.photo){toast('⚠️ שים לב: לשלוח תמונה ידנית בוואטסאפ')}
+  const phone=d.contractorPhone?d.contractorPhone.replace(/[-\s]/g,''):'';
+  const url=phone?`https://wa.me/972${phone.replace(/^0/,'')}?text=`:`https://wa.me/?text=`;
+  window.open(url+encodeURIComponent(msg),'_blank');
+}
+
+function updateDefectStatus(id,status){
+  const d=APP.defects.find(x=>x.id===id);
+  if(d){d.status=status;saveJSON('sb_defects',APP.defects);renderDefects();toast('סטטוס עודכן');}
+}
+
+function deleteDefect(id){
+  if(!confirm('למחוק ליקוי זה?'))return;
+  APP.defects=APP.defects.filter(x=>x.id!==id);
+  saveJSON('sb_defects',APP.defects);
+  renderDefects();toast('ליקוי נמחק');
+}
+
+// ===================== SAFETY =====================
+const SAFETY_QUESTIONS=[
+  {q:'כל הפתחים, שוחות ומרפסות מגודרים?',alert:'גדר מיידית — סכנת נפילה!'},
+  {q:'פיגומים ותשתיות תקינים ובטוחים?',alert:'עצור עבודה על פיגום לא תקין!'},
+  {q:'כל הפועלים עם קסדות ונעלי בטיחות?',alert:'חובה לענוש ולעצור עבודה ללא ציוד'},
+  {q:'ציוד חשמלי זמני תקין (לוחות, כבלים)?',alert:'חשמל פגום = סכנת מוות'},
+  {q:'ארגז עזרה ראשונה נגיש ומאויש?',alert:'הבא ארגז לפני תחילת עבודה'},
+  {q:'שילוט בטיחות תקין (עברית + שפות נוספות)?',alert:'שים שלטים בשפת העובדים הזרים'},
+  {q:'אין חפירות פתוחות ללא גידור?',alert:'גדר חפירות מיידית'},
+  {q:'כלי הרמה (עגורן, מנוף) תקינים ומורשים?',alert:'בדוק תעודת כשירות'},
+  {q:'אין עבודות חשמל ב-HIGH VOLTAGE ללא אישור?',alert:'דרש אישור מהממונה על הבטיחות'},
+  {q:'כיבויי אש ומטפים תקינים?',alert:'הוצא לטעינה מיידית'},
+  {q:'מים לשתייה זמינים לכל פועלי האתר?',alert:'חובה חוקית בימי חום'},
+  {q:'כניסות האתר סגורות ומוגנות מפני חדירת זרים?',alert:'נעל שערים ובדוק גדר'}
+];
+
+function initSafety(){
+  document.getElementById('safety-date-sub').textContent=heDate();
+  APP.safetyAnswers={};
+  renderSafetyQuestions();
+  initSig();
+}
+
+function renderSafetyQuestions(){
+  const el=document.getElementById('safety-questions');
+  el.innerHTML=SAFETY_QUESTIONS.map((q,i)=>`
+    <div class="sq-card" id="sq-${i}">
+      <div class="sq-main">
+        <div class="sq-num">${i+1}</div>
+        <div class="sq-text">${q.q}</div>
+        <div class="sq-btns">
+          <button class="sq-btn" id="sqok-${i}" onclick="answerSafety(${i},true)">✅</button>
+          <button class="sq-btn" id="sqfail-${i}" onclick="answerSafety(${i},false)">❌</button>
+        </div>
+      </div>
+      <div class="sq-alert" id="sq-alert-${i}">${q.alert}</div>
+    </div>`).join('');
+}
+
+function answerSafety(i,ok){
+  APP.safetyAnswers[i]=ok;
+  const card=document.getElementById(`sq-${i}`);
+  const okBtn=document.getElementById(`sqok-${i}`);
+  const failBtn=document.getElementById(`sqfail-${i}`);
+  const alert=document.getElementById(`sq-alert-${i}`);
+  card.className='sq-card '+(ok?'answered-ok':'answered-fail');
+  okBtn.className='sq-btn '+(ok?'sq-ok':'');
+  failBtn.className='sq-btn '+(ok?'':'sq-fail');
+  alert.className='sq-alert '+(ok?'':'show');
+  updateSafetyProgress();
+}
+
+function updateSafetyProgress(){
+  const answered=Object.keys(APP.safetyAnswers).length;
+  const pct=Math.round(answered/SAFETY_QUESTIONS.length*100);
+  document.getElementById('sf-progress').style.width=pct+'%';
+  document.getElementById('sf-progress-label').textContent=`${answered} / ${SAFETY_QUESTIONS.length} שאלות נענו`;
+}
+
+// ---- SIGNATURE ----
+function initSig(){
+  const c=document.getElementById('sig-canvas');
+  APP.sigCanvas=c;
+  APP.sigCtx=c.getContext('2d');
+  c.width=c.offsetWidth*window.devicePixelRatio;
+  c.height=110*window.devicePixelRatio;
+  APP.sigCtx.scale(window.devicePixelRatio,window.devicePixelRatio);
+  APP.sigCtx.strokeStyle='#2c3e50';APP.sigCtx.lineWidth=2.5;APP.sigCtx.lineCap='round';
+
+  const getPos=(e)=>{
+    const r=c.getBoundingClientRect();
+    const pt=e.touches?e.touches[0]:e;
+    return{x:(pt.clientX-r.left),y:(pt.clientY-r.top)};
+  };
+  c.addEventListener('pointerdown',e=>{
+    APP.sigDrawing=true;
+    const p=getPos(e);APP.sigCtx.beginPath();APP.sigCtx.moveTo(p.x,p.y);
+    document.getElementById('sig-hint').style.display='none';
+    e.preventDefault();
+  },{passive:false});
+  c.addEventListener('pointermove',e=>{
+    if(!APP.sigDrawing)return;
+    const p=getPos(e);APP.sigCtx.lineTo(p.x,p.y);APP.sigCtx.stroke();
+    e.preventDefault();
+  },{passive:false});
+  c.addEventListener('pointerup',()=>{APP.sigDrawing=false});
+  c.addEventListener('pointerleave',()=>{APP.sigDrawing=false});
+}
+
+function clearSig(){
+  const c=APP.sigCanvas,ctx=APP.sigCtx;
+  ctx.clearRect(0,0,c.offsetWidth,110);
+  document.getElementById('sig-hint').style.display='block';
+}
+
+function getSigData(){
+  const c=APP.sigCanvas;
+  const blank=document.createElement('canvas');
+  blank.width=c.width;blank.height=c.height;
+  return c.toDataURL()===blank.toDataURL()?null:c.toDataURL('image/png');
+}
+
+function saveSafety(){
+  const answered=Object.keys(APP.safetyAnswers).length;
+  if(answered<SAFETY_QUESTIONS.length){
+    if(!confirm(`ענית על ${answered} מתוך ${SAFETY_QUESTIONS.length} שאלות. להמשיך בכל זאת?`))return;
+  }
+  const sig=getSigData();
+  if(!sig){toast('יש לחתום לפני אישור');return}
+
+  const entry={
+    id:uid(),date:isoDate(),dateHe:heDate(),
+    answers:SAFETY_QUESTIONS.map((q,i)=>({q:q.q,ok:APP.safetyAnswers[i],alert:q.alert})),
+    sig,manager:APP.settings.managerName,project:APP.settings.projectName,
+    gps:null
+  };
+
+  // try GPS
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>{
+      entry.gps=`${p.coords.latitude.toFixed(5)},${p.coords.longitude.toFixed(5)}`;
+      finalizeSafety(entry);
+    },()=>finalizeSafety(entry),{timeout:4000});
+  } else finalizeSafety(entry);
+}
+
+function finalizeSafety(entry){
+  APP.safety.unshift(entry);
+  saveJSON('sb_safety',APP.safety);
+  toast('✅ דוח בטיחות נשמר!');
+  printSafetyReport(entry);
+}
+
+function printSafetyReport(entry){
+  const s=APP.settings;
+  const failCount=entry.answers.filter(a=>a.ok===false).length;
+  const okCount=entry.answers.filter(a=>a.ok===true).length;
+  const qs=entry.answers.map((a,i)=>`
+    <div class="pr-q">
+      <span class="${a.ok===true?'r':a.ok===false?'x':''}">${a.ok===true?'✅':a.ok===false?'❌':'—'}</span>
+      ${i+1}. ${a.q}
+      ${a.ok===false?`<span style="color:#e74c3c;font-size:12px"> ← ${a.alert}</span>`:''}
+    </div>`).join('');
+
+  const statusColor=failCount===0?'#27ae60':failCount<=2?'#e67e22':'#e74c3c';
+  const statusText=failCount===0?'תקין — כל הבדיקות עברו':failCount<=2?`${failCount} ליקויים — נדרש טיפול מיידי`:`${failCount} ליקויים חמורים — עצור אתר!`;
+
+  let html=`<div class="print-report">
+    <div class="pr-header">
+      <div>
+        <div class="pr-logo">SiteBoss – דוח בטיחות יומי</div>
+        <div style="font-size:13px;color:#555;margin-top:4px">${s.projectName||'שם הפרויקט'}</div>
+      </div>
+      <div class="pr-meta">
+        <div>${entry.dateHe}</div>
+        <div>מנהל עבודה: ${entry.manager||''}</div>
+        ${entry.gps?`<div>GPS: ${entry.gps}</div>`:''}
+        <div>הופק: ${new Date().toLocaleTimeString('he-IL')}</div>
+      </div>
+    </div>
+
+    <div class="pr-section">
+      <div style="background:${statusColor};color:white;padding:12px 16px;border-radius:8px;font-size:15px;font-weight:700;margin-bottom:14px">
+        ${statusText}
+      </div>
+      <div class="pr-row"><strong>סך שאלות:</strong> ${entry.answers.length}</div>
+      <div class="pr-row"><strong>תקין:</strong> <span style="color:#27ae60;font-weight:700">${okCount}</span></div>
+      <div class="pr-row"><strong>ליקויים:</strong> <span style="color:#e74c3c;font-weight:700">${failCount}</span></div>
+      <div class="pr-row"><strong>לא נענו:</strong> ${entry.answers.length-okCount-failCount}</div>
+    </div>
+
+    <div class="pr-section">
+      <div class="pr-st">פרטי הבדיקה</div>
+      ${qs}
+    </div>
+
+    <div class="pr-section" style="margin-top:20px">
+      <div class="pr-st">חתימת מנהל העבודה</div>
+      <div style="display:flex;align-items:center;gap:20px">
+        <img src="${entry.sig}" style="height:70px;border:1px solid #ddd;border-radius:8px;background:#fafafa">
+        <div>
+          <div style="font-weight:700">${entry.manager||s.managerName||''}</div>
+          <div style="font-size:12px;color:#666">${entry.dateHe}</div>
+          ${entry.gps?`<div style="font-size:11px;color:#aaa">GPS: ${entry.gps}</div>`:''}
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:30px;border-top:1px solid #ddd;padding-top:12px;font-size:11px;color:#aaa;text-align:center">
+      מסמך זה הופק ע"י SiteBoss — מנהל עבודה פלוס · ${new Date().toLocaleString('he-IL')}
+    </div>
+  </div>`;
+
+  document.getElementById('report-content').innerHTML=html;
+  showScreen('s-report');
+}
+
+function renderSafetyHistory(){
+  const el=document.getElementById('safety-history-list');
+  if(!APP.safety.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">🦺</div><div class="empty-text">עדיין אין דוחות בטיחות.<br>בצע את הבדיקה הראשונה!</div></div>';
+    return;
+  }
+  el.innerHTML=APP.safety.map(e=>{
+    const ok=e.answers.filter(a=>a.ok===true).length;
+    const fail=e.answers.filter(a=>a.ok===false).length;
+    const color=fail===0?'var(--green)':fail<=2?'var(--orange)':'var(--red)';
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:800;font-size:15px">${e.dateHe}</span>
+        <span style="background:${color};color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700">
+          ${fail===0?'✅ תקין':`❌ ${fail} ליקויים`}
+        </span>
+      </div>
+      <div style="font-size:13px;color:var(--gray);margin-bottom:10px">✅ ${ok} תקין &nbsp; ❌ ${fail} ליקויים</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="printSafetyReport(APP.safety.find(x=>x.id==='${e.id}'))">🖨️ הדפס</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteSafety('${e.id}')">🗑️ מחק</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteSafety(id){
+  if(!confirm('למחוק דוח זה?'))return;
+  APP.safety=APP.safety.filter(x=>x.id!==id);
+  saveJSON('sb_safety',APP.safety);
+  renderSafetyHistory();
+  toast('דוח נמחק');
+}
+
+// ===================== MODALS =====================
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function closeModalIfOutside(e,id){if(e.target.id===id)closeModal(id)}
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded',()=>{
+  refreshHome();
+  // service worker for offline
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+});
+
+// Prevent zoom on double-tap iOS
+let lastTap=0;
+document.addEventListener('touchend',e=>{
+  const now=Date.now();
+  if(now-lastTap<300){e.preventDefault()}
+  lastTap=now;
+},{passive:false});
+</script>
+</body>
+</html>
