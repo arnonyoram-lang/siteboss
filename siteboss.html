@@ -82,6 +82,13 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
 .defect-meta{font-size:12px;color:var(--sub);margin-bottom:10px;}
 .defect-meta span{margin-left:10px;}
 .defect-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.fix-panel{background:#eafaf1;border:1.5px solid #a9dfbf;border-radius:10px;padding:12px 14px;margin:10px 0 6px;}
+.fix-panel-title{font-size:14px;font-weight:800;color:var(--green);margin-bottom:8px;}
+.fix-row{display:flex;gap:8px;font-size:13px;margin-bottom:4px;align-items:flex-start;}
+.fix-lbl{color:var(--sub);min-width:90px;flex-shrink:0;font-weight:600;}
+.btn-fix-main{flex:1;padding:9px 12px;border-radius:8px;border:none;background:var(--green);color:white;font-size:14px;font-weight:800;cursor:pointer;min-width:120px;}
+.btn-fix-main:active{opacity:.8;}
+.photo-add-btn{display:flex;align-items:center;gap:8px;padding:12px 16px;border:2px dashed #bdc3c7;border-radius:10px;cursor:pointer;font-size:15px;color:var(--sub);background:#fafafa;}
 .status-btn{padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:12px;font-weight:700;cursor:pointer;}
 .status-btn.active-open{background:#fdecea;border-color:var(--red);color:var(--red);}
 .status-btn.active-progress{background:#fef3e7;border-color:var(--orange);color:var(--orange);}
@@ -341,6 +348,46 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
   </div>
 </div>
 
+<!-- FIX MODAL -->
+<div class="modal-overlay hidden" id="modal-fix">
+  <div class="modal-sheet">
+    <div class="modal-title" data-t="fixTitle"></div>
+
+    <div class="defect-fix-info" id="fix-defect-preview"></div>
+
+    <div class="form-group">
+      <label class="form-label" data-t="fixBy"></label>
+      <input id="fix-by" type="text" class="form-input" data-tp="fixByPlaceholder">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" data-t="fixWhen"></label>
+      <input id="fix-when" type="datetime-local" class="form-input">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" data-t="fixPhoto"></label>
+      <div id="fix-photo-wrap">
+        <label class="photo-add-btn">
+          <input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFixPhoto(this)">
+          <span>📷</span> <span data-t="takePhoto"></span>
+        </label>
+      </div>
+      <div id="fix-photo-preview" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" data-t="fixNotes"></label>
+      <textarea id="fix-notes" class="form-input" rows="2" data-tp="fixNotesPlaceholder"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-gray" style="flex:1;" onclick="closeModal('modal-fix')"><span data-t="cancel"></span></button>
+      <button class="btn btn-green" style="flex:2;" onclick="saveFix()"><span data-t="confirmFix"></span></button>
+    </div>
+  </div>
+</div>
+
 <!-- CONTRACTOR MODAL -->
 <div class="modal-overlay hidden" id="modal-contractor">
   <div class="modal-sheet">
@@ -374,6 +421,12 @@ addDefectTitle:'ליקוי / משימה חדשה',defPhoto:'תמונה (מומל
 defFloor:'קומה',defArea:'דירה / אזור',defContractor:'קבלן אחראי',defDeadline:'תאריך יעד לתיקון',
 defSeverity:'חומרה',sevUrgent:'🔴 דחוף',sevNormal:'🟠 רגיל',sevLow:'🟢 נמוך',
 saveAndSend:'שמור ← שלח לקבלן',btnDone:'✅ בוצע',btnProgress:'⏳ בטיפול',btnWA:'📲 וואטסאפ',
+fixBtn:'🔧 סמן כתוקן',fixTitle:'פרטי התיקון',
+fixBy:'מי ביצע את התיקון',fixByPlaceholder:'שם הקבלן / פועל שתיקן',
+fixWhen:'תאריך ושעת התיקון',fixPhoto:'תמונה של התיקון (מומלץ)',takePhoto:'צלם',
+fixNotes:'הערות נוספות',fixNotesPlaceholder:'כל פרט נוסף רלוונטי...',
+confirmFix:'✅ אשר — סמן כטופל',
+fixedLabel:'✅ טופל',fixedBy:'תוקן על ידי:',fixedAt:'בתאריך:',fixedNote:'הערות תיקון:',
 noDeadline:'ללא יעד',overdue:'⚠️ באיחור',targetDate:'יעד: ',
 safetyTitle:'בטיחות יומית',chooseWorkType:'בחר סוג עבודה',
 wtGeneral:'כללי',wtStructure:'שלד',wtFinishing:'גמר',wtScaffolding:'פיגומים',wtExcavation:'חפירות',
@@ -434,6 +487,12 @@ addDefectTitle:'عيب / مهمة جديدة',defPhoto:'صورة (مُوصى ب�
 defFloor:'طابق',defArea:'شقة / منطقة',defContractor:'المقاول المسؤول',defDeadline:'تاريخ الإصلاح المستهدف',
 defSeverity:'الأهمية',sevUrgent:'🔴 عاجل',sevNormal:'🟠 عادي',sevLow:'🟢 منخفض',
 saveAndSend:'احفظ ← أرسل للمقاول',btnDone:'✅ منجز',btnProgress:'⏳ قيد المعالجة',btnWA:'📲 واتساب',
+fixBtn:'🔧 سجّل الإصلاح',fixTitle:'تفاصيل الإصلاح',
+fixBy:'من أجرى الإصلاح',fixByPlaceholder:'اسم المقاول / العامل الذي أصلح',
+fixWhen:'تاريخ ووقت الإصلاح',fixPhoto:'صورة الإصلاح (مُوصى به)',takePhoto:'التقط صورة',
+fixNotes:'ملاحظات إضافية',fixNotesPlaceholder:'أي تفاصيل إضافية ذات صلة...',
+confirmFix:'✅ أكّد — سجّل كمُعالَج',
+fixedLabel:'✅ تمت المعالجة',fixedBy:'أصلحه:',fixedAt:'بتاريخ:',fixedNote:'ملاحظات الإصلاح:',
 noDeadline:'بدون موعد',overdue:'⚠️ متأخر',targetDate:'الموعد: ',
 safetyTitle:'السلامة اليومية',chooseWorkType:'اختر نوع العمل',
 wtGeneral:'عام',wtStructure:'هيكل',wtFinishing:'تشطيب',wtScaffolding:'سقالات',wtExcavation:'حفر',
@@ -660,10 +719,26 @@ function renderDefects(){
     if(d.contractor)h+='<span>👷 '+esc(d.contractor)+'</span>';
     h+='<span>'+dl+'</span></div>';
     if(d.photos&&d.photos.length){h+='<div class="photos-grid" style="margin-bottom:10px;">';for(var p=0;p<Math.min(d.photos.length,3);p++)h+='<div class="photo-thumb"><img src="'+d.photos[p]+'"></div>';h+='</div>';}
+    // פרטי תיקון אם קיימים
+    if(d.fix){
+      var fdt=d.fix.when?new Date(d.fix.when).toLocaleString(APP.lang==='ar'?'ar-IL':'he-IL'):'';
+      h+='<div class="fix-panel">';
+      h+='<div class="fix-panel-title">'+T('fixedLabel')+'</div>';
+      if(d.fix.by)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedBy')+'</span><span>'+esc(d.fix.by)+'</span></div>';
+      if(fdt)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedAt')+'</span><span>'+fdt+'</span></div>';
+      if(d.floor||d.area)h+='<div class="fix-row"><span class="fix-lbl">📍</span><span>'+esc((d.floor||'')+(d.area?' / '+d.area:''))+'</span></div>';
+      if(d.fix.notes)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedNote')+'</span><span>'+esc(d.fix.notes)+'</span></div>';
+      if(d.fix.photo)h+='<div style="margin-top:8px;"><img src="'+d.fix.photo+'" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;"></div>';
+      h+='</div>';
+    }
     h+='<div class="defect-actions">';
-    h+='<button class="status-btn'+oa+'" onclick="setDefStatus('+d.id+',\'open\')">'+T('filterOpen')+'</button>';
-    h+='<button class="status-btn'+pa+'" onclick="setDefStatus('+d.id+',\'progress\')">'+T('btnProgress')+'</button>';
-    h+='<button class="status-btn'+da+'" onclick="setDefStatus('+d.id+',\'done\')">'+T('btnDone')+'</button>';
+    if(d.status!=='done'){
+      h+='<button class="status-btn'+oa+'" onclick="setDefStatus('+d.id+',\'open\')">'+T('filterOpen')+'</button>';
+      h+='<button class="status-btn'+pa+'" onclick="setDefStatus('+d.id+',\'progress\')">'+T('btnProgress')+'</button>';
+      h+='<button class="btn-fix-main" onclick="openFixModal('+d.id+')">'+T('fixBtn')+'</button>';
+    } else {
+      h+='<button class="status-btn" onclick="setDefStatus('+d.id+',\'open\')" style="opacity:.6;font-size:12px;">↩ פתח מחדש</button>';
+    }
     h+='<button class="status-btn" onclick="sendDefWA('+d.id+')">'+T('btnWA')+'</button>';
     h+='<button class="status-btn" onclick="delDefect('+d.id+')" style="background:#fdecea;color:var(--red);">🗑️</button>';
     h+='</div></div>';
@@ -701,6 +776,52 @@ function saveDefect(){
   if(entry.contractor){var cs=APP.settings.contractors||[];var c=cs.find(function(x){return x.name===entry.contractor;});if(c&&c.phone)sendDefWADirect(entry,c.phone);}
 }
 function setDefStatus(id,status){var ds=loadJSON('sb_defects',[]);for(var i=0;i<ds.length;i++){if(ds[i].id===id){ds[i].status=status;break;}}saveJSON('sb_defects',ds);renderDefects();}
+
+var _fixDefectId=null;
+var _fixPhoto=null;
+function openFixModal(id){
+  _fixDefectId=id;_fixPhoto=null;
+  var ds=loadJSON('sb_defects',[]);
+  var d=ds.find(function(x){return x.id===id;});if(!d)return;
+  // מלא תצוגה מקדימה של הליקוי
+  var prev=document.getElementById('fix-defect-preview');
+  if(prev)prev.innerHTML='<div style="background:#fff3cd;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;"><strong>'+esc(d.desc)+'</strong>'+(d.floor||d.area?'<br>📍 '+esc((d.floor||'')+(d.area?' / '+d.area:'')):'')+(d.contractor?'<br>👷 '+esc(d.contractor):'')+'</div>';
+  // זמן נוכחי
+  var now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+  document.getElementById('fix-when').value=now.toISOString().slice(0,16);
+  document.getElementById('fix-by').value=d.contractor||'';
+  document.getElementById('fix-notes').value='';
+  document.getElementById('fix-photo-preview').innerHTML='';
+  applyLang();
+  openModal('modal-fix');
+}
+function handleFixPhoto(input){
+  var f=input.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    _fixPhoto=e.target.result;
+    document.getElementById('fix-photo-preview').innerHTML='<div style="position:relative;display:inline-block;width:100%;"><img src="'+_fixPhoto+'" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;"><button onclick="_fixPhoto=null;document.getElementById(\'fix-photo-preview\').innerHTML=\'\'" style="position:absolute;top:6px;left:6px;background:rgba(231,76,60,.9);color:white;border:none;border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;">✕</button></div>';
+  };
+  r.readAsDataURL(f);input.value='';
+}
+function saveFix(){
+  var by=document.getElementById('fix-by').value.trim();
+  var when=document.getElementById('fix-when').value;
+  var notes=document.getElementById('fix-notes').value.trim();
+  if(!by){toast(APP.lang==='ar'?'يرجى إدخال اسم المُصلِح':'יש להזין מי ביצע את התיקון');return;}
+  var ds=loadJSON('sb_defects',[]);
+  for(var i=0;i<ds.length;i++){
+    if(ds[i].id===_fixDefectId){
+      ds[i].status='done';
+      ds[i].fix={by:by,when:when,notes:notes,photo:_fixPhoto||null};
+      break;
+    }
+  }
+  saveJSON('sb_defects',ds);
+  closeModal('modal-fix');
+  toast(T('fixedLabel')+' ✅');
+  renderDefects();
+}
 function delDefect(id){if(!confirm(T('deleteConfirm')))return;var ds=loadJSON('sb_defects',[]);ds=ds.filter(function(d){return d.id!==id;});saveJSON('sb_defects',ds);renderDefects();toast(T('deleted'));}
 function sendDefWA(id){var ds=loadJSON('sb_defects',[]);var d=ds.find(function(x){return x.id===id;});if(!d)return;var cs=APP.settings.contractors||[];var c=d.contractor?cs.find(function(x){return x.name===d.contractor;}):null;sendDefWADirect(d,c?c.phone:'');}
 function sendDefWADirect(d,phone){
