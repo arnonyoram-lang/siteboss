@@ -51,7 +51,8 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 .home-btn-title{font-size:20px;font-weight:900;display:block;margin-bottom:4px;}
 .home-btn-desc{font-size:13px;opacity:.95;display:block;line-height:1.45;}
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
-.stat-card{background:var(--card);border:1px solid #e8edf2;border-radius:14px;padding:14px 8px;text-align:center;box-shadow:0 2px 6px rgba(27,39,51,.05);}
+.stat-card{background:var(--card);border:1px solid #e8edf2;border-radius:14px;padding:14px 8px;text-align:center;box-shadow:0 2px 6px rgba(27,39,51,.05);cursor:pointer;}
+.stat-card:active{transform:scale(.97);}
 .stat-num{font-size:30px;font-weight:900;color:var(--blue);line-height:1;}
 #stat-defects{color:var(--orange);}#stat-safety{color:var(--green);}
 .stat-label{font-size:12px;color:var(--sub);font-weight:700;margin-top:5px;}
@@ -245,9 +246,9 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <span style="color:var(--sub);font-size:20px;">⚙️</span>
     </div>
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-num" id="stat-journal">0</div><div class="stat-label" data-t="statJournal"></div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-defects">0</div><div class="stat-label" data-t="statOpen"></div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-safety">0</div><div class="stat-label" data-t="statSafety"></div></div>
+      <div class="stat-card" onclick="showScreen('s-journal-history')"><div class="stat-num" id="stat-journal">0</div><div class="stat-label" data-t="statJournal"></div></div>
+      <div class="stat-card" onclick="showScreen('s-defects')"><div class="stat-num" id="stat-defects">0</div><div class="stat-label" data-t="statOpen"></div></div>
+      <div class="stat-card" onclick="showScreen('s-safety-history')"><div class="stat-num" id="stat-safety">0</div><div class="stat-label" data-t="statSafety"></div></div>
     </div>
     <button class="home-btn" style="background:linear-gradient(135deg,#1f9d57,#157a42);" onclick="showScreen('s-journal')">
       <span class="home-btn-icon">📋</span>
@@ -416,8 +417,11 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     </div>
   </div>
   <div class="screen-body">
-    <div id="report-approve-bar" class="no-print" style="display:none;margin-bottom:12px;">
-      <button class="btn btn-green" onclick="openSupervisorApprove()"><span data-t="supervisorApprove"></span></button>
+    <div class="no-print" style="margin-bottom:12px;display:flex;flex-direction:column;gap:8px;">
+      <button class="btn btn-green" onclick="shareReportWA()"><span data-t="shareReportWA"></span></button>
+      <div id="report-approve-bar" style="display:none;">
+        <button class="btn btn-outline" onclick="openSupervisorApprove()"><span data-t="supervisorApprove"></span></button>
+      </div>
     </div>
     <div id="report-content" class="report-container"></div>
   </div>
@@ -572,7 +576,7 @@ regCompany:'חברה / קבלן ראשי',regCompanyPh:'שם החברה שאתה
 regProject:'שם הפרויקט הנוכחי',regProjectPh:'לדוגמה: מגדל רמות קומות 1-12',
 regLang:'שפה מועדפת',regSubmit:'כניסה לאפליקציה ←',
 regNote:'הנתונים שמורים בטלפון שלך בלבד',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
-msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',
+msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',shareReportWA:'📲 שלח למשרד בוואטסאפ',
 btn1Title:'יומן עבודה יומי',btn1Desc:'דבר דקה אחת ← יומן חוקי מסודר ישלח לוואטסאפ',
 btn2Title:'ליקויים ומשימות',btn2Desc:'צלם ← הקצה לקבלן ← עקוב אחרי סטטוס',
 btn3Title:'בטיחות יומית',btn3Desc:'12 שאלות בטיחות ← דוח חתום עם GPS ← הגנה משפטית',
@@ -655,7 +659,7 @@ regCompany:'الشركة / المقاول الرئيسي',regCompanyPh:'اسم �
 regProject:'اسم المشروع الحالي',regProjectPh:'مثال: برج رامات طوابق 1-12',
 regLang:'اللغة المفضلة',regSubmit:'الدخول إلى التطبيق ←',
 regNote:'البيانات محفوظة في هاتفك فقط',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
-msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',
+msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',shareReportWA:'📲 أرسل للمكتب عبر واتساب',
 btn1Title:'يومية العمل اليومية',btn1Desc:'تكلم دقيقة ← يومية قانونية تُرسل للواتساب',
 btn2Title:'العيوب والمهام',btn2Desc:'التقط صورة ← أسند للمقاول ← تابع الحالة',
 btn3Title:'السلامة اليومية',btn3Desc:'12 سؤال أمان ← تقرير موقّع بـGPS ← حماية قانونية',
@@ -920,7 +924,7 @@ function fmtSerial(n){var s=''+(n||0);while(s.length<3)s='0'+s;return s;}
 function saveJournal(){
   var txt=document.getElementById('jnl-text').value.trim();
   if(!txt){toast(APP.lang==='ar'?'أدخل وصف اليوم':'יש להזין תיאור יום העבודה');return;}
-  if(!jnlSignPad||jnlSignPad.isEmpty()){toast(T('signRequired'));return;}
+  if(!jnlSignPad||jnlSignPad.isEmpty()){toast(T('signRequired'));var sc=document.getElementById('jnl-sign-canvas');if(sc)sc.scrollIntoView({behavior:'smooth',block:'center'});return;}
   var entry={id:Date.now(),serial:nextJournalSerial(),date:new Date().toISOString(),ts:Date.now(),text:txt,workers:getWorkers(),weather:currentWeather,delays:document.getElementById('jnl-delays').value.trim(),tasks:document.getElementById('jnl-tasks').value.trim(),photos:APP.jnlPhotos.slice(),managerSign:jnlSignPad.dataURL(),manager:APP.settings.managerName||'',locked:true,supervisorApproval:null,lang:APP.lang};
   var journals=loadJSON('sb_journals',[]);journals.unshift(entry);saveJSON('sb_journals',journals);
   toast(T('saved'));showJournalReport(entry);
@@ -934,6 +938,34 @@ function sendJournalWA(){
   var t=document.getElementById('jnl-tasks').value.trim();if(t)msg+=T('tasksTitle')+':\n'+t+'\n';
   var phone=s.officePhone||'';
   window.open('https://wa.me/'+(phone?phone.replace(/\D/g,''):'')+'?text='+encodeURIComponent(msg),'_blank');
+}
+function openOfficeWA(msg){
+  var phone=(APP.settings.officePhone||'').replace(/\D/g,'');
+  window.open('https://wa.me/'+(phone?'972'+phone.replace(/^0/,''):'')+'?text='+encodeURIComponent(msg),'_blank');
+}
+function shareReportWA(){
+  var cr=window._currentReport;if(!cr){return;}
+  var s=APP.settings;var e=cr.entry;
+  var dd=new Date(e.date).toLocaleDateString(APP.lang==='ar'?'ar-IL':'he-IL');
+  var msg='';
+  if(cr.type==='journal'){
+    msg='📋 '+T('reportJournalTitle')+dd+'\n'+(s.projectName||'')+(e.serial?' · '+T('journalSerial')+' '+fmtSerial(e.serial):'')+'\n👷 '+(e.manager||s.managerName||'')+'\n\n';
+    if(e.text)msg+=e.text+'\n\n';
+    if(e.workers&&e.workers.length){msg+=T('reportManpower')+':\n';for(var i=0;i<e.workers.length;i++)msg+='• '+e.workers[i].trade+': '+e.workers[i].qty+'\n';msg+='\n';}
+    if(e.weather>=0)msg+=T('reportWeather')+T('wl'+e.weather)+'\n';
+    if(e.delays)msg+=T('reportDelays')+'\n'+e.delays+'\n';
+    if(e.tasks)msg+=T('reportTasks')+'\n'+e.tasks+'\n';
+    if(e.supervisorApproval)msg+='\n'+T('approvedBadge')+' — '+e.supervisorApproval.name+'\n';
+  } else {
+    var fails=0,oks=0;for(var k in e.answers){if(e.answers[k]==='fail')fails++;else if(e.answers[k]==='ok')oks++;}
+    msg='🦺 '+T('reportSafetyTitle')+'\n'+(s.projectName||'')+' · '+dd+'\n👷 '+(s.managerName||'')+'\n';
+    if(e.stageLabel)msg+=''+e.stageLabel+'\n';
+    msg+='\n✅ '+oks+'   ❌ '+fails+'\n';
+    msg+=(fails?('⚠️ '+fails+' '+(APP.lang==='ar'?'عيوب — تتطلب معالجة':'ליקויים — דורשים טיפול')):(APP.lang==='ar'?'سليم — اجتاز الكل':'תקין — הכל עבר'))+'\n';
+    if(e.gps)msg+='📍 '+e.gps+'\n';
+  }
+  msg+='\n— '+ (APP.lang==='ar'?'أُرسل عبر דקה':'נשלח מ-דקה');
+  openOfficeWA(msg);
 }
 function renderJournalHistory(){
   var list=document.getElementById('journal-history-list');if(!list)return;
@@ -965,6 +997,7 @@ var _viewedJournalId=null;
 function showJournalReport(entryOrStr){
   var entry=typeof entryOrStr==='string'?JSON.parse(entryOrStr):entryOrStr;
   _viewedJournalId=entry.id;
+  window._currentReport={type:'journal',entry:entry};
   var el=document.getElementById('report-content');var s=APP.settings;
   var d=new Date(entry.date);var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
   var serialStr=entry.serial?(T('journalSerial')+' '+fmtSerial(entry.serial)):'';
@@ -1285,6 +1318,7 @@ function showSafetyReportById(id){
 }
 function showSafetyReport(entryOrStr){
   var entry=typeof entryOrStr==='string'?JSON.parse(entryOrStr):entryOrStr;
+  window._currentReport={type:'safety',entry:entry};
   var el=document.getElementById('report-content');var s=APP.settings;
   var d=new Date(entry.date);var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
   document.getElementById('report-topbar-title').textContent=T('reportSafetyTitle');
