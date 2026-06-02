@@ -311,10 +311,20 @@ function listenMessages(){
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ---------- auto-boot if config saved ----------
+// ---------- config מוטמע (siteboss-b2dd2) ----------
+const DEFAULT_CONFIG = {
+  apiKey: "AIzaSyBuMvbL1XvjyF2dFPQyx-orcISYNuc1RqA",
+  authDomain: "siteboss-b2dd2.firebaseapp.com",
+  projectId: "siteboss-b2dd2",
+  storageBucket: "siteboss-b2dd2.firebasestorage.app",
+  messagingSenderId: "217365148122",
+  appId: "1:217365148122:web:000bcf98af028eb98210e3"
+};
+// ---------- auto-boot ----------
 (function(){
   var saved = localStorage.getItem('dk_admin_fbcfg');
-  if(saved){ try { boot(JSON.parse(saved)); } catch(e){} }
+  if(saved){ try { boot(JSON.parse(saved)); return; } catch(e){} }
+  boot(DEFAULT_CONFIG);
 })();
 </script>
 </body>
