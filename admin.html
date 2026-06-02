@@ -317,6 +317,7 @@ function renderRep(){
   var arr=_repData[_repTab]||[];var b=document.getElementById('rep-body');
   if(!arr.length){b.innerHTML='<div class="empty">אין רשומות בקטגוריה זו</div>';return;}
   var h='';
+  function photos(r){if(!r.photoUrls||!r.photoUrls.length)return '';var x='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">';for(var i=0;i<r.photoUrls.length;i++)x+='<a href="'+r.photoUrls[i]+'" target="_blank"><img src="'+r.photoUrls[i]+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border);"></a>';return x+'</div>';}
   arr.forEach(function(r){
     var d=r.date?new Date(r.date).toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'}):'';
     if(_repTab==='journals'){
@@ -324,14 +325,14 @@ function renderRep(){
       var appr=r.supervisorApproval?'<span class="rc-badge bg-green">✅ מאושר פיקוח</span>':'<span class="rc-badge bg-orange">ממתין לאישור</span>';
       h+='<div class="rep-card"><div class="rc-top"><span class="rc-date">'+(r.serial?'יומן #'+pad(r.serial)+' · ':'')+d+'</span>'+appr+'</div>'
         +'<div class="rc-text">'+esc(r.text||'')+'</div>'
-        +'<div class="rc-meta">👷 '+tot+' פועלים'+(r.photoCount?' · 📷 '+r.photoCount+' תמונות':'')+'</div></div>';
+        +'<div class="rc-meta">👷 '+tot+' פועלים'+(r.photoCount?' · 📷 '+r.photoCount+' תמונות':'')+'</div>'+photos(r)+'</div>';
     } else if(_repTab==='defects'){
       var sevC=r.severity==='urgent'?'bg-red':r.severity==='low'?'bg-green':'bg-orange';
       var sevT=r.severity==='urgent'?'דחוף':r.severity==='low'?'נמוך':'רגיל';
       var st=r.status==='done'?'<span class="rc-badge bg-green">✅ טופל</span>':r.status==='progress'?'<span class="rc-badge bg-orange">בטיפול</span>':'<span class="rc-badge bg-red">פתוח</span>';
       h+='<div class="rep-card"><div class="rc-top"><span class="rc-date"><span class="rc-badge '+sevC+'">'+sevT+'</span> '+d+'</span>'+st+'</div>'
         +'<div class="rc-text">'+esc(r.desc||'')+'</div>'
-        +'<div class="rc-meta">📍 '+esc((r.floor||'')+(r.area?' / '+r.area:''))+(r.fix?' · 🔧 תוקן ע"י '+esc(r.fix.by||''):'')+'</div></div>';
+        +'<div class="rc-meta">📍 '+esc((r.floor||'')+(r.area?' / '+r.area:''))+(r.fix?' · 🔧 תוקן ע"י '+esc(r.fix.by||''):'')+'</div>'+photos(r)+'</div>';
     } else {
       var fails=0;if(r.answers)for(var k in r.answers){if(r.answers[k]==='fail')fails++;}
       var sb=fails?'<span class="rc-badge bg-red">❌ '+fails+' ליקויים</span>':'<span class="rc-badge bg-green">✅ תקין</span>';

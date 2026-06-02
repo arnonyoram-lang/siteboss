@@ -784,11 +784,18 @@ function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):
 function cloudSave(coll,entry){
   if(!window._dkSaveDoc||!entry)return;
   var s=APP.settings||{};var owner=(s.managerPhone||'').replace(/\D/g,'');
+  var docId=(owner||'x')+'_'+entry.id;
   var copy={};for(var k in entry){if(k==='photos')continue;copy[k]=entry[k];}
   if(entry.photos)copy.photoCount=entry.photos.length;
   copy.owner=owner;copy.ownerName=s.managerName||'';copy.project=s.projectName||'';
   copy.cloudAt=new Date().toISOString();
-  try{window._dkSaveDoc(coll,(owner||'x')+'_'+entry.id,copy);}catch(e){}
+  try{window._dkSaveDoc(coll,docId,copy);}catch(e){}
+  // העלאת תמונות ל-Storage (אסינכרוני) ועדכון הכתובות במסמך
+  if(entry.photos&&entry.photos.length&&window._dkUploadPhotos){
+    try{window._dkUploadPhotos('photos/'+(owner||'x')+'/'+coll+'/'+entry.id,entry.photos).then(function(urls){
+      if(urls&&urls.length)window._dkSaveDoc(coll,docId,{photoUrls:urls});
+    });}catch(e){}
+  }
 }
 function cloudDelete(coll,entry){
   if(!window._dkDeleteDoc||!entry)return;
@@ -1674,6 +1681,19 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     window._dkDeleteDoc = function(coll, id){
       try{ return deleteDoc(doc(db, coll, String(id))).catch(function(){}); }catch(e){ return Promise.resolve(); }
     };
+    // העלאת תמונות ל-Firebase Storage → מחזיר מערך כתובות
+    try{
+      const stMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js");
+      const storage = stMod.getStorage(app);
+      window._dkUploadPhotos = async function(pathBase, dataUrls){
+        if(!dataUrls||!dataUrls.length) return [];
+        var urls=[];
+        for(var i=0;i<dataUrls.length;i++){
+          try{ var r=stMod.ref(storage, pathBase+'/'+i+'.jpg'); await stMod.uploadString(r, dataUrls[i], 'data_url'); urls.push(await stMod.getDownloadURL(r)); }catch(e){}
+        }
+        return urls;
+      };
+    }catch(e){}
 
     // האזנה להודעות מהמשרד
     var myPhone = ((window.APP&&APP.settings&&APP.settings.managerPhone)||'').replace(/\D/g,'');
