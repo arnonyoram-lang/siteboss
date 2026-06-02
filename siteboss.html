@@ -24,6 +24,11 @@ body{display:flex;justify-content:center;}
 .topbar-sub{font-size:11px;opacity:.85;margin-top:1px;}
 .icon-btn{width:44px;height:44px;border:none;background:rgba(255,255,255,.18);color:white;border-radius:12px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .icon-btn:active{background:rgba(255,255,255,.32);}
+.back-btn{display:flex;align-items:center;gap:5px;height:44px;padding:0 16px;border:2px solid rgba(255,255,255,.6);background:rgba(255,255,255,.22);color:white;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;flex-shrink:0;font-family:inherit;}
+.back-btn:active{background:rgba(255,255,255,.4);}
+#bottom-back{display:none;padding:6px 16px calc(14px + env(safe-area-inset-bottom));}
+#bottom-back button{width:100%;min-height:50px;border:2px solid var(--blue);background:#eaf1fb;color:var(--blue-d);border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;}
+#bottom-back button:active{background:#d9e6f7;}
 .lang-toggle{display:flex;gap:3px;}
 .lang-btn{padding:4px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.7);font-size:12px;font-weight:700;cursor:pointer;}
 .lang-btn.active{background:white;color:var(--blue-d);}
@@ -269,7 +274,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 <!-- MESSAGES INBOX -->
 <div class="screen" id="s-messages">
   <div class="topbar">
-    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
     <div class="topbar-center"><div class="topbar-title" data-t="msgInboxTitle"></div></div>
     <div style="width:40px"></div>
   </div>
@@ -279,7 +284,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 <!-- JOURNAL -->
 <div class="screen" id="s-journal">
   <div class="topbar">
-    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
     <div class="topbar-center"><div class="topbar-title" data-t="journalTitle"></div><div class="topbar-sub" id="jnl-date-sub"></div></div>
     <div style="display:flex;gap:6px;align-items:center">
       <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
@@ -327,7 +332,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 <!-- JOURNAL HISTORY -->
 <div class="screen" id="s-journal-history">
   <div class="topbar">
-    <button class="icon-btn" onclick="goBack()">→</button>
+    <button class="back-btn" onclick="goBack()">→ <span data-t="backLabel"></span></button>
     <div class="topbar-center"><div class="topbar-title" data-t="archive"></div></div>
     <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
   </div>
@@ -337,7 +342,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 <!-- DEFECTS -->
 <div class="screen" id="s-defects">
   <div class="topbar">
-    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
     <div class="topbar-center"><div class="topbar-title" data-t="defectsTitle"></div></div>
     <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
   </div>
@@ -348,7 +353,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 <!-- SAFETY -->
 <div class="screen" id="s-safety">
   <div class="topbar">
-    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
     <div class="topbar-center"><div class="topbar-title" data-t="safetyTitle"></div><div class="topbar-sub" id="safety-date-sub"></div></div>
     <div style="display:flex;gap:6px;align-items:center">
       <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
@@ -371,7 +376,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 <!-- SAFETY HISTORY -->
 <div class="screen" id="s-safety-history">
   <div class="topbar">
-    <button class="icon-btn" onclick="goBack()">→</button>
+    <button class="back-btn" onclick="goBack()">→ <span data-t="backLabel"></span></button>
     <div class="topbar-center"><div class="topbar-title" data-t="archive"></div></div>
     <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
   </div>
@@ -381,7 +386,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 <!-- SETTINGS -->
 <div class="screen" id="s-settings">
   <div class="topbar">
-    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
     <div class="topbar-center"><div class="topbar-title" data-t="settingsTitle"></div></div>
     <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
   </div>
@@ -409,7 +414,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 <!-- REPORT -->
 <div class="screen" id="s-report">
   <div class="topbar">
-    <button class="icon-btn" onclick="goBack()">→</button>
+    <button class="back-btn" onclick="goBack()">→ <span data-t="backLabel"></span></button>
     <div class="topbar-center"><div class="topbar-title" id="report-topbar-title">דוח</div></div>
     <div style="display:flex;gap:6px;align-items:center">
       <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
@@ -576,7 +581,7 @@ regCompany:'חברה / קבלן ראשי',regCompanyPh:'שם החברה שאתה
 regProject:'שם הפרויקט הנוכחי',regProjectPh:'לדוגמה: מגדל רמות קומות 1-12',
 regLang:'שפה מועדפת',regSubmit:'כניסה לאפליקציה ←',
 regNote:'הנתונים שמורים בטלפון שלך בלבד',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
-msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',shareReportWA:'📲 שלח למשרד בוואטסאפ',
+msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',shareReportWA:'📲 שלח למשרד בוואטסאפ',backLabel:'חזרה',backToHome:'→ חזרה לדף הקודם',
 btn1Title:'יומן עבודה יומי',btn1Desc:'דבר דקה אחת ← יומן חוקי מסודר ישלח לוואטסאפ',
 btn2Title:'ליקויים ומשימות',btn2Desc:'צלם ← הקצה לקבלן ← עקוב אחרי סטטוס',
 btn3Title:'בטיחות יומית',btn3Desc:'12 שאלות בטיחות ← דוח חתום עם GPS ← הגנה משפטית',
@@ -659,7 +664,7 @@ regCompany:'الشركة / المقاول الرئيسي',regCompanyPh:'اسم �
 regProject:'اسم المشروع الحالي',regProjectPh:'مثال: برج رامات طوابق 1-12',
 regLang:'اللغة المفضلة',regSubmit:'الدخول إلى التطبيق ←',
 regNote:'البيانات محفوظة في هاتفك فقط',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
-msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',shareReportWA:'📲 أرسل للمكتب عبر واتساب',
+msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',shareReportWA:'📲 أرسل للمكتب عبر واتساب',backLabel:'رجوع',backToHome:'→ العودة إلى الصفحة السابقة',
 btn1Title:'يومية العمل اليومية',btn1Desc:'تكلم دقيقة ← يومية قانونية تُرسل للواتساب',
 btn2Title:'العيوب والمهام',btn2Desc:'التقط صورة ← أسند للمقاول ← تابع الحالة',
 btn3Title:'السلامة اليومية',btn3Desc:'12 سؤال أمان ← تقرير موقّع بـGPS ← حماية قانونية',
@@ -776,6 +781,16 @@ function onScreenEnter(id){
   if(id==='s-safety-history')renderSafetyHistory();
   if(id==='s-settings')loadSettingsForm();
   if(id==='s-messages')renderMessages();
+  updateBottomBack(id);
+}
+function updateBottomBack(id){
+  var ex=document.getElementById('bottom-back');if(ex&&ex.parentNode)ex.parentNode.removeChild(ex);
+  if(id==='s-home'||id==='s-register')return;
+  var scr=document.getElementById(id);if(!scr)return;
+  var body=scr.querySelector('.screen-body');if(!body)return;
+  var d=document.createElement('div');d.id='bottom-back';d.style.display='block';
+  d.innerHTML='<button onclick="goBack()">'+T('backToHome')+'</button>';
+  body.appendChild(d);
 }
 function refreshHome(){
   var s=APP.settings;
