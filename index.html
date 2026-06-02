@@ -153,6 +153,9 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
 .reg-lang-btn.active{border-color:var(--blue);background:var(--blue-bg);color:var(--blue);}
 .reg-submit{margin-top:8px;padding:16px;font-size:17px;letter-spacing:.5px;}
 .reg-note{text-align:center;font-size:12px;color:var(--sub);margin-top:14px;opacity:.7;}
+.btn-fix-sm{padding:5px 10px;border-radius:8px;border:none;background:#e67e22;color:white;font-size:12px;font-weight:700;cursor:pointer;margin-top:6px;}
+.safety-fix-panel{background:#eafaf1;border:1.5px solid #a9dfbf;border-radius:10px;padding:10px 12px;margin-top:8px;}
+.safety-fix-panel-title{font-size:13px;font-weight:800;color:var(--green);margin-bottom:6px;}
 @media print{.topbar,.offline-note,.no-print{display:none!important;}.screen-body{padding-bottom:0!important;overflow:visible!important;}#app{box-shadow:none;}}
 </style>
 </head>
@@ -457,6 +460,38 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
   </div>
 </div>
 
+<!-- SAFETY FIX MODAL -->
+<div class="modal-overlay hidden" id="modal-safety-fix">
+  <div class="modal-sheet">
+    <div class="modal-title" data-t="safetyFixTitle"></div>
+    <div id="safety-fix-q-preview"></div>
+    <div class="form-group">
+      <label data-t="fixBy"></label>
+      <input id="sf-by" type="text" class="form-input" data-tp="fixByPlaceholder">
+    </div>
+    <div class="form-group">
+      <label data-t="fixWhen"></label>
+      <input id="sf-when" type="datetime-local" class="form-input">
+    </div>
+    <div class="form-group">
+      <label data-t="fixPhoto"></label>
+      <label class="photo-add-btn">
+        <input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleSafetyFixPhoto(this)">
+        📷 <span data-t="takePhoto"></span>
+      </label>
+      <div id="sf-photo-preview" style="margin-top:8px;"></div>
+    </div>
+    <div class="form-group">
+      <label data-t="fixNotes"></label>
+      <textarea id="sf-notes" class="form-input" rows="2" data-tp="fixNotesPlaceholder"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" style="flex:1" onclick="closeModal('modal-safety-fix')"><span data-t="cancel"></span></button>
+      <button class="btn btn-green" style="flex:2" onclick="saveSafetyFix()"><span data-t="confirmFix"></span></button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div><script>
 const STRINGS={
 he:{appTagline:'יומן ומשימות שטח — הכל בדקה אחת',
@@ -492,6 +527,8 @@ fixedLabel:'✅ טופל',fixedBy:'תוקן על ידי:',fixedAt:'בתאריך:
 noDeadline:'ללא יעד',overdue:'⚠️ באיחור',targetDate:'יעד: ',
 safetyTitle:'בטיחות יומית',chooseWorkType:'בחר סוג עבודה',
 wtGeneral:'כללי',wtStructure:'שלד',wtFinishing:'גמר',wtScaffolding:'פיגומים',wtExcavation:'חפירות',
+wt_general:'כללי',wt_structure:'שלד',wt_finishing:'גמר',wt_scaffolding:'פיגומים',wt_excavation:'חפירות',
+safetyFixTitle:'תיקון ליקוי בטיחות',
 signTitle:'חתימת מנהל העבודה',signHint:'חתום כאן עם האצבע',clearSign:'🗑️ נקה',
 confirmSafety:'✅ אשר ושלח דוח בטיחות',pastReports:'📂 דוחות קודמים',questionsAnswered:'שאלות נענו',
 settingsTitle:'הגדרות פרויקט',siteInfo:'פרטי האתר',projectName:'שם הפרויקט / האתר',projectPlaceholder:'לדוגמה: מגדל רמות קומות 1-12',
@@ -565,6 +602,8 @@ fixedLabel:'✅ تمت المعالجة',fixedBy:'أصلحه:',fixedAt:'بتار
 noDeadline:'بدون موعد',overdue:'⚠️ متأخر',targetDate:'الموعد: ',
 safetyTitle:'السلامة اليومية',chooseWorkType:'اختر نوع العمل',
 wtGeneral:'عام',wtStructure:'هيكل',wtFinishing:'تشطيب',wtScaffolding:'سقالات',wtExcavation:'حفر',
+wt_general:'عام',wt_structure:'هيكل',wt_finishing:'تشطيب',wt_scaffolding:'سقالات',wt_excavation:'حفر',
+safetyFixTitle:'إصلاح عيب السلامة',
 signTitle:'توقيع مدير العمل',signHint:'وقّع هنا بإصبعك',clearSign:'🗑️ مسح',
 confirmSafety:'✅ أكّد وأرسل تقرير السلامة',pastReports:'📂 تقارير سابقة',questionsAnswered:'أسئلة تم الإجابة عليها',
 settingsTitle:'إعدادات المشروع',siteInfo:'تفاصيل الموقع',projectName:'اسم المشروع / الموقع',projectPlaceholder:'مثال: برج رامات طوابق 1-12',
@@ -999,7 +1038,26 @@ function showSafetyReport(entryOrStr){
   if(entry.gps)h+='<p><strong>GPS: </strong>'+entry.gps+'</p>';
   h+='</div><div class="report-section-title">'+T('reportSafetyCheck')+'</div>';
   var qs=entry.questions||getSafetyQs(entry.workType||'general');var fails=0;
-  for(var i=0;i<qs.length;i++){var q=qs[i];var ans=entry.answers[q.qKey];if(ans==='fail')fails++;var okf=ans==='ok'?'<span class="report-ok">✅ '+T('reportOk')+'</span>':'<span class="report-fail">❌ '+T('reportFail')+'</span>';h+='<div class="report-sq-row"><span>'+(i+1)+'. '+T(q.qKey)+'</span>'+okf+'</div>';}
+  for(var i=0;i<qs.length;i++){
+    var q=qs[i];var ans=entry.answers[q.qKey];if(ans==='fail')fails++;
+    var okf=ans==='ok'?'<span class="report-ok">✅ '+T('reportOk')+'</span>':'<span class="report-fail">❌ '+T('reportFail')+'</span>';
+    h+='<div class="report-sq-row"><span>'+(i+1)+'. '+T(q.qKey)+'</span>'+okf+'</div>';
+    if(ans==='fail'){
+      var fix=entry.fixes&&entry.fixes[q.qKey];
+      if(fix){
+        var fdt=fix.when?new Date(fix.when).toLocaleString(APP.lang==='ar'?'ar-IL':'he-IL'):'';
+        h+='<div class="safety-fix-panel">';
+        h+='<div class="safety-fix-panel-title">'+T('fixedLabel')+'</div>';
+        if(fix.by)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedBy')+'</span><span>'+esc(fix.by)+'</span></div>';
+        if(fdt)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedAt')+'</span><span>'+fdt+'</span></div>';
+        if(fix.notes)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedNote')+'</span><span>'+esc(fix.notes)+'</span></div>';
+        if(fix.photo)h+='<div style="margin-top:6px;"><img src="'+fix.photo+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;"></div>';
+        h+='</div>';
+      } else {
+        h+='<div style="margin-bottom:6px;"><button class="btn-fix-sm no-print" onclick="openSafetyFix('+entry.id+',\''+q.qKey+'\')">🔧 '+(APP.lang==='ar'?'إصلاح':'תוקן')+'</button></div>';
+      }
+    }
+  }
   h+='<div style="text-align:center;padding:12px;font-size:15px;font-weight:800;color:'+(fails?'var(--red)':'var(--green)')+';">'+(fails?'❌ '+fails+' ליקויים':'✅ '+T('reportSafetyStatus0'))+'</div>';
   if(entry.signature)h+='<div class="report-section-title">'+T('reportSafetySignature')+'</div><div style="border:2px solid #dce3e9;border-radius:10px;padding:10px;margin-top:8px;"><img src="'+entry.signature+'" style="max-width:100%;"></div>';
   h+='<div class="report-footer">'+T('reportFooter')+'<br>'+T('reportGenerated')+new Date().toLocaleString('he-IL')+'</div>';
@@ -1042,6 +1100,58 @@ var _toastTimer=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(function(){el.classList.remove('show');},2500);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function getGPS(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(function(p){APP.gps=p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5);},function(){},{timeout:10000});}
+// ===================== SAFETY FIX =====================
+var _sfReportId=null,_sfQuestionKey=null,_sfPhoto=null;
+function openSafetyFix(reportId,questionKey){
+  _sfReportId=reportId;_sfQuestionKey=questionKey;_sfPhoto=null;
+  var safety=loadJSON('sb_safety',[]);
+  var entry=safety.find(function(r){return r.id===reportId;});
+  if(!entry)return;
+  var prev=document.getElementById('safety-fix-q-preview');
+  if(prev){
+    var qText=T(questionKey);
+    var fixEntry=entry.fixes&&entry.fixes[questionKey];
+    var existing=fixEntry?('<div style="background:#d5f5e3;border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:12px;color:var(--green);">'+T('fixedLabel')+': '+esc(fixEntry.by)+'</div>'):'';
+    prev.innerHTML='<div style="background:#fff3cd;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;"><strong>'+esc(qText)+'</strong></div>'+existing;
+  }
+  var now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+  document.getElementById('sf-when').value=now.toISOString().slice(0,16);
+  document.getElementById('sf-by').value=APP.settings.managerName||'';
+  document.getElementById('sf-notes').value='';
+  document.getElementById('sf-photo-preview').innerHTML='';
+  applyLang();
+  openModal('modal-safety-fix');
+}
+function handleSafetyFixPhoto(input){
+  var f=input.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    _sfPhoto=e.target.result;
+    document.getElementById('sf-photo-preview').innerHTML='<div style="position:relative;display:inline-block;width:100%;"><img src="'+_sfPhoto+'" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;"><button onclick="_sfPhoto=null;document.getElementById(\'sf-photo-preview\').innerHTML=\'\'" style="position:absolute;top:6px;left:6px;background:rgba(231,76,60,.9);color:white;border:none;border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;">✕</button></div>';
+  };
+  r.readAsDataURL(f);input.value='';
+}
+function saveSafetyFix(){
+  var by=document.getElementById('sf-by').value.trim();
+  var when=document.getElementById('sf-when').value;
+  var notes=document.getElementById('sf-notes').value.trim();
+  if(!by){toast(APP.lang==='ar'?'يرجى إدخال اسم المُصلِح':'יש להזין מי ביצע את התיקון');return;}
+  var safety=loadJSON('sb_safety',[]);
+  for(var i=0;i<safety.length;i++){
+    if(safety[i].id===_sfReportId){
+      if(!safety[i].fixes)safety[i].fixes={};
+      safety[i].fixes[_sfQuestionKey]={by:by,when:when,notes:notes,photo:_sfPhoto||null};
+      break;
+    }
+  }
+  saveJSON('sb_safety',safety);
+  closeModal('modal-safety-fix');
+  toast(T('fixedLabel')+' ✅');
+  // רענן את הדוח המוצג
+  var entry=safety.find(function(r){return r.id===_sfReportId;});
+  if(entry)showSafetyReport(entry);
+}
+
 // ===================== REGISTRATION =====================
 function setRegLang(lang){
   APP.lang=lang;
