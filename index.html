@@ -111,7 +111,7 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
 .sq-btn{flex:1;min-height:40px;border-radius:9px;border:1.5px solid var(--border);background:white;font-size:14px;font-weight:700;cursor:pointer;}
 .sq-btn.ok{background:var(--green);border-color:var(--green);color:white;}
 .sq-btn.fail{background:var(--red);border-color:var(--red);color:white;}
-#sign-canvas{border:2px solid var(--border);border-radius:12px;width:100%;height:160px;background:white;cursor:crosshair;touch-action:none;}
+#sign-canvas,#jnl-sign-canvas,#sup-sign-canvas{border:2px solid var(--border);border-radius:12px;width:100%;height:160px;background:white;cursor:crosshair;touch-action:none;}
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#2c3e50;color:white;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;max-width:90%;text-align:center;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center;}
@@ -214,6 +214,11 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
     </div>
   </div>
   <div class="screen-body">
+    <div id="msg-banner" onclick="showScreen('s-messages')" style="display:none;background:linear-gradient(135deg,#1a73e8,#1557b0);color:#fff;border-radius:12px;padding:13px 15px;margin-bottom:14px;cursor:pointer;align-items:center;gap:10px;box-shadow:0 3px 12px rgba(26,115,232,.35);">
+      <span style="font-size:22px;">📢</span>
+      <div style="flex:1;"><div style="font-weight:800;font-size:14px;" id="msg-banner-title"></div><div style="font-size:12px;opacity:.9;" id="msg-banner-sub"></div></div>
+      <span style="background:#fff;color:#1a73e8;border-radius:20px;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;padding:0 7px;" id="msg-banner-count">0</span>
+    </div>
     <div id="home-banner" style="background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;cursor:pointer;" onclick="showScreen('s-settings')">
       <div id="home-project-name" style="font-size:15px;font-weight:800;"></div>
       <div id="home-manager-name" style="font-size:12px;color:var(--sub);margin-top:2px;"></div>
@@ -234,6 +239,16 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
     </button>
   </div>
   <div class="offline-note" data-t="offlineNote"></div>
+</div>
+
+<!-- MESSAGES INBOX -->
+<div class="screen" id="s-messages">
+  <div class="topbar">
+    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <div class="topbar-center"><div class="topbar-title" data-t="msgInboxTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body"><div id="messages-list"></div></div>
 </div>
 
 <!-- JOURNAL -->
@@ -272,6 +287,12 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
       <div class="photos-grid" id="jnl-photos-grid"></div>
       <input type="file" id="jnl-photo-input" accept="image/*" multiple style="display:none" onchange="handleJnlPhotos(event)">
     </div>
+    <div class="card">
+      <div class="card-title" data-t="journalSignTitle"></div>
+      <canvas id="jnl-sign-canvas"></canvas>
+      <button class="btn btn-gray" style="margin-top:10px;min-height:40px;font-size:13px;" onclick="clearJnlSign()"><span data-t="clearSign"></span></button>
+    </div>
+    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px 12px;font-size:12px;color:#8a6d00;margin-bottom:12px;" data-t="lockedNote"></div>
     <button class="btn btn-blue" style="margin-bottom:10px;" onclick="saveJournal()"><span data-t="saveJournal"></span></button>
     <button class="btn btn-green" onclick="sendJournalWA()"><span data-t="sendWA"></span></button>
   </div>
@@ -370,10 +391,35 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
       <button class="icon-btn no-print" onclick="window.print()">🖨️</button>
     </div>
   </div>
-  <div class="screen-body"><div id="report-content" class="report-container"></div></div>
+  <div class="screen-body">
+    <div id="report-approve-bar" class="no-print" style="display:none;margin-bottom:12px;">
+      <button class="btn btn-green" onclick="openSupervisorApprove()"><span data-t="supervisorApprove"></span></button>
+    </div>
+    <div id="report-content" class="report-container"></div>
+  </div>
 </div>
 
 </div><!-- #app -->
+
+<!-- SUPERVISOR APPROVAL MODAL -->
+<div class="modal-overlay hidden" id="modal-supervisor">
+  <div class="modal-sheet">
+    <div class="modal-title" data-t="supervisorTitle"></div>
+    <div class="form-group">
+      <label data-t="supervisorName"></label>
+      <input id="sup-name" type="text" class="form-input" data-tp="supervisorNamePh">
+    </div>
+    <div class="form-group">
+      <label data-t="supervisorSignLabel"></label>
+      <canvas id="sup-sign-canvas"></canvas>
+      <button class="btn btn-gray" style="margin-top:8px;min-height:38px;font-size:13px;" onclick="clearSupSign()"><span data-t="clearSign"></span></button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" style="flex:1" onclick="closeModal('modal-supervisor')"><span data-t="cancel"></span></button>
+      <button class="btn btn-green" style="flex:2" onclick="saveSupervisorApprove()"><span data-t="approveBtn"></span></button>
+    </div>
+  </div>
+</div>
 
 <!-- DEFECT MODAL -->
 <div class="modal-overlay hidden" id="modal-defect">
@@ -502,6 +548,7 @@ regCompany:'חברה / קבלן ראשי',regCompanyPh:'שם החברה שאתה
 regProject:'שם הפרויקט הנוכחי',regProjectPh:'לדוגמה: מגדל רמות קומות 1-12',
 regLang:'שפה מועדפת',regSubmit:'כניסה לאפליקציה ←',
 regNote:'הנתונים שמורים בטלפון שלך בלבד',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
+msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',
 btn1Title:'יומן עבודה יומי',btn1Desc:'דבר דקה אחת ← יומן חוקי מסודר ישלח לוואטסאפ',
 btn2Title:'ליקויים ומשימות',btn2Desc:'צלם ← הקצה לקבלן ← עקוב אחרי סטטוס',
 btn3Title:'בטיחות יומית',btn3Desc:'12 שאלות בטיחות ← דוח חתום עם GPS ← הגנה משפטית',
@@ -546,6 +593,8 @@ voiceNotSupported:'הקלטת קול לא נתמכת — נסה Chrome באנד�
 reportJournalTitle:'יומן עבודה — ',reportSafetyTitle:'דוח בטיחות יומי',
 reportProject:'פרויקט: ',reportManager:'מנהל עבודה: ',reportDate:'תאריך: ',reportGenerated:'הופק: ',
 reportWorkDesc:'תיאור יום העבודה',reportManpower:'כוח אדם',reportConditions:'תנאים ועיכובים',
+journalSignTitle:'חתימת מנהל העבודה',signRequired:'יש לחתום לפני שמירת היומן',journalSerial:'יומן מס׳',lockedNote:'🔒 לאחר שמירה היומן ננעל ולא ניתן לעריכה',
+supervisorApprove:'✍️ אישור פיקוח',supervisorTitle:'אישור מפקח מטעם המזמין',supervisorName:'שם המפקח',supervisorNamePh:'שם מלא של המפקח',supervisorSignLabel:'חתימת המפקח',approveBtn:'✅ אשר יומן',approvedByLabel:'אושר ע"י מפקח:',pendingApproval:'⏳ ממתין לאישור פיקוח',approvedBadge:'✅ מאושר פיקוח',reportManagerSign:'חתימת מנהל העבודה',reportSupervisorSign:'חתימת מפקח (אישור המזמין)',
 reportWeather:'מזג אוויר: ',reportDelays:'עיכובים/חריגים: ',reportTasks:'משימות למחר: ',reportPhotos:'תמונות מהיום',
 reportSafetyCheck:'פרטי בדיקת הבטיחות',reportSafetyStatus0:'תקין — כל הבדיקות עברו',reportSafetySignature:'חתימת מנהל העבודה',
 reportFooter:'מסמך זה הופק ע"י דקה — יומן ומשימות שטח',reportOk:'תקין',reportFail:'ליקוי',
@@ -577,6 +626,7 @@ regCompany:'الشركة / المقاول الرئيسي',regCompanyPh:'اسم �
 regProject:'اسم المشروع الحالي',regProjectPh:'مثال: برج رامات طوابق 1-12',
 regLang:'اللغة المفضلة',regSubmit:'الدخول إلى التطبيق ←',
 regNote:'البيانات محفوظة في هاتفك فقط',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
+msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',
 btn1Title:'يومية العمل اليومية',btn1Desc:'تكلم دقيقة ← يومية قانونية تُرسل للواتساب',
 btn2Title:'العيوب والمهام',btn2Desc:'التقط صورة ← أسند للمقاول ← تابع الحالة',
 btn3Title:'السلامة اليومية',btn3Desc:'12 سؤال أمان ← تقرير موقّع بـGPS ← حماية قانونية',
@@ -621,6 +671,8 @@ voiceNotSupported:'التسجيل الصوتي غير مدعوم — جرّب Ch
 reportJournalTitle:'يومية العمل — ',reportSafetyTitle:'تقرير السلامة اليومي',
 reportProject:'المشروع: ',reportManager:'مدير العمل: ',reportDate:'التاريخ: ',reportGenerated:'أُنشئ: ',
 reportWorkDesc:'وصف يوم العمل',reportManpower:'القوى العاملة',reportConditions:'الأحوال والتأخيرات',
+journalSignTitle:'توقيع مدير العمل',signRequired:'يجب التوقيع قبل حفظ اليومية',journalSerial:'يومية رقم',lockedNote:'🔒 بعد الحفظ تُقفل اليومية ولا يمكن تعديلها',
+supervisorApprove:'✍️ مصادقة المشرف',supervisorTitle:'مصادقة المشرف نيابة عن صاحب العمل',supervisorName:'اسم المشرف',supervisorNamePh:'الاسم الكامل للمشرف',supervisorSignLabel:'توقيع المشرف',approveBtn:'✅ صادق على اليومية',approvedByLabel:'صودق بواسطة المشرف:',pendingApproval:'⏳ بانتظار مصادقة المشرف',approvedBadge:'✅ مصادق عليه',reportManagerSign:'توقيع مدير العمل',reportSupervisorSign:'توقيع المشرف (مصادقة صاحب العمل)',
 reportWeather:'الطقس: ',reportDelays:'التأخيرات: ',reportTasks:'مهام الغد: ',reportPhotos:'صور اليوم',
 reportSafetyCheck:'تفاصيل فحص السلامة',reportSafetyStatus0:'سليم — اجتازت جميع الفحوصات',reportSafetySignature:'توقيع مدير العمل',
 reportFooter:'هذا المستند أُنشئ بواسطة دقيقة — يومية ومهام الميدان',reportOk:'سليم',reportFail:'عيب',
@@ -685,6 +737,7 @@ function onScreenEnter(id){
   if(id==='s-safety')initSafety();
   if(id==='s-safety-history')renderSafetyHistory();
   if(id==='s-settings')loadSettingsForm();
+  if(id==='s-messages')renderMessages();
 }
 function refreshHome(){
   var s=APP.settings;
@@ -699,7 +752,48 @@ function refreshHome(){
   document.getElementById('stat-defects').textContent=defects.filter(function(d){return d.status!=='done';}).length;
   var weekAgo=Date.now()-7*24*3600*1000;
   document.getElementById('stat-safety').textContent=safety.filter(function(r){return r.ts>weekAgo;}).length;
+  updateMsgBanner();
 }
+// ===================== MESSAGES (from admin) =====================
+function getMessages(){return loadJSON('dk_messages',[]);}
+function getLastRead(){return loadJSON('dk_msg_lastread',0);}
+function unreadCount(){var lr=getLastRead();return getMessages().filter(function(m){return (m.ts||0)>lr;}).length;}
+function updateMsgBanner(){
+  var b=document.getElementById('msg-banner');if(!b)return;
+  var n=unreadCount();
+  if(n>0){
+    b.style.display='flex';
+    document.getElementById('msg-banner-title').textContent=T('msgBannerTitle');
+    document.getElementById('msg-banner-sub').textContent=T('msgBannerSub');
+    document.getElementById('msg-banner-count').textContent=n;
+  } else { b.style.display='none'; }
+}
+function renderMessages(){
+  var list=document.getElementById('messages-list');if(!list)return;
+  var msgs=getMessages().slice().sort(function(a,b){return (b.ts||0)-(a.ts||0);});
+  if(!msgs.length){list.innerHTML='<div style="text-align:center;padding:50px 20px;color:var(--sub);font-size:15px;">📭<br><br>'+T('emptyMsg')+'</div>';}
+  else{
+    var lr=getLastRead();var h='';
+    for(var i=0;i<msgs.length;i++){
+      var m=msgs[i];var isNew=(m.ts||0)>lr;
+      var when=m.ts?new Date(m.ts).toLocaleString(APP.lang==='ar'?'ar-IL':'he-IL'):'';
+      h+='<div style="background:#fff;border:1px solid var(--border);border-'+(APP.lang==='ar'?'right':'right')+':4px solid '+(isNew?'var(--blue)':'var(--border)')+';border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.05);">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:11px;color:var(--blue);font-weight:700;">📢 '+T('msgFrom')+'</span>'+(isNew?'<span style="background:var(--blue);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;">חדש</span>':'')+'</div>';
+      if(m.title)h+='<div style="font-weight:800;font-size:16px;margin-bottom:4px;">'+esc(m.title)+'</div>';
+      if(m.body)h+='<div style="font-size:14px;line-height:1.6;white-space:pre-wrap;color:var(--text);">'+esc(m.body)+'</div>';
+      if(m.link)h+='<a href="'+esc(m.link)+'" target="_blank" style="display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;font-size:14px;text-decoration:none;">'+T('msgOpenLink')+'</a>';
+      h+='<div style="font-size:11px;color:var(--sub);margin-top:8px;">'+when+'</div>';
+      h+='</div>';
+    }
+    list.innerHTML=h;
+  }
+  // סמן הכל כנקרא
+  var msgsAll=getMessages();var maxTs=0;for(var j=0;j<msgsAll.length;j++)if((msgsAll[j].ts||0)>maxTs)maxTs=msgsAll[j].ts||0;
+  saveJSON('dk_msg_lastread',maxTs);
+  updateMsgBanner();
+}
+// נקודת כניסה ל-Firebase: נקרא מהמודול כשמגיעות הודעות חדשות
+window._dkOnMessages=function(msgs){saveJSON('dk_messages',msgs);updateMsgBanner();var act=document.querySelector('.screen.active');if(act&&act.id==='s-messages')renderMessages();};
 var _recog=null,_voiceTarget=null,_voiceActive=false;
 function toggleVoice(target,btnId){
   if(_voiceActive){
@@ -716,12 +810,28 @@ function toggleVoice(target,btnId){
 }
 var WKEYS=['w1','w2','w3','w4','w5','w6'];
 var currentWeather=-1;
+// ===== עזר חתימה גנרי (שימוש חוזר לכמה קנבסים) =====
+function attachSignPad(canvas){
+  if(!canvas)return null;
+  var ctx=canvas.getContext('2d');canvas.width=canvas.offsetWidth||400;canvas.height=160;ctx.clearRect(0,0,canvas.width,canvas.height);
+  var drawing=false,dirty=false;
+  function pos(e){var r=canvas.getBoundingClientRect();var pt=e.touches?e.touches[0]:e;return{x:pt.clientX-r.left,y:pt.clientY-r.top};}
+  function down(e){if(e.preventDefault)e.preventDefault();drawing=true;dirty=true;var p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+  function move(e){if(!drawing)return;if(e.preventDefault)e.preventDefault();var p=pos(e);ctx.lineTo(p.x,p.y);ctx.strokeStyle='#222';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();}
+  function up(){drawing=false;}
+  canvas.onmousedown=down;canvas.onmousemove=move;canvas.onmouseup=up;canvas.onmouseleave=up;
+  canvas.addEventListener('touchstart',down,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',up);
+  return {clear:function(){ctx.clearRect(0,0,canvas.width,canvas.height);dirty=false;},isEmpty:function(){return !dirty;},dataURL:function(){return dirty?canvas.toDataURL('image/png'):'';}};
+}
+var jnlSignPad=null;
+function clearJnlSign(){if(jnlSignPad)jnlSignPad.clear();}
 function initJournal(){
   var today=new Date();
   document.getElementById('jnl-date-sub').textContent=today.toLocaleDateString(APP.lang==='ar'?'ar-IL':'he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   document.getElementById('jnl-text').value='';document.getElementById('jnl-delays').value='';document.getElementById('jnl-tasks').value='';
   APP.jnlPhotos=[];currentWeather=-1;
   renderWorkersTable();renderWeatherGrid();renderJnlPhotos();
+  jnlSignPad=attachSignPad(document.getElementById('jnl-sign-canvas'));
 }
 function renderWorkersTable(){
   var tb=document.getElementById('workers-tbody');if(!tb)return;
@@ -744,10 +854,13 @@ function renderJnlPhotos(){
 function handleJnlPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){APP.jnlPhotos.push(ev.target.result);renderJnlPhotos();};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
 function removeJnlPhoto(i){APP.jnlPhotos.splice(i,1);renderJnlPhotos();}
 function getWorkers(){var d=[];for(var i=0;i<WKEYS.length;i++){var el=document.getElementById('w-'+WKEYS[i]);var q=el?parseInt(el.value)||0:0;if(q>0)d.push({trade:T(WKEYS[i]),qty:q});}return d;}
+function nextJournalSerial(){var n=loadJSON('dk_journal_serial',0);n=(parseInt(n)||0)+1;saveJSON('dk_journal_serial',n);return n;}
+function fmtSerial(n){var s=''+(n||0);while(s.length<3)s='0'+s;return s;}
 function saveJournal(){
   var txt=document.getElementById('jnl-text').value.trim();
   if(!txt){toast(APP.lang==='ar'?'أدخل وصف اليوم':'יש להזין תיאור יום העבודה');return;}
-  var entry={id:Date.now(),date:new Date().toISOString(),ts:Date.now(),text:txt,workers:getWorkers(),weather:currentWeather,delays:document.getElementById('jnl-delays').value.trim(),tasks:document.getElementById('jnl-tasks').value.trim(),photos:APP.jnlPhotos.slice(),lang:APP.lang};
+  if(!jnlSignPad||jnlSignPad.isEmpty()){toast(T('signRequired'));return;}
+  var entry={id:Date.now(),serial:nextJournalSerial(),date:new Date().toISOString(),ts:Date.now(),text:txt,workers:getWorkers(),weather:currentWeather,delays:document.getElementById('jnl-delays').value.trim(),tasks:document.getElementById('jnl-tasks').value.trim(),photos:APP.jnlPhotos.slice(),managerSign:jnlSignPad.dataURL(),manager:APP.settings.managerName||'',locked:true,supervisorApproval:null,lang:APP.lang};
   var journals=loadJSON('sb_journals',[]);journals.unshift(entry);saveJSON('sb_journals',journals);
   toast(T('saved'));showJournalReport(entry);
 }
@@ -770,9 +883,13 @@ function renderJournalHistory(){
     var j=journals[i];var d=new Date(j.date);
     var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
     var tw=0;if(j.workers)for(var k=0;k<j.workers.length;k++)tw+=j.workers[k].qty;
+    var serialStr=j.serial?(T('journalSerial')+' '+fmtSerial(j.serial)+' · '):'';
+    var appBadge=j.supervisorApproval
+      ?'<span style="font-size:11px;color:var(--green);font-weight:700;">'+T('approvedBadge')+'</span>'
+      :'<span style="font-size:11px;color:var(--orange);font-weight:700;">'+T('pendingApproval')+'</span>';
     h+='<div class="history-item" onclick="showJournalReportById('+j.id+')">'
-      +'<div class="history-item-date">'+ds+'</div>'
-      +'<div class="history-item-sub">'+T('totalWorkers')+': '+tw+'</div>'
+      +'<div class="history-item-date">'+serialStr+ds+'</div>'
+      +'<div class="history-item-sub">'+T('totalWorkers')+': '+tw+' &nbsp;·&nbsp; '+appBadge+'</div>'
       +'</div>';
   }
   list.innerHTML=h;
@@ -783,13 +900,16 @@ function showJournalReportById(id){
   if(!entry){toast('לא נמצא יומן');return;}
   showJournalReport(entry);
 }
+var _viewedJournalId=null;
 function showJournalReport(entryOrStr){
   var entry=typeof entryOrStr==='string'?JSON.parse(entryOrStr):entryOrStr;
+  _viewedJournalId=entry.id;
   var el=document.getElementById('report-content');var s=APP.settings;
   var d=new Date(entry.date);var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
+  var serialStr=entry.serial?(T('journalSerial')+' '+fmtSerial(entry.serial)):'';
   document.getElementById('report-topbar-title').textContent=T('reportJournalTitle')+ds;
   var h='<div class="report-logo"><div class="report-logo-title">דקה</div><div class="report-logo-sub">'+T('appTagline')+'</div></div>';
-  h+='<div class="report-header"><p><strong>'+T('reportProject')+'</strong>'+(s.projectName||'—')+'</p><p><strong>'+T('reportManager')+'</strong>'+(s.managerName||'—')+'</p><p><strong>'+T('reportDate')+'</strong>'+ds+'</p></div>';
+  h+='<div class="report-header"><p><strong>'+T('reportProject')+'</strong>'+(s.projectName||'—')+'</p><p><strong>'+T('reportManager')+'</strong>'+(entry.manager||s.managerName||'—')+'</p><p><strong>'+T('reportDate')+'</strong>'+ds+'</p>'+(serialStr?'<p><strong>'+serialStr+'</strong></p>':'')+'</div>';
   h+='<div class="report-section-title">'+T('reportWorkDesc')+'</div><p>'+(entry.text||'').replace(/\n/g,'<br>')+'</p>';
   if(entry.workers&&entry.workers.length){
     h+='<div class="report-section-title">'+T('reportManpower')+'</div><table style="width:100%;border-collapse:collapse;font-size:13px;"><tr><th style="text-align:right;padding:6px;border-bottom:1px solid #dce3e9;">'+T('tradeCol')+'</th><th style="text-align:center;padding:6px;border-bottom:1px solid #dce3e9;">'+T('qtyCol')+'</th></tr>';
@@ -803,8 +923,55 @@ function showJournalReport(entryOrStr){
     if(entry.tasks)h+='<p>'+T('reportTasks')+'</p><p>'+esc(entry.tasks).replace(/\n/g,'<br>')+'</p>';
   }
   if(entry.photos&&entry.photos.length){h+='<div class="report-section-title">'+T('reportPhotos')+'</div><div class="photos-grid">';for(var p=0;p<entry.photos.length;p++)h+='<div class="photo-thumb"><img src="'+entry.photos[p]+'"></div>';h+='</div>';}
+  // ===== חתימות =====
+  h+='<div style="display:flex;gap:14px;margin-top:18px;flex-wrap:wrap;">';
+  // חתימת מנהל עבודה
+  h+='<div style="flex:1;min-width:140px;text-align:center;">'
+    +'<div style="font-size:12px;color:var(--sub);font-weight:700;margin-bottom:4px;">'+T('reportManagerSign')+'</div>'
+    +(entry.managerSign?'<img src="'+entry.managerSign+'" style="max-width:100%;height:70px;object-fit:contain;border:1px solid #dce3e9;border-radius:8px;background:#fff;">':'<div style="height:70px;border:1px dashed #dce3e9;border-radius:8px;"></div>')
+    +'<div style="font-size:12px;margin-top:4px;font-weight:700;">'+esc(entry.manager||s.managerName||'')+'</div></div>';
+  // חתימת מפקח
+  h+='<div style="flex:1;min-width:140px;text-align:center;">'
+    +'<div style="font-size:12px;color:var(--sub);font-weight:700;margin-bottom:4px;">'+T('reportSupervisorSign')+'</div>';
+  if(entry.supervisorApproval){
+    var aw=new Date(entry.supervisorApproval.ts).toLocaleString('he-IL');
+    h+='<img src="'+entry.supervisorApproval.sign+'" style="max-width:100%;height:70px;object-fit:contain;border:1px solid #27ae60;border-radius:8px;background:#fff;">'
+      +'<div style="font-size:12px;margin-top:4px;font-weight:700;color:var(--green);">'+esc(entry.supervisorApproval.name)+'</div>'
+      +'<div style="font-size:10px;color:var(--sub);">'+aw+'</div>';
+  } else {
+    h+='<div style="height:70px;border:1px dashed #dce3e9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--sub);">'+T('pendingApproval')+'</div>';
+  }
+  h+='</div></div>';
   h+='<div class="report-footer">'+T('reportFooter')+'<br>'+T('reportGenerated')+new Date().toLocaleString('he-IL')+'</div>';
-  el.innerHTML=h;showScreen('s-report');
+  el.innerHTML=h;
+  // כפתור אישור פיקוח (לא מודפס)
+  var approveBar=document.getElementById('report-approve-bar');
+  if(approveBar){
+    if(entry.supervisorApproval){approveBar.style.display='none';}
+    else{approveBar.style.display='block';}
+  }
+  showScreen('s-report');
+}
+// ===== אישור פיקוח =====
+var supSignPad=null;
+function openSupervisorApprove(){
+  if(!_viewedJournalId){return;}
+  document.getElementById('sup-name').value=APP.settings.officeName||'';
+  openModal('modal-supervisor');
+  setTimeout(function(){supSignPad=attachSignPad(document.getElementById('sup-sign-canvas'));},50);
+}
+function clearSupSign(){if(supSignPad)supSignPad.clear();}
+function saveSupervisorApprove(){
+  var name=document.getElementById('sup-name').value.trim();
+  if(!name){toast(T('supervisorName'));return;}
+  if(!supSignPad||supSignPad.isEmpty()){toast(T('signRequired'));return;}
+  var journals=loadJSON('sb_journals',[]);
+  var entry=null;
+  for(var i=0;i<journals.length;i++){if(journals[i].id===_viewedJournalId){journals[i].supervisorApproval={name:name,sign:supSignPad.dataURL(),ts:Date.now()};entry=journals[i];break;}}
+  saveJSON('sb_journals',journals);
+  closeModal('modal-supervisor');
+  toast(T('approvedBadge'));
+  if(entry)showJournalReport(entry);
 }function renderDefectFilters(){
   var el=document.getElementById('defect-filters');if(!el)return;
   var fs=[{k:'all',l:'filterAll'},{k:'open',l:'filterOpen'},{k:'progress',l:'filterProgress'},{k:'done',l:'filterDone'}];
@@ -1176,8 +1343,8 @@ function submitRegistration(){
   APP.settings.registered=true;
   APP.settings.registeredAt=new Date().toISOString();
   saveJSON('sb_settings',APP.settings);
-  // TODO: כשמחברים Firebase — שלח כאן לשרת
-  // firebaseRegister({ name, phone, company, project, lang: APP.lang });
+  // שליחה ל-Firebase (אם מחובר)
+  if(window._dkRegister)try{window._dkRegister({name:name,phone:phone,company:company,project:project,lang:APP.lang,registeredAt:APP.settings.registeredAt});}catch(e){}
   toast((APP.lang==='ar'?'أهلاً ':' ברוך הבא ')+name+' 👋',3000);
   showScreen('s-home');
 }
@@ -1207,8 +1374,57 @@ function init(){
     refreshHome();
   }
   getGPS();
+  // סנכרון Firebase למשתמש קיים (עדכון lastSeen + משיכת הודעות)
+  if(window._dkSync){var s=APP.settings;if(s&&s.managerName)try{window._dkSync({name:s.managerName,phone:s.managerPhone,company:s.companyName,project:s.projectName,lang:s.lang});}catch(e){}}
 }
 init();
+</script>
+
+<!-- ============ FIREBASE LAYER (ready — paste config to activate) ============ -->
+<script type="module">
+// כדי להפעיל סנכרון ענן + הודעות מהמשרד: הדבק כאן את firebaseConfig מ-Firebase Console.
+// כל עוד ריק — האפליקציה עובדת רגיל (localStorage בלבד), ללא הודעות.
+const FIREBASE_CONFIG = {
+  // apiKey: "...",
+  // authDomain: "...",
+  // projectId: "...",
+  // storageBucket: "...",
+  // messagingSenderId: "...",
+  // appId: "..."
+};
+
+if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
+  import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then(async function(appMod){
+    const fsMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const app = appMod.initializeApp(FIREBASE_CONFIG);
+    const db = fsMod.getFirestore(app);
+    const { doc, setDoc, collection, query, orderBy, onSnapshot } = fsMod;
+
+    // רישום / עדכון מנהל (id = טלפון מנוקה)
+    function upsert(data){
+      var id = (data.phone||'').replace(/\D/g,'') || ('u'+Date.now());
+      return setDoc(doc(db,'managers',id), Object.assign({}, data, { lastSeen: new Date().toISOString() }), { merge:true });
+    }
+    window._dkRegister = upsert;
+    window._dkSync = upsert;
+
+    // האזנה להודעות מהמשרד
+    var myPhone = ((window.APP&&APP.settings&&APP.settings.managerPhone)||'').replace(/\D/g,'');
+    var qy = query(collection(db,'messages'), orderBy('createdAt','desc'));
+    onSnapshot(qy, function(snap){
+      var msgs=[];
+      snap.forEach(function(d){
+        var m=d.data();
+        var aud=m.audience;
+        var forMe = aud==='all' || (Array.isArray(aud) && aud.indexOf(myPhone)>=0);
+        if(!forMe) return;
+        var ts = m.createdAt && m.createdAt.toDate ? m.createdAt.toDate().getTime() : Date.now();
+        msgs.push({ ts:ts, title:m.title||'', body:m.body||'', link:m.link||'' });
+      });
+      if(window._dkOnMessages) window._dkOnMessages(msgs);
+    });
+  }).catch(function(e){ console.error('Firebase load failed', e); });
+}
 </script>
 </body>
 </html>

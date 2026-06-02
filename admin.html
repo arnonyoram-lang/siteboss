@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>דקה — לוח ניהול</title>
+<style>
+:root{--blue:#1a73e8;--blue-d:#1557b0;--green:#27ae60;--orange:#e67e22;--red:#e74c3c;--bg:#f0f4f8;--card:#fff;--text:#2c3e50;--sub:#7f8c8d;--border:#dce3e9;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.topbar{background:linear-gradient(135deg,var(--blue-d),var(--blue));color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.topbar h1{font-size:22px;font-weight:900;letter-spacing:1px;}
+.topbar h1 span{opacity:.7;font-size:14px;font-weight:600;}
+.topbar .status-chip{font-size:12px;padding:5px 12px;border-radius:20px;font-weight:700;}
+.chip-off{background:rgba(255,255,255,.2);}
+.chip-on{background:#1e8449;}
+.wrap{max-width:1100px;margin:0 auto;padding:22px;}
+.setup-banner{background:#fff8e1;border:2px solid #ffe082;border-radius:14px;padding:18px 20px;margin-bottom:22px;font-size:14px;line-height:1.7;}
+.setup-banner b{color:var(--orange);}
+.setup-banner code{background:#fff3cd;padding:2px 7px;border-radius:5px;font-family:monospace;direction:ltr;display:inline-block;}
+.grid{display:grid;grid-template-columns:1.3fr 1fr;gap:22px;}
+@media(max-width:820px){.grid{grid-template-columns:1fr;}}
+.card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:22px;}
+.card h2{font-size:17px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.stat-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.stat{flex:1;min-width:150px;background:var(--card);border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.stat .num{font-size:32px;font-weight:900;color:var(--blue);}
+.stat .lbl{font-size:13px;color:var(--sub);margin-top:2px;}
+.search{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:15px;margin-bottom:14px;font-family:inherit;}
+.search:focus{outline:none;border-color:var(--blue);}
+.user-list{max-height:520px;overflow-y:auto;}
+.user-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;cursor:pointer;transition:.15s;}
+.user-row:hover{background:#f5f9ff;border-color:var(--blue);}
+.user-row.sel{background:#e8f0fe;border-color:var(--blue);}
+.user-row .ava{width:42px;height:42px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;flex-shrink:0;}
+.user-row .info{flex:1;min-width:0;}
+.user-row .nm{font-weight:700;font-size:15px;}
+.user-row .meta{font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-row .chk{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;}
+.user-row.sel .chk{background:var(--blue);border-color:var(--blue);}
+label{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px;margin-top:14px;}
+label:first-of-type{margin-top:0;}
+input[type=text],textarea,select{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--blue);}
+textarea{min-height:90px;resize:vertical;line-height:1.6;}
+.audience-row{display:flex;gap:10px;margin-bottom:6px;}
+.aud-btn{flex:1;padding:11px;border:2px solid var(--border);border-radius:10px;background:#fff;text-align:center;font-weight:700;font-size:14px;cursor:pointer;color:var(--sub);}
+.aud-btn.active{border-color:var(--blue);background:#e8f0fe;color:var(--blue);}
+.btn{width:100%;padding:14px;border:none;border-radius:11px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:16px;}
+.btn-send{background:var(--green);color:#fff;}
+.btn-send:active{opacity:.85;}
+.btn-send:disabled{opacity:.5;cursor:not-allowed;}
+.msg-log{max-height:340px;overflow-y:auto;}
+.msg-item{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+.msg-item .mt{font-weight:800;font-size:14px;}
+.msg-item .mb{font-size:13px;color:var(--text);margin-top:3px;line-height:1.5;white-space:pre-wrap;}
+.msg-item .mf{font-size:11px;color:var(--sub);margin-top:7px;display:flex;justify-content:space-between;}
+.empty{text-align:center;padding:36px 20px;color:var(--sub);font-size:14px;line-height:1.7;}
+.sel-count{font-size:13px;color:var(--blue);font-weight:700;margin-top:8px;min-height:18px;}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:13px 24px;border-radius:30px;font-weight:700;opacity:0;transition:.3s;pointer-events:none;z-index:99;}
+#toast.show{opacity:1;}
+.config-box{width:100%;min-height:150px;font-family:monospace;direction:ltr;font-size:13px;padding:12px;border:2px solid var(--border);border-radius:10px;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>דקה <span>· לוח ניהול</span></h1>
+  <span class="status-chip chip-off" id="conn-chip">לא מחובר ל-Firebase</span>
+</div>
+
+<div class="wrap">
+
+  <!-- SETUP BANNER (shown until Firebase config is pasted) -->
+  <div class="setup-banner" id="setup-banner">
+    <b>⚙️ חיבור Firebase — שלב אחרון</b><br>
+    הלוח מוכן לחלוטין. כדי שיציג את 200 המנהלים ויאפשר שליחת הודעות — הדבק את קוד החיבור של Firebase:
+    <ol style="margin:10px 22px 6px;line-height:2;">
+      <li>היכנס ל-<a href="https://console.firebase.google.com" target="_blank">Firebase Console</a> ← הפרויקט שלך</li>
+      <li>⚙️ Project Settings ← תחת "Your apps" העתק את <code>firebaseConfig</code></li>
+      <li>הדבק כאן למטה ולחץ "התחבר":</li>
+    </ol>
+    <textarea class="config-box" id="cfg-input" placeholder='{
+  "apiKey": "AIza...",
+  "authDomain": "...firebaseapp.com",
+  "projectId": "...",
+  "storageBucket": "...",
+  "messagingSenderId": "...",
+  "appId": "..."
+}'></textarea>
+    <button class="btn btn-send" style="margin-top:12px;" onclick="connectFirebase()">🔌 התחבר ל-Firebase</button>
+    <div style="font-size:12px;color:var(--sub);margin-top:8px;">הקוד נשמר מקומית בדפדפן שלך בלבד ולא צריך להדביק שוב.</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stat-row" id="stats" style="display:none;">
+    <div class="stat"><div class="num" id="st-users">0</div><div class="lbl">מנהלי עבודה רשומים</div></div>
+    <div class="stat"><div class="num" id="st-active">0</div><div class="lbl">פעילים ב-7 ימים</div></div>
+    <div class="stat"><div class="num" id="st-msgs">0</div><div class="lbl">הודעות שנשלחו</div></div>
+  </div>
+
+  <div class="grid" id="main-grid" style="display:none;">
+    <!-- USERS -->
+    <div>
+      <div class="card">
+        <h2>👷 מנהלי עבודה</h2>
+        <input class="search" id="user-search" placeholder="🔍 חיפוש לפי שם / חברה / פרויקט..." oninput="renderUsers()">
+        <div class="user-list" id="user-list"></div>
+        <div class="sel-count" id="sel-count"></div>
+      </div>
+    </div>
+
+    <!-- COMPOSE + LOG -->
+    <div>
+      <div class="card">
+        <h2>📢 שליחת הודעה</h2>
+        <label>נמענים</label>
+        <div class="audience-row">
+          <div class="aud-btn active" id="aud-all" onclick="setAudience('all')">📣 כל המנהלים</div>
+          <div class="aud-btn" id="aud-sel" onclick="setAudience('selected')">✓ נבחרים בלבד</div>
+        </div>
+        <label>כותרת</label>
+        <input type="text" id="msg-title" placeholder="לדוגמה: עדכון חשוב על עובדים זרים">
+        <label>תוכן ההודעה</label>
+        <textarea id="msg-body" placeholder="כתוב כאן את ההודעה שתגיע לכל מנהלי העבודה..."></textarea>
+        <label>קישור (אופציונלי)</label>
+        <input type="text" id="msg-link" placeholder="https://... טופס / מסמך / סרטון">
+        <button class="btn btn-send" id="send-btn" onclick="sendMessage()">📤 שלח הודעה</button>
+      </div>
+
+      <div class="card">
+        <h2>🕓 הודעות שנשלחו</h2>
+        <div class="msg-log" id="msg-log"><div class="empty">עדיין לא נשלחו הודעות</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+// ============ FIREBASE-READY ADMIN CONSOLE ============
+// משתמש ב-Firebase v10 modular SDK. ללא config — מציג מסך הגדרה.
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, getDocs, addDoc, query, orderBy,
+  onSnapshot, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+let db = null;
+let USERS = [];
+let SELECTED = new Set();
+let AUDIENCE = 'all';
+
+// ---------- toast ----------
+window._toast = function(m){
+  var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2600);
+};
+
+// ---------- connect ----------
+window.connectFirebase = function(){
+  var raw = document.getElementById('cfg-input').value.trim();
+  if(!raw){ _toast('הדבק את קוד החיבור'); return; }
+  var cfg;
+  try {
+    // מקבל גם פורמט JS (apiKey: "...") וגם JSON
+    cfg = parseConfig(raw);
+  } catch(e){
+    _toast('הקוד לא תקין — העתק שוב מ-Firebase'); return;
+  }
+  localStorage.setItem('dk_admin_fbcfg', JSON.stringify(cfg));
+  boot(cfg);
+};
+
+function parseConfig(raw){
+  // נסה JSON ישר
+  try { return JSON.parse(raw); } catch(e){}
+  // נסה לחלץ אובייקט מתוך "const firebaseConfig = {...}"
+  var m = raw.match(/\{[\s\S]*\}/);
+  if(!m) throw new Error('no object');
+  var obj = m[0]
+    .replace(/(\w+)\s*:/g, '"$1":')   // keys ללא מרכאות
+    .replace(/'/g, '"')                // single → double
+    .replace(/,(\s*[}\]])/g, '$1');    // trailing commas
+  return JSON.parse(obj);
+}
+
+async function boot(cfg){
+  try {
+    const app = initializeApp(cfg);
+    db = getFirestore(app);
+    document.getElementById('setup-banner').style.display='none';
+    document.getElementById('stats').style.display='flex';
+    document.getElementById('main-grid').style.display='grid';
+    var chip=document.getElementById('conn-chip');
+    chip.textContent='מחובר ✓ ('+(cfg.projectId||'')+')';
+    chip.className='status-chip chip-on';
+    await loadUsers();
+    listenMessages();
+  } catch(e){
+    console.error(e);
+    _toast('שגיאת חיבור: '+e.message);
+  }
+}
+
+// ---------- users ----------
+async function loadUsers(){
+  USERS = [];
+  try {
+    const snap = await getDocs(collection(db,'managers'));
+    snap.forEach(function(d){ USERS.push(Object.assign({id:d.id}, d.data())); });
+  } catch(e){ console.error(e); }
+  document.getElementById('st-users').textContent = USERS.length;
+  var weekAgo = Date.now() - 7*864e5;
+  var active = USERS.filter(function(u){
+    var t = u.lastSeen ? new Date(u.lastSeen).getTime() : (u.registeredAt ? new Date(u.registeredAt).getTime() : 0);
+    return t >= weekAgo;
+  }).length;
+  document.getElementById('st-active').textContent = active;
+  renderUsers();
+}
+
+window.renderUsers = function(){
+  var q = (document.getElementById('user-search').value||'').toLowerCase();
+  var list = document.getElementById('user-list');
+  var filtered = USERS.filter(function(u){
+    return !q || (((u.name||'')+(u.company||'')+(u.project||'')+(u.phone||'')).toLowerCase().indexOf(q)>=0);
+  });
+  if(!filtered.length){ list.innerHTML='<div class="empty">'+(USERS.length?'לא נמצאו תוצאות':'אין מנהלים רשומים עדיין.<br>ברגע שמנהל יירשם באפליקציה — הוא יופיע כאן.')+'</div>'; updateSelCount(); return; }
+  var h='';
+  filtered.forEach(function(u){
+    var init=(u.name||'?').trim().charAt(0);
+    var sel=SELECTED.has(u.id)?' sel':'';
+    h+='<div class="user-row'+sel+'" onclick="toggleUser(\''+u.id+'\')">'
+      +'<div class="ava">'+esc(init)+'</div>'
+      +'<div class="info"><div class="nm">'+esc(u.name||'ללא שם')+'</div>'
+      +'<div class="meta">'+esc([u.company,u.project,u.phone].filter(Boolean).join(' · ')||'—')+'</div></div>'
+      +'<div class="chk">'+(sel?'✓':'')+'</div></div>';
+  });
+  list.innerHTML=h;
+  updateSelCount();
+};
+
+window.toggleUser = function(id){
+  if(SELECTED.has(id)) SELECTED.delete(id); else SELECTED.add(id);
+  if(SELECTED.size>0) setAudience('selected');
+  renderUsers();
+};
+
+function updateSelCount(){
+  var el=document.getElementById('sel-count');
+  el.textContent = SELECTED.size ? ('נבחרו '+SELECTED.size+' מנהלים') : '';
+}
+
+window.setAudience = function(a){
+  AUDIENCE=a;
+  document.getElementById('aud-all').classList.toggle('active',a==='all');
+  document.getElementById('aud-sel').classList.toggle('active',a==='selected');
+};
+
+// ---------- send ----------
+window.sendMessage = async function(){
+  if(!db){ _toast('התחבר ל-Firebase תחילה'); return; }
+  var title=document.getElementById('msg-title').value.trim();
+  var body=document.getElementById('msg-body').value.trim();
+  var link=document.getElementById('msg-link').value.trim();
+  if(!title && !body){ _toast('כתוב כותרת או תוכן'); return; }
+  if(AUDIENCE==='selected' && SELECTED.size===0){ _toast('בחר לפחות מנהל אחד'); return; }
+  var btn=document.getElementById('send-btn'); btn.disabled=true; btn.textContent='שולח...';
+  try {
+    await addDoc(collection(db,'messages'), {
+      title: title, body: body, link: link || null,
+      audience: AUDIENCE==='all' ? 'all' : Array.from(SELECTED),
+      audienceNames: AUDIENCE==='all' ? 'כל המנהלים' : USERS.filter(function(u){return SELECTED.has(u.id);}).map(function(u){return u.name;}).join(', '),
+      createdAt: serverTimestamp()
+    });
+    _toast('✅ ההודעה נשלחה!');
+    document.getElementById('msg-title').value='';
+    document.getElementById('msg-body').value='';
+    document.getElementById('msg-link').value='';
+  } catch(e){
+    console.error(e); _toast('שגיאה בשליחה: '+e.message);
+  }
+  btn.disabled=false; btn.textContent='📤 שלח הודעה';
+};
+
+// ---------- messages log (live) ----------
+function listenMessages(){
+  try {
+    const qy = query(collection(db,'messages'), orderBy('createdAt','desc'));
+    onSnapshot(qy, function(snap){
+      var msgs=[]; snap.forEach(function(d){ msgs.push(d.data()); });
+      document.getElementById('st-msgs').textContent = msgs.length;
+      var log=document.getElementById('msg-log');
+      if(!msgs.length){ log.innerHTML='<div class="empty">עדיין לא נשלחו הודעות</div>'; return; }
+      var h='';
+      msgs.forEach(function(m){
+        var when = m.createdAt && m.createdAt.toDate ? m.createdAt.toDate().toLocaleString('he-IL') : '';
+        h+='<div class="msg-item">'
+          +'<div class="mt">'+esc(m.title||'(ללא כותרת)')+'</div>'
+          +(m.body?'<div class="mb">'+esc(m.body)+'</div>':'')
+          +'<div class="mf"><span>📤 '+esc(m.audienceNames||'')+'</span><span>'+when+'</span></div>'
+          +'</div>';
+      });
+      log.innerHTML=h;
+    });
+  } catch(e){ console.error(e); }
+}
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ---------- auto-boot if config saved ----------
+(function(){
+  var saved = localStorage.getItem('dk_admin_fbcfg');
+  if(saved){ try { boot(JSON.parse(saved)); } catch(e){} }
+})();
+</script>
+</body>
+</html>
