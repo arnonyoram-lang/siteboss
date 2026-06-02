@@ -147,6 +147,7 @@ import {
   getFirestore, collection, getDocs, addDoc, query, orderBy,
   onSnapshot, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 let db = null;
 let USERS = [];
@@ -191,6 +192,7 @@ async function boot(cfg){
   try {
     const app = initializeApp(cfg);
     db = getFirestore(app);
+    try{ await signInAnonymously(getAuth(app)); }catch(e){ /* אם אנונימי מושבת בקונסול — ימשיך עם הכללים הקיימים */ }
     document.getElementById('setup-banner').style.display='none';
     document.getElementById('stats').style.display='flex';
     document.getElementById('main-grid').style.display='grid';

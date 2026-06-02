@@ -1576,6 +1576,8 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     const fsMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const app = appMod.initializeApp(FIREBASE_CONFIG);
     const db = fsMod.getFirestore(app);
+    // הזדהות אנונימית — מאפשר כללי אבטחה שדורשים auth (לא חוסם אם מושבת בקונסול)
+    try{const authMod=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");const auth=authMod.getAuth(app);authMod.signInAnonymously(auth).catch(function(){});}catch(e){}
     const { doc, setDoc, collection, query, orderBy, onSnapshot } = fsMod;
 
     // רישום / עדכון מנהל (id = טלפון מנוקה)
