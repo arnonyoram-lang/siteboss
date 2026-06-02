@@ -1056,7 +1056,12 @@ function submitRegistration(){
 
 function isRegistered(){
   var s=loadJSON('sb_settings',{});
-  return !!(s&&s.registered&&s.managerName);
+  // תואם גרסות ישנות: אם יש שם מנהל (גם בלי דגל registered) — נחשב רשום
+  if(s&&s.managerName){
+    if(!s.registered){s.registered=true;saveJSON('sb_settings',s);}
+    return true;
+  }
+  return false;
 }
 
 function init(){
