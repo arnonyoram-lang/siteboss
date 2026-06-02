@@ -290,6 +290,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
         <tbody id="workers-tbody"></tbody>
         <tfoot><tr class="total-row"><td data-t="totalWorkers"></td><td style="text-align:center;" id="workers-total">0</td></tr></tfoot>
       </table>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;width:100%;" onclick="addCustomTrade()"><span data-t="addTrade"></span></button>
     </div>
     <div class="card"><div class="card-title" data-t="weatherTitle"></div><div class="weather-grid" id="weather-grid"></div></div>
     <div class="card"><div class="card-title" data-t="delaysTitle"></div><textarea id="jnl-delays" data-tp="delaysPlaceholder" rows="3"></textarea></div>
@@ -570,7 +571,7 @@ delaysTitle:'עיכובים / חריגים',delaysPlaceholder:'האם היו ע�
 tasksTitle:'משימות למחר',tasksPlaceholder:'מה מתוכנן למחר?',photosTitle:'תמונות מהיום',
 saveJournal:'✅ שמור יומן והפק דוח PDF',sendWA:'📲 שלח לוואטסאפ',
 tradeCol:'מקצוע',qtyCol:'כמות',totalWorkers:'סה"כ פועלים',
-w1:'טייחים',w2:'חשמלאים',w3:'אינסטלטורים',w4:'פועלים כלליים',w5:'נגרים / קופסאי',w6:'אחר',
+w1:'טייחים',w2:'חשמלאים',w3:'אינסטלטורים',w4:'פועלים כלליים',w5:'נגרים / קופסאי',w6:'אחר',addTrade:'➕ הוסף מקצוע אחר',tradeNamePh:'שם המקצוע (לדוגמה: ברזלן, רצף)',
 wi0:'☀️',wi1:'⛅',wi2:'🌧️',wi3:'💨',wi4:'🔥',wl0:'שמש',wl1:'מעונן',wl2:'גשם',wl3:'רוח',wl4:'חום קיצוני',
 defectsTitle:'ליקויים ומשימות',filterAll:'הכל',filterOpen:'🔴 פתוח',filterProgress:'🟠 בטיפול',filterDone:'🟢 בוצע',
 addDefectTitle:'ליקוי / משימה חדשה',defPhoto:'תמונה (מומלץ)',defDesc:'תיאור הליקוי',defDescPlaceholder:'תאר מה צריך תיקון...',
@@ -648,7 +649,7 @@ delaysTitle:'التأخيرات / الانحرافات',delaysPlaceholder:'هل 
 tasksTitle:'مهام الغد',tasksPlaceholder:'ما المخطط ليوم الغد؟',photosTitle:'صور اليوم',
 saveJournal:'✅ احفظ اليومية وأنشئ تقرير PDF',sendWA:'📲 أرسل للواتساب',
 tradeCol:'المهنة',qtyCol:'الكمية',totalWorkers:'مجموع العمال',
-w1:'مبيّضون',w2:'كهربائيون',w3:'سباكون',w4:'عمال عامون',w5:'نجارون',w6:'أخرى',
+w1:'مبيّضون',w2:'كهربائيون',w3:'سباكون',w4:'عمال عامون',w5:'نجارون',w6:'أخرى',addTrade:'➕ إضافة مهنة أخرى',tradeNamePh:'اسم المهنة (مثال: حدّاد، مبلّط)',
 wi0:'☀️',wi1:'⛅',wi2:'🌧️',wi3:'💨',wi4:'🔥',wl0:'مشمس',wl1:'غائم جزئياً',wl2:'ممطر',wl3:'عاصف',wl4:'حر شديد',
 defectsTitle:'العيوب والمهام',filterAll:'الكل',filterOpen:'🔴 مفتوح',filterProgress:'🟠 قيد المعالجة',filterDone:'🟢 منجز',
 addDefectTitle:'عيب / مهمة جديدة',defPhoto:'صورة (مُوصى به)',defDesc:'وصف العيب',defDescPlaceholder:'صِف ما يحتاج إصلاحاً...',
@@ -820,7 +821,7 @@ function toggleVoice(target,btnId){
   _recog.onend=function(){if(_voiceActive){try{_recog.start();}catch(e){}}};
   try{_recog.start();_voiceActive=true;_voiceTarget=target;var b=document.getElementById(btnId);if(b){b.innerHTML='⏹️';b.classList.add('recording');}}catch(e){toast(T('voiceError'));}
 }
-var WKEYS=['w1','w2','w3','w4','w5','w6'];
+var WKEYS=['w1','w2','w3','w4','w5'];
 var currentWeather=-1;
 // ===== עזר חתימה גנרי (שימוש חוזר לכמה קנבסים) =====
 function attachSignPad(canvas){
@@ -850,7 +851,21 @@ function renderWorkersTable(){
   var h='';for(var i=0;i<WKEYS.length;i++){var k=WKEYS[i];h+='<tr><td>'+T(k)+'</td><td><input type="number" min="0" value="0" id="w-'+k+'" oninput="calcTotal()" style="text-align:center;"></td></tr>';}
   tb.innerHTML=h;
 }
-function calcTotal(){var t=0;for(var i=0;i<WKEYS.length;i++){var e=document.getElementById('w-'+WKEYS[i]);if(e)t+=parseInt(e.value)||0;}document.getElementById('workers-total').textContent=t;}
+function addCustomTrade(){
+  var tb=document.getElementById('workers-tbody');if(!tb)return;
+  var tr=document.createElement('tr');tr.className='custom-trade';
+  tr.innerHTML='<td><input type="text" class="ct-name" placeholder="'+T('tradeNamePh')+'" style="padding:8px 10px;font-size:14px;"></td>'
+    +'<td style="white-space:nowrap;"><input type="number" min="0" value="0" class="ct-qty" oninput="calcTotal()" style="text-align:center;width:60px;display:inline-block;padding:8px 4px;">'
+    +'<button onclick="this.closest(\'tr\').remove();calcTotal();" style="background:none;border:none;color:var(--red);font-size:20px;cursor:pointer;padding:0 6px;vertical-align:middle;">×</button></td>';
+  tb.appendChild(tr);
+  var inp=tr.querySelector('.ct-name');if(inp)inp.focus();
+}
+function calcTotal(){
+  var t=0;
+  for(var i=0;i<WKEYS.length;i++){var e=document.getElementById('w-'+WKEYS[i]);if(e)t+=parseInt(e.value)||0;}
+  document.querySelectorAll('.ct-qty').forEach(function(q){t+=parseInt(q.value)||0;});
+  document.getElementById('workers-total').textContent=t;
+}
 function renderWeatherGrid(){
   var g=document.getElementById('weather-grid');if(!g)return;
   var h='';for(var i=0;i<5;i++){var a=currentWeather===i?' active':'';h+='<div class="weather-btn'+a+'" onclick="selWeather('+i+')"><span class="w-icon">'+T('wi'+i)+'</span><span class="w-label">'+T('wl'+i)+'</span></div>';}
@@ -865,7 +880,15 @@ function renderJnlPhotos(){
 }
 function handleJnlPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){APP.jnlPhotos.push(ev.target.result);renderJnlPhotos();};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
 function removeJnlPhoto(i){APP.jnlPhotos.splice(i,1);renderJnlPhotos();}
-function getWorkers(){var d=[];for(var i=0;i<WKEYS.length;i++){var el=document.getElementById('w-'+WKEYS[i]);var q=el?parseInt(el.value)||0:0;if(q>0)d.push({trade:T(WKEYS[i]),qty:q});}return d;}
+function getWorkers(){
+  var d=[];
+  for(var i=0;i<WKEYS.length;i++){var el=document.getElementById('w-'+WKEYS[i]);var q=el?parseInt(el.value)||0:0;if(q>0)d.push({trade:T(WKEYS[i]),qty:q});}
+  document.querySelectorAll('#workers-tbody tr.custom-trade').forEach(function(tr){
+    var nm=(tr.querySelector('.ct-name')||{}).value;var qv=parseInt((tr.querySelector('.ct-qty')||{}).value)||0;
+    if(nm&&nm.trim()&&qv>0)d.push({trade:nm.trim(),qty:qv});
+  });
+  return d;
+}
 function nextJournalSerial(){var n=loadJSON('dk_journal_serial',0);n=(parseInt(n)||0)+1;saveJSON('dk_journal_serial',n);return n;}
 function fmtSerial(n){var s=''+(n||0);while(s.length<3)s='0'+s;return s;}
 function saveJournal(){
