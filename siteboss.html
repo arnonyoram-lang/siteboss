@@ -29,6 +29,9 @@ body{display:flex;justify-content:center;}
 #bottom-back{display:none;padding:6px 16px calc(14px + env(safe-area-inset-bottom));}
 #bottom-back button{width:100%;min-height:50px;border:2px solid var(--blue);background:#eaf1fb;color:var(--blue-d);border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;}
 #bottom-back button:active{background:#d9e6f7;}
+#install-banner{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;display:flex;align-items:center;gap:10px;padding:12px 14px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -3px 16px rgba(0,0,0,.25);z-index:80;}
+.install-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
+.install-step b{background:var(--blue);color:#fff;min-width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 .lang-toggle{display:flex;gap:3px;}
 .lang-btn{padding:4px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.7);font-size:12px;font-weight:700;cursor:pointer;}
 .lang-btn.active{background:white;color:var(--blue-d);}
@@ -442,6 +445,23 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 
 </div><!-- #app -->
 
+<!-- INSTALL BANNER (הוספה למסך הבית) -->
+<div id="install-banner" style="display:none;">
+  <span style="font-size:24px;flex-shrink:0;">📲</span>
+  <div style="flex:1;font-size:14px;font-weight:700;line-height:1.4;" data-t="installBannerText"></div>
+  <button id="install-now-btn" onclick="installAction()" style="background:#fff;color:var(--blue-d);border:none;border-radius:10px;padding:9px 14px;font-size:14px;font-weight:800;cursor:pointer;flex-shrink:0;" data-t="installHow"></button>
+  <button onclick="dismissInstall()" style="background:rgba(255,255,255,.25);color:#fff;border:none;border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;flex-shrink:0;">✕</button>
+</div>
+
+<!-- INSTALL STEPS MODAL -->
+<div class="modal-overlay hidden" id="modal-install">
+  <div class="modal-sheet">
+    <div class="modal-title" data-t="installTitle"></div>
+    <div id="install-steps" style="font-size:15px;line-height:1.9;"></div>
+    <div class="modal-actions"><button class="btn btn-blue" onclick="closeModal('modal-install')"><span data-t="gotIt"></span></button></div>
+  </div>
+</div>
+
 <!-- SUPERVISOR APPROVAL MODAL -->
 <div class="modal-overlay hidden" id="modal-supervisor">
   <div class="modal-sheet">
@@ -590,6 +610,9 @@ regProject:'שם הפרויקט הנוכחי',regProjectPh:'לדוגמה: מגד
 regLang:'שפה מועדפת',regSubmit:'כניסה לאפליקציה ←',
 regNote:'הנתונים שמורים בטלפון שלך בלבד',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
 msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',shareReportWA:'📲 שלח למשרד בוואטסאפ',backLabel:'חזרה',backToHome:'→ חזרה לדף הקודם',
+installBannerText:'הוסף את דקה למסך הבית',installHow:'איך?',installBtn:'התקן',gotIt:'הבנתי 👍',installTitle:'הוספה למסך הבית 📲',
+installAndroid:'1|פתח את התפריט ⋮ למעלה|2|בחר "הוספה למסך הבית"|3|לחץ "הוסף" / "התקן"|4|האייקון יופיע במסך ✅',
+installIos:'1|ודא שאתה ב-Safari (לא Chrome)|2|לחץ על כפתור השיתוף ⬆️ בתחתית|3|גלול ובחר "הוספה למסך הבית"|4|לחץ "הוסף" למעלה ✅',
 btn1Title:'יומן עבודה יומי',btn1Desc:'דבר דקה אחת ← יומן חוקי מסודר ישלח לוואטסאפ',
 btn2Title:'ליקויים ומשימות',btn2Desc:'צלם ← הקצה לקבלן ← עקוב אחרי סטטוס',
 btn3Title:'בטיחות יומית',btn3Desc:'12 שאלות בטיחות ← דוח חתום עם GPS ← הגנה משפטית',
@@ -673,6 +696,9 @@ regProject:'اسم المشروع الحالي',regProjectPh:'مثال: برج �
 regLang:'اللغة المفضلة',regSubmit:'الدخول إلى التطبيق ←',
 regNote:'البيانات محفوظة في هاتفك فقط',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
 msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',shareReportWA:'📲 أرسل للمكتب عبر واتساب',backLabel:'رجوع',backToHome:'→ العودة إلى الصفحة السابقة',
+installBannerText:'أضف דקה إلى الشاشة الرئيسية',installHow:'كيف؟',installBtn:'تثبيت',gotIt:'فهمت 👍',installTitle:'الإضافة إلى الشاشة الرئيسية 📲',
+installAndroid:'1|افتح القائمة ⋮ في الأعلى|2|اختر "إضافة إلى الشاشة الرئيسية"|3|اضغط "إضافة" / "تثبيت"|4|ستظهر الأيقونة على الشاشة ✅',
+installIos:'1|تأكد أنك في Safari (وليس Chrome)|2|اضغط زر المشاركة ⬆️ في الأسفل|3|مرّر واختر "إضافة إلى الشاشة الرئيسية"|4|اضغط "إضافة" في الأعلى ✅',
 btn1Title:'يومية العمل اليومية',btn1Desc:'تكلم دقيقة ← يومية قانونية تُرسل للواتساب',
 btn2Title:'العيوب والمهام',btn2Desc:'التقط صورة ← أسند للمقاول ← تابع الحالة',
 btn3Title:'السلامة اليومية',btn3Desc:'12 سؤال أمان ← تقرير موقّع بـGPS ← حماية قانونية',
@@ -1560,6 +1586,35 @@ function init(){
   getGPS();
   // סנכרון Firebase למשתמש קיים (עדכון lastSeen + משיכת הודעות)
   if(window._dkSync){var s=APP.settings;if(s&&s.managerName)try{window._dkSync({name:s.managerName,phone:s.managerPhone,company:s.companyName,project:s.projectName,lang:s.lang});}catch(e){}}
+  maybeShowInstall();
+}
+// ===== הוספה למסך הבית =====
+var _deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();_deferredPrompt=e;});
+function isStandalone(){return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;}
+function maybeShowInstall(){
+  if(isStandalone())return;                       // כבר מותקן
+  if(loadJSON('dk_install_dismissed',false))return; // המשתמש סגר
+  var b=document.getElementById('install-banner');
+  if(b){b.style.display='flex';
+    // אם יש prompt מקורי (אנדרואיד) — הצג "התקן", אחרת "איך?"
+    document.getElementById('install-now-btn').textContent=_deferredPrompt?T('installBtn'):T('installHow');
+  }
+}
+function dismissInstall(){saveJSON('dk_install_dismissed',true);var b=document.getElementById('install-banner');if(b)b.style.display='none';}
+function installAction(){
+  if(_deferredPrompt){
+    _deferredPrompt.prompt();
+    _deferredPrompt.userChoice.then(function(){_deferredPrompt=null;dismissInstall();});
+    return;
+  }
+  // ללא prompt (אייפון / לא נתמך) — הצג שלבים לפי מכשיר
+  var ua=navigator.userAgent||'';
+  var isIos=/iPhone|iPad|iPod/i.test(ua);
+  var steps=(isIos?T('installIos'):T('installAndroid')).split('|');
+  var h='';for(var i=0;i<steps.length;i+=2){h+='<div class="install-step"><b>'+steps[i]+'</b><span>'+steps[i+1]+'</span></div>';}
+  document.getElementById('install-steps').innerHTML=h;
+  openModal('modal-install');
 }
 init();
 </script>
