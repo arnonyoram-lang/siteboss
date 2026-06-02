@@ -1,1552 +1,842 @@
-<!DOCTYPE html>
-<html dir="rtl" lang="he">
+﻿<!DOCTYPE html>
+<html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a73e8">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1a3a5c">
-<title>SiteBoss – מנהל עבודה פלוס</title>
+<meta name="apple-mobile-web-app-title" content="דקה">
+<title>דקה — יומן ומשימות שטח</title>
+<link rel="manifest" href="manifest.json">
 <style>
-/* ===== RESET & ROOT ===== */
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{
-  --green:#27ae60;--green-d:#1e8449;--green-bg:#eafaf1;
-  --orange:#e67e22;--orange-d:#ca6f1e;--orange-bg:#fef5ec;
-  --red:#e74c3c;--red-d:#c0392b;--red-bg:#fdf0ef;
-  --blue:#2980b9;--blue-d:#1a3a5c;--blue-bg:#e8f4fd;
-  --gray:#7f8c8d;--light:#f0f3f4;--dark:#2c3e50;--white:#fff;
-  --radius:14px;--shadow:0 3px 14px rgba(0,0,0,.1);
-}
-body{font-family:'Segoe UI',Arial,sans-serif;background:var(--light);color:var(--dark);min-height:100vh;direction:rtl;font-size:16px;overflow-x:hidden}
-
-/* ===== SCREEN SYSTEM ===== */
-.screen{display:none;min-height:100vh;flex-direction:column}
-.screen.active{display:flex}
-
-/* ===== TOP BAR ===== */
-.topbar{
-  background:var(--blue-d);color:white;
-  padding:0 12px;
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:100;min-height:58px;
-  box-shadow:0 2px 10px rgba(0,0,0,.25);
-}
-.topbar-center{flex:1;text-align:center}
-.topbar-title{font-size:17px;font-weight:800}
-.topbar-sub{font-size:11px;opacity:.75}
-.icon-btn{
-  background:rgba(255,255,255,.18);border:none;color:white;
-  width:44px;height:44px;border-radius:10px;font-size:18px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
-.icon-btn:active{opacity:.7}
-
-/* ===== CONTENT ===== */
-.content{flex:1;padding:16px;overflow-y:auto;padding-bottom:80px}
-
-/* ===== HOME ===== */
-.home-hero{
-  background:linear-gradient(150deg,var(--blue-d) 0%,#1e6091 100%);
-  color:white;padding:24px 20px 30px;text-align:center;
-}
-.home-logo{font-size:36px;font-weight:900;letter-spacing:2px}
-.home-logo span{color:#f39c12}
-.home-tagline{font-size:13px;opacity:.85;margin-top:6px}
-
-.project-pill{
-  background:white;border-radius:12px;
-  margin:0 16px;margin-top:-14px;
-  padding:14px 16px;
-  box-shadow:var(--shadow);
-  display:flex;justify-content:space-between;align-items:center;
-}
-.pill-name{font-size:16px;font-weight:800}
-.pill-date{font-size:12px;color:var(--gray)}
-
-.main-buttons{padding:18px 16px 0;display:flex;flex-direction:column;gap:14px}
-
-.main-btn{
-  border:none;border-radius:var(--radius);padding:20px 18px;
-  display:flex;align-items:center;gap:14px;cursor:pointer;
-  box-shadow:var(--shadow);transition:transform .12s;width:100%;
-  text-align:right;position:relative;overflow:hidden;
-}
-.main-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,rgba(255,255,255,.1),transparent);
-  pointer-events:none;
-}
-.main-btn:active{transform:scale(.97)}
-.btn-icon{font-size:44px;flex-shrink:0}
-.btn-texts{flex:1}
-.btn-title{font-size:20px;font-weight:900;color:white;display:block;line-height:1.1}
-.btn-desc{font-size:12px;color:rgba(255,255,255,.85);display:block;margin-top:5px;line-height:1.4}
-.btn-badge{
-  background:rgba(255,255,255,.25);color:white;
-  font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;
-  flex-shrink:0;align-self:flex-start;margin-top:2px;
-}
-.btn-journal{background:linear-gradient(135deg,#27ae60,#1a7a43)}
-.btn-defects{background:linear-gradient(135deg,#e67e22,#a85311)}
-.btn-safety{background:linear-gradient(135deg,#e74c3c,#922b21)}
-
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px 0}
-.stat-box{
-  background:white;border-radius:12px;padding:12px 10px;text-align:center;
-  box-shadow:0 2px 8px rgba(0,0,0,.07);
-}
-.stat-num{font-size:28px;font-weight:900;line-height:1}
-.stat-label{font-size:11px;color:var(--gray);margin-top:4px}
-.stat-green .stat-num{color:var(--green)}
-.stat-orange .stat-num{color:var(--orange)}
-.stat-red .stat-num{color:var(--red)}
-
-/* ===== SETTINGS ===== */
-.settings-section{margin-bottom:24px}
-.settings-label{font-size:13px;font-weight:700;color:var(--gray);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
-
-/* ===== FORM ===== */
-.form-group{margin-bottom:18px}
-.form-label{display:block;font-size:14px;font-weight:700;color:var(--dark);margin-bottom:8px}
-.form-input,.form-textarea,.form-select{
-  width:100%;border:2px solid #dce3e9;border-radius:10px;
-  padding:12px 14px;font-size:16px;font-family:inherit;color:var(--dark);
-  background:white;direction:rtl;transition:border-color .2s;
-}
-.form-input:focus,.form-textarea:focus,.form-select:focus{outline:none;border-color:var(--blue)}
-.form-textarea{min-height:90px;resize:vertical;line-height:1.5}
-
-/* ===== BUTTONS ===== */
-.btn{
-  border:none;border-radius:10px;padding:14px 20px;
-  font-size:16px;font-weight:800;cursor:pointer;width:100%;
-  font-family:inherit;transition:opacity .15s;letter-spacing:.3px;
-}
-.btn:active{opacity:.8}
-.btn-primary{background:var(--blue);color:white}
-.btn-green{background:var(--green);color:white}
-.btn-orange{background:var(--orange);color:white}
-.btn-red{background:var(--red);color:white}
-.btn-ghost{background:white;color:var(--dark);border:2px solid #dce3e9}
-.btn-sm{padding:8px 14px;font-size:13px;width:auto;border-radius:8px;font-weight:700}
-.btn-row{display:flex;gap:10px}
-.btn-row .btn{flex:1}
-
-/* ===== VOICE ===== */
-.voice-card{
-  background:white;border-radius:var(--radius);padding:22px;
-  text-align:center;box-shadow:var(--shadow);margin-bottom:18px;
-}
-.voice-btn{
-  width:88px;height:88px;border-radius:50%;border:none;
-  background:var(--green);color:white;font-size:38px;
-  cursor:pointer;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 6px 20px rgba(39,174,96,.4);transition:all .2s;
-}
-.voice-btn.recording{background:var(--red);animation:pulse 1.1s infinite;box-shadow:0 6px 20px rgba(231,76,60,.5)}
+:root{--blue:#1a73e8;--blue-d:#1557b0;--green:#27ae60;--orange:#e67e22;--red:#e74c3c;--bg:#f0f4f8;--card:#fff;--text:#2c3e50;--sub:#7f8c8d;--border:#dce3e9;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Segoe UI',Arial,Tahoma,sans-serif;background:#e8ecef;color:var(--text);}
+body{display:flex;justify-content:center;}
+#app{max-width:480px;width:100%;min-height:100vh;background:white;position:relative;box-shadow:0 0 30px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden;}
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.screen.active{display:flex;}
+.screen-body{flex:1;overflow-y:auto;padding:16px;padding-bottom:80px;}
+.topbar{height:56px;background:var(--blue);color:white;display:flex;align-items:center;padding:0 10px;gap:8px;flex-shrink:0;}
+.topbar-center{flex:1;text-align:center;min-width:0;}
+.topbar-title{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-sub{font-size:11px;opacity:.8;}
+.icon-btn{width:40px;height:40px;border:none;background:rgba(255,255,255,.15);color:white;border-radius:10px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.lang-toggle{display:flex;gap:3px;}
+.lang-btn{padding:4px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.7);font-size:12px;font-weight:700;cursor:pointer;}
+.lang-btn.active{background:white;color:var(--blue-d);}
+.card{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:12px;}
+.card-title{font-size:14px;font-weight:700;margin-bottom:10px;}
+input,textarea,select{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:15px;color:var(--text);background:white;outline:none;}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);}
+textarea{resize:vertical;min-height:90px;}
+label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-bottom:5px;}
+.form-group{margin-bottom:12px;}
+.btn{min-height:50px;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:0 16px;position:relative;transition:opacity .15s,transform .1s;}
+.btn::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;}
+.btn:active{transform:scale(.97);}
+.btn-blue{background:var(--blue);color:white;}
+.btn-green{background:var(--green);color:white;}
+.btn-red{background:var(--red);color:white;}
+.btn-gray{background:var(--bg);color:var(--text);}
+.btn-outline{background:white;border:2px solid var(--blue);color:var(--blue);}
+.btn-sm{min-height:36px;font-size:13px;border-radius:9px;padding:0 12px;width:auto;}
+.home-btn{border-radius:16px;padding:18px 16px;text-align:right;border:none;cursor:pointer;display:block;width:100%;margin-bottom:12px;color:white;position:relative;overflow:hidden;min-height:80px;}
+.home-btn::before{content:'';position:absolute;inset:0;pointer-events:none;}
+.home-btn-title{font-size:17px;font-weight:800;display:block;margin-bottom:4px;}
+.home-btn-desc{font-size:12px;opacity:.9;display:block;line-height:1.4;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.stat-card{background:var(--bg);border-radius:12px;padding:12px 8px;text-align:center;}
+.stat-num{font-size:26px;font-weight:800;color:var(--blue);}
+.stat-label{font-size:11px;color:var(--sub);font-weight:600;margin-top:2px;}
+.voice-btn{width:80px;height:80px;border-radius:50%;border:none;background:var(--green);color:white;font-size:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 4px 15px rgba(39,174,96,.4);transition:all .2s;}
+.voice-btn.recording{background:var(--red);animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.voice-status{font-size:13px;color:var(--gray);font-weight:600}
-.voice-transcript{
-  background:#f8f9fa;border-radius:10px;padding:12px;
-  min-height:50px;font-size:14px;line-height:1.6;text-align:right;
-  margin-top:10px;color:var(--dark);white-space:pre-wrap;
-}
-
-/* ===== WORKER TABLE ===== */
-.worker-table{width:100%;border-collapse:collapse}
-.worker-table th,.worker-table td{padding:10px 8px;text-align:right;border-bottom:1px solid #eef;font-size:14px}
-.worker-table th{background:#f8fafd;font-weight:700;font-size:13px;color:var(--gray)}
-.worker-table input[type=number]{
-  width:64px;text-align:center;border:2px solid #dce3e9;border-radius:8px;
-  padding:8px 4px;font-size:18px;font-weight:700;
-}
-.worker-table input[type=number]:focus{outline:none;border-color:var(--blue)}
-.worker-total{background:var(--blue-bg);font-weight:800;font-size:15px}
-
-/* ===== WEATHER ===== */
-.weather-row{display:flex;gap:8px;flex-wrap:wrap}
-.w-opt{
-  flex:1;min-width:64px;padding:10px 6px;border:2px solid #dce3e9;
-  border-radius:10px;background:white;text-align:center;cursor:pointer;transition:all .2s;
-}
-.w-opt.active{border-color:var(--blue);background:var(--blue-bg)}
-.w-emoji{font-size:26px;display:block}
-.w-label{font-size:11px;color:var(--gray);display:block;margin-top:3px}
-
-/* ===== PHOTOS ===== */
-.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
-.p-thumb{
-  aspect-ratio:1;border-radius:8px;overflow:hidden;
-  position:relative;background:#e9ecef;
-}
-.p-thumb img{width:100%;height:100%;object-fit:cover}
-.p-del{
-  position:absolute;top:4px;left:4px;
-  background:rgba(231,76,60,.9);color:white;border:none;
-  border-radius:50%;width:26px;height:26px;font-size:13px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-}
-.p-add{
-  aspect-ratio:1;border:2px dashed #bdc3c7;border-radius:8px;
-  background:#fafafa;display:flex;align-items:center;justify-content:center;
-  font-size:30px;color:#bdc3c7;cursor:pointer;
-}
-
-/* ===== DEFECTS ===== */
-.defect-card{
-  background:white;border-radius:var(--radius);margin-bottom:12px;
-  overflow:hidden;box-shadow:var(--shadow);
-}
-.def-top{
-  padding:13px 16px;display:flex;align-items:center;gap:10px;
-  border-bottom:1px solid #f0f3f4;
-}
-.status-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
-.s-open{background:var(--red)}
-.s-progress{background:var(--orange)}
-.s-done{background:var(--green)}
-.def-title{font-size:15px;font-weight:800;flex:1;line-height:1.3}
-.def-contractor{
-  font-size:11px;color:var(--orange);background:var(--orange-bg);
-  padding:3px 8px;border-radius:20px;font-weight:700;white-space:nowrap;
-}
-.def-body{padding:10px 16px 14px}
-.def-location{font-size:13px;color:var(--blue);font-weight:700;margin-bottom:5px}
-.def-desc{font-size:14px;line-height:1.5;color:var(--dark);margin-bottom:8px}
-.def-footer{display:flex;justify-content:space-between;align-items:center}
-.def-deadline{font-size:12px;color:var(--gray)}
-.def-deadline.late{color:var(--red);font-weight:700}
-.def-photo{width:100%;max-height:160px;object-fit:cover;margin-bottom:10px;border-radius:8px}
-.def-actions{display:flex;gap:8px;margin-top:10px}
-
-/* ===== FILTER TABS ===== */
-.filter-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
-.ftab{
-  padding:7px 16px;border-radius:20px;border:2px solid #dce3e9;
-  background:white;font-size:13px;font-weight:700;cursor:pointer;
-  white-space:nowrap;color:var(--gray);
-}
-.ftab.active{border-color:var(--blue);background:var(--blue);color:white}
-
-/* ===== SAFETY ===== */
-.safety-progress-wrap{margin-bottom:16px}
-.progress-bar{background:#dce3e9;border-radius:20px;height:10px;overflow:hidden}
-.progress-fill{height:100%;border-radius:20px;background:var(--green);transition:width .4s}
-.progress-label{font-size:12px;color:var(--gray);margin-top:5px;text-align:left}
-
-.sq-card{
-  background:white;border-radius:12px;margin-bottom:10px;
-  box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden;
-}
-.sq-main{padding:14px 16px;display:flex;align-items:center;gap:12px}
-.sq-num{
-  width:28px;height:28px;border-radius:50%;background:var(--light);
-  font-size:12px;font-weight:800;display:flex;align-items:center;
-  justify-content:center;flex-shrink:0;color:var(--gray);
-}
-.sq-text{flex:1;font-size:15px;font-weight:600;line-height:1.4}
-.sq-btns{display:flex;gap:6px;flex-shrink:0}
-.sq-btn{
-  width:50px;height:50px;border-radius:10px;border:2px solid #dce3e9;
-  background:white;font-size:22px;cursor:pointer;display:flex;
-  align-items:center;justify-content:center;transition:all .15s;
-}
-.sq-btn:active{transform:scale(.95)}
-.sq-ok{border-color:var(--green);background:var(--green-bg)}
-.sq-fail{border-color:var(--red);background:var(--red-bg)}
-.sq-alert{
-  background:#fff9e6;padding:10px 16px;font-size:13px;
-  color:#856404;display:none;border-top:1px solid #ffd;
-}
-.sq-alert.show{display:block}
-.sq-card.answered-ok .sq-num{background:var(--green-bg);color:var(--green)}
-.sq-card.answered-fail .sq-num{background:var(--red-bg);color:var(--red)}
-
-/* ===== SIGNATURE ===== */
-.sig-wrap{
-  border:2px solid #dce3e9;border-radius:10px;overflow:hidden;
-  background:#fafafa;position:relative;
-}
-.sig-hint{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  font-size:13px;color:#bdc3c7;pointer-events:none;
-  white-space:nowrap;font-weight:600;
-}
-canvas.sig-canvas{display:block;touch-action:none;width:100%;height:110px}
-.sig-clear{
-  width:100%;padding:8px;background:#f8f9fa;border:none;
-  border-top:1px solid #eee;font-size:13px;color:var(--gray);
-  cursor:pointer;font-weight:700;
-}
-
-/* ===== FAB ===== */
-.fab{
-  position:fixed;bottom:22px;left:16px;
-  width:62px;height:62px;border-radius:50%;
-  background:var(--orange);color:white;border:none;font-size:30px;
-  cursor:pointer;box-shadow:0 5px 18px rgba(230,126,34,.55);
-  display:flex;align-items:center;justify-content:center;z-index:50;
-}
-.fab:active{transform:scale(.93)}
-
-/* ===== CARDS / MISC ===== */
-.card{background:white;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
-.section-label{font-size:13px;font-weight:800;color:var(--gray);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
-.divider{height:1px;background:#eef0f3;margin:18px 0}
-.empty-state{text-align:center;padding:50px 20px;color:var(--gray)}
-.empty-icon{font-size:54px;margin-bottom:14px}
-.empty-text{font-size:15px;line-height:1.6}
-
-/* ===== TOAST ===== */
-#toast{
-  position:fixed;bottom:86px;left:50%;
-  transform:translateX(-50%) translateY(20px);opacity:0;
-  background:#2c3e50;color:white;padding:12px 22px;
-  border-radius:25px;font-size:14px;font-weight:700;
-  z-index:999;transition:all .3s;pointer-events:none;white-space:nowrap;
-}
-#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-
-/* ===== MODAL BOTTOM SHEET ===== */
-.modal-wrap{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;
-}
-.modal-wrap.open{display:flex}
-.modal-sheet{
-  background:white;border-radius:20px 20px 0 0;
-  padding:20px 16px 30px;width:100%;
-  max-height:92vh;overflow-y:auto;
-}
-.modal-handle{
-  width:40px;height:4px;background:#dce3e9;
-  border-radius:4px;margin:0 auto 18px;
-}
-.modal-title{font-size:19px;font-weight:900;text-align:center;margin-bottom:20px}
-
-/* ===== JOURNAL VIEW ===== */
-.log-card{
-  background:white;border-radius:var(--radius);
-  margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow);
-}
-.log-header{
-  padding:12px 16px;background:var(--green-bg);
-  display:flex;justify-content:space-between;align-items:center;
-  border-bottom:1px solid #d5f5e3;
-}
-.log-date{font-size:15px;font-weight:800;color:var(--green-d)}
-.log-workers{font-size:13px;color:var(--green)}
-.log-body{padding:14px 16px}
-.log-text{font-size:14px;line-height:1.6;color:var(--dark);margin-bottom:8px}
-.log-weather{font-size:13px;color:var(--gray)}
-
-/* ===== CONTRACTOR ITEM IN SETTINGS ===== */
-.contractor-item{
-  background:white;border-radius:10px;padding:12px 14px;
-  margin-bottom:8px;display:flex;align-items:center;gap:10px;
-  box-shadow:0 1px 5px rgba(0,0,0,.06);
-}
-.contractor-item .c-name{flex:1;font-weight:700}
-.contractor-item .c-trade{font-size:12px;color:var(--orange);background:var(--orange-bg);padding:3px 8px;border-radius:20px;font-weight:700}
-.contractor-item .c-del{background:none;border:none;color:#bdc3c7;font-size:18px;cursor:pointer;padding:4px}
-
-/* ===== REPORT PRINT ===== */
-@media print{
-  .no-print{display:none!important}
-  body{background:white}
-  .screen{display:block!important;min-height:unset}
-  .topbar{display:none}
-  .print-report{padding:20px;font-family:Arial,sans-serif;direction:rtl}
-  .pr-header{
-    display:flex;justify-content:space-between;align-items:flex-start;
-    padding-bottom:14px;border-bottom:3px solid #1a3a5c;margin-bottom:18px;
-  }
-  .pr-logo{font-size:22px;font-weight:900;color:#1a3a5c}
-  .pr-meta{font-size:12px;color:#666;text-align:left}
-  .pr-section{margin-bottom:18px;page-break-inside:avoid}
-  .pr-st{
-    background:#1a3a5c;color:white;padding:6px 12px;
-    border-radius:4px;font-size:13px;font-weight:700;margin-bottom:10px;
-  }
-  .pr-row{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;padding:4px 0;border-bottom:1px solid #f0f3f4}
-  .pr-row strong{min-width:120px;display:inline-block;color:#555}
-  .pr-table{width:100%;border-collapse:collapse;font-size:13px}
-  .pr-table th,.pr-table td{padding:6px 10px;text-align:right;border:1px solid #ddd}
-  .pr-table th{background:#f0f3f4;font-weight:700}
-  .pr-q{padding:5px 0;font-size:13px;border-bottom:1px solid #f5f5f5}
-  .pr-q .r{color:#27ae60;font-weight:700}
-  .pr-q .x{color:#e74c3c;font-weight:700}
-  img.pr-img{max-width:180px;max-height:140px;border-radius:6px;margin:4px;object-fit:cover}
-}
+.workers-table{width:100%;border-collapse:collapse;font-size:14px;}
+.workers-table th{background:var(--bg);padding:8px 10px;text-align:right;font-size:12px;font-weight:700;color:var(--sub);border-bottom:1px solid var(--border);}
+.workers-table td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.workers-table td input{padding:6px 8px;font-size:14px;text-align:center;min-height:36px;}
+.workers-table tr.total-row td{font-weight:700;background:#f8fafc;}
+.weather-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.weather-btn{border:2px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;background:white;}
+.weather-btn.active{border-color:var(--blue);background:#e8f0fe;}
+.w-icon{font-size:22px;display:block;}
+.w-label{font-size:10px;font-weight:600;color:var(--sub);margin-top:3px;display:block;}
+.photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.photo-thumb{aspect-ratio:1;border-radius:10px;overflow:hidden;position:relative;}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-add{border:2px dashed var(--border);border-radius:10px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--bg);gap:4px;color:var(--sub);font-size:12px;font-weight:600;}
+.photo-add-icon{font-size:28px;}
+.photo-del{position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:rgba(231,76,60,.85);color:white;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.defect-card{border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:10px;background:white;}
+.sev-urgent{border-right:4px solid var(--red);}
+.sev-normal{border-right:4px solid var(--orange);}
+.sev-low{border-right:4px solid var(--green);}
+.defect-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.defect-desc{font-size:15px;font-weight:700;flex:1;}
+.sev-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;}
+.sev-badge.urgent{background:#fdecea;color:var(--red);}
+.sev-badge.normal{background:#fef3e7;color:var(--orange);}
+.sev-badge.low{background:#eafaf1;color:var(--green);}
+.defect-meta{font-size:12px;color:var(--sub);margin-bottom:10px;}
+.defect-meta span{margin-left:10px;}
+.defect-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.status-btn{padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:12px;font-weight:700;cursor:pointer;}
+.status-btn.active-open{background:#fdecea;border-color:var(--red);color:var(--red);}
+.status-btn.active-progress{background:#fef3e7;border-color:var(--orange);color:var(--orange);}
+.status-btn.active-done{background:#eafaf1;border-color:var(--green);color:var(--green);}
+.filter-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
+.filter-tab{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--sub);}
+.filter-tab.active{background:var(--blue);border-color:var(--blue);color:white;}
+.work-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.work-type-btn{padding:14px;border-radius:12px;border:2px solid var(--border);background:white;text-align:center;cursor:pointer;}
+.work-type-btn.active{border-color:var(--red);background:#fdf0ef;}
+.work-type-icon{font-size:28px;display:block;margin-bottom:4px;}
+.work-type-label{font-size:13px;font-weight:700;}
+.safety-question{background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.safety-question.passed{border-color:var(--green);background:#f0faf4;}
+.safety-question.failed{border-color:var(--red);background:#fff5f5;}
+.sq-text{font-size:14px;font-weight:600;margin-bottom:10px;line-height:1.5;}
+.sq-alert{font-size:12px;color:var(--red);font-weight:700;margin-top:6px;display:none;}
+.safety-question.failed .sq-alert{display:block;}
+.sq-btns{display:flex;gap:8px;}
+.sq-btn{flex:1;min-height:40px;border-radius:9px;border:1.5px solid var(--border);background:white;font-size:14px;font-weight:700;cursor:pointer;}
+.sq-btn.ok{background:var(--green);border-color:var(--green);color:white;}
+.sq-btn.fail{background:var(--red);border-color:var(--red);color:white;}
+#sign-canvas{border:2px solid var(--border);border-radius:12px;width:100%;height:160px;background:white;cursor:crosshair;touch-action:none;}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#2c3e50;color:white;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;max-width:90%;text-align:center;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center;}
+.modal-overlay.hidden{display:none;}
+.modal-sheet{background:white;border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:20px;}
+.modal-title{font-size:17px;font-weight:800;margin-bottom:16px;}
+.modal-actions{display:flex;gap:10px;margin-top:16px;}
+.history-item{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;}
+.history-item-date{font-size:15px;font-weight:700;}
+.history-item-sub{font-size:12px;color:var(--sub);margin-top:3px;}
+.report-container{padding:20px;font-size:14px;line-height:1.7;}
+.report-logo{text-align:center;margin-bottom:16px;}
+.report-logo-title{font-size:22px;font-weight:900;color:var(--blue);}
+.report-logo-sub{font-size:12px;color:var(--sub);}
+.report-header{background:var(--bg);border-radius:10px;padding:12px;margin-bottom:14px;}
+.report-header p{margin-bottom:4px;font-size:13px;}
+.report-section-title{font-size:15px;font-weight:800;border-bottom:2px solid var(--blue);padding-bottom:4px;margin:14px 0 8px;color:var(--blue);}
+.report-sq-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.report-ok{color:var(--green);font-weight:700;}
+.report-fail{color:var(--red);font-weight:700;}
+.report-sign-box{border:2px solid var(--border);border-radius:10px;padding:10px;margin-top:8px;}
+.report-footer{text-align:center;font-size:11px;color:var(--sub);margin-top:20px;padding-top:10px;border-top:1px solid var(--border);}
+.offline-note{text-align:center;font-size:11px;color:var(--sub);padding:8px;border-top:1px solid var(--border);flex-shrink:0;}
+.contractor-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+.contractor-info .c-name{font-size:14px;font-weight:700;}
+.contractor-info .c-meta{font-size:12px;color:var(--sub);}
+.contractor-del{width:32px;height:32px;border-radius:8px;border:none;background:#fdecea;color:var(--red);font-size:16px;cursor:pointer;}
+.fab{position:fixed;bottom:80px;left:16px;width:56px;height:56px;border-radius:50%;background:var(--blue);color:white;font-size:28px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(26,115,232,.4);z-index:100;}
+@media print{.topbar,.offline-note,.no-print{display:none!important;}.screen-body{padding-bottom:0!important;overflow:visible!important;}#app{box-shadow:none;}}
 </style>
 </head>
 <body>
-
-<!-- ===================== TOAST ===================== -->
-<div id="toast"></div>
-
-<!-- ===================== SCREEN: HOME ===================== -->
-<div id="s-home" class="screen active">
-  <div class="home-hero">
-    <div class="home-logo">Site<span>Boss</span></div>
-    <div class="home-tagline">מנהל עבודה פלוס — כל הכלים, כפתור אחד</div>
-  </div>
-
-  <div class="project-pill" onclick="showScreen('s-settings')">
-    <div>
-      <div class="pill-name" id="home-project-name">לחץ להגדרת פרויקט ⚙️</div>
-      <div class="pill-date" id="home-date"></div>
-    </div>
-    <div style="font-size:22px;color:#bdc3c7">›</div>
-  </div>
-
-  <div class="stats-row">
-    <div class="stat-box stat-green">
-      <div class="stat-num" id="stat-journal">0</div>
-      <div class="stat-label">ימי יומן</div>
-    </div>
-    <div class="stat-box stat-orange">
-      <div class="stat-num" id="stat-open">0</div>
-      <div class="stat-label">ליקויים פתוחים</div>
-    </div>
-    <div class="stat-box stat-red">
-      <div class="stat-num" id="stat-safety">0</div>
-      <div class="stat-label">בטיחות השבוע</div>
+<div id="app">
+<!-- HOME -->
+<div class="screen active" id="s-home">
+  <div class="topbar">
+    <div style="width:40px"></div>
+    <div class="topbar-center"><div class="topbar-title">דקה</div><div class="topbar-sub" data-t="appTagline"></div></div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
+      <button class="icon-btn" onclick="showScreen('s-settings')">⚙️</button>
     </div>
   </div>
-
-  <div class="main-buttons">
-    <button class="main-btn btn-journal" onclick="showScreen('s-journal')">
-      <span class="btn-icon">📋</span>
-      <span class="btn-texts">
-        <span class="btn-title">יומן עבודה יומי</span>
-        <span class="btn-desc">דבר דקה אחת ← יומן חוקי מסודר ישלח לוואטסאפ</span>
-      </span>
-      <span class="btn-badge">מ-1</span>
+  <div class="screen-body">
+    <div id="home-banner" style="background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;cursor:pointer;" onclick="showScreen('s-settings')">
+      <div id="home-project-name" style="font-size:15px;font-weight:800;"></div>
+      <div id="home-manager-name" style="font-size:12px;color:var(--sub);margin-top:2px;"></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="stat-journal">0</div><div class="stat-label" data-t="statJournal"></div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-defects">0</div><div class="stat-label" data-t="statOpen"></div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-safety">0</div><div class="stat-label" data-t="statSafety"></div></div>
+    </div>
+    <button class="home-btn" style="background:linear-gradient(135deg,#27ae60,#1e8449);" onclick="showScreen('s-journal')">
+      <span class="home-btn-title" data-t="btn1Title"></span><span class="home-btn-desc" data-t="btn1Desc"></span>
     </button>
-
-    <button class="main-btn btn-defects" onclick="showScreen('s-defects')">
-      <span class="btn-icon">📸</span>
-      <span class="btn-texts">
-        <span class="btn-title">ליקויים ומשימות</span>
-        <span class="btn-desc">צלם ← הקצה לקבלן ← עקוב אחרי סטטוס</span>
-      </span>
-      <span class="btn-badge">מ-2</span>
+    <button class="home-btn" style="background:linear-gradient(135deg,#e67e22,#ca6f1e);" onclick="showScreen('s-defects')">
+      <span class="home-btn-title" data-t="btn2Title"></span><span class="home-btn-desc" data-t="btn2Desc"></span>
     </button>
-
-    <button class="main-btn btn-safety" onclick="showScreen('s-safety')">
-      <span class="btn-icon">🦺</span>
-      <span class="btn-texts">
-        <span class="btn-title">בטיחות יומית</span>
-        <span class="btn-desc">12 שאלות בטיחות ← דוח חתום עם GPS ← הגנה משפטית</span>
-      </span>
-      <span class="btn-badge">מ-3</span>
+    <button class="home-btn" style="background:linear-gradient(135deg,#e74c3c,#c0392b);" onclick="showScreen('s-safety')">
+      <span class="home-btn-title" data-t="btn3Title"></span><span class="home-btn-desc" data-t="btn3Desc"></span>
     </button>
   </div>
+  <div class="offline-note" data-t="offlineNote"></div>
+</div>
 
-  <div style="text-align:center;padding:18px 16px 0;color:#bdc3c7;font-size:12px">
-    כל הנתונים שמורים בטלפון שלך בלבד · עובד ללא אינטרנט
+<!-- JOURNAL -->
+<div class="screen" id="s-journal">
+  <div class="topbar">
+    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <div class="topbar-center"><div class="topbar-title" data-t="journalTitle"></div><div class="topbar-sub" id="jnl-date-sub"></div></div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
+      <button class="icon-btn" onclick="showScreen('s-journal-history')">📂</button>
+    </div>
+  </div>
+  <div class="screen-body">
+    <div class="card">
+      <div class="card-title" data-t="voiceSectionTitle"></div>
+      <div style="text-align:center;padding:10px 0 6px;">
+        <button class="voice-btn" id="voice-btn" onclick="toggleVoice('jnl-text','voice-btn')">🎙️</button>
+        <div style="font-size:12px;color:var(--sub);" data-t="voiceHint"></div>
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--sub);margin:8px 0;" data-t="voiceOrType"></div>
+      <textarea id="jnl-text" data-tp="journalPlaceholder" rows="5"></textarea>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="workersTitle"></div>
+      <table class="workers-table">
+        <thead><tr><th data-t="tradeCol"></th><th data-t="qtyCol" style="width:80px;text-align:center;"></th></tr></thead>
+        <tbody id="workers-tbody"></tbody>
+        <tfoot><tr class="total-row"><td data-t="totalWorkers"></td><td style="text-align:center;" id="workers-total">0</td></tr></tfoot>
+      </table>
+    </div>
+    <div class="card"><div class="card-title" data-t="weatherTitle"></div><div class="weather-grid" id="weather-grid"></div></div>
+    <div class="card"><div class="card-title" data-t="delaysTitle"></div><textarea id="jnl-delays" data-tp="delaysPlaceholder" rows="3"></textarea></div>
+    <div class="card"><div class="card-title" data-t="tasksTitle"></div><textarea id="jnl-tasks" data-tp="tasksPlaceholder" rows="3"></textarea></div>
+    <div class="card">
+      <div class="card-title" data-t="photosTitle"></div>
+      <div class="photos-grid" id="jnl-photos-grid"></div>
+      <input type="file" id="jnl-photo-input" accept="image/*" multiple style="display:none" onchange="handleJnlPhotos(event)">
+    </div>
+    <button class="btn btn-blue" style="margin-bottom:10px;" onclick="saveJournal()"><span data-t="saveJournal"></span></button>
+    <button class="btn btn-green" onclick="sendJournalWA()"><span data-t="sendWA"></span></button>
   </div>
 </div>
 
-<!-- ===================== SCREEN: SETTINGS ===================== -->
-<div id="s-settings" class="screen">
-  <div class="topbar no-print">
-    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
-    <div class="topbar-center">
-      <div class="topbar-title">הגדרות פרויקט</div>
-    </div>
-    <button class="icon-btn" onclick="saveSettings()">💾</button>
+<!-- JOURNAL HISTORY -->
+<div class="screen" id="s-journal-history">
+  <div class="topbar">
+    <button class="icon-btn" onclick="goBack()">→</button>
+    <div class="topbar-center"><div class="topbar-title" data-t="archive"></div></div>
+    <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
   </div>
-  <div class="content">
+  <div class="screen-body"><div id="journal-history-list"></div></div>
+</div>
 
-    <div class="settings-section">
-      <div class="section-label">פרטי האתר</div>
-      <div class="form-group">
-        <label class="form-label">שם הפרויקט / האתר</label>
-        <input class="form-input" id="cfg-project" placeholder="לדוגמה: מגדל רמות קומות 1-12" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">שם מנהל העבודה</label>
-        <input class="form-input" id="cfg-manager" placeholder="שם מלא" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">מספר טלפון מנהל</label>
-        <input class="form-input" id="cfg-phone" type="tel" placeholder="05X-XXXXXXX" />
-      </div>
+<!-- DEFECTS -->
+<div class="screen" id="s-defects">
+  <div class="topbar">
+    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <div class="topbar-center"><div class="topbar-title" data-t="defectsTitle"></div></div>
+    <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
+  </div>
+  <div class="screen-body"><div class="filter-tabs" id="defect-filters"></div><div id="defects-list"></div></div>
+  <button class="fab" onclick="openAddDefect()">+</button>
+</div>
+
+<!-- SAFETY -->
+<div class="screen" id="s-safety">
+  <div class="topbar">
+    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <div class="topbar-center"><div class="topbar-title" data-t="safetyTitle"></div><div class="topbar-sub" id="safety-date-sub"></div></div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
+      <button class="icon-btn" onclick="showScreen('s-safety-history')">📂</button>
     </div>
-
-    <div class="settings-section">
-      <div class="section-label">משרד / פיקוח (לקבל דוחות)</div>
-      <div class="form-group">
-        <label class="form-label">שם איש הקשר במשרד</label>
-        <input class="form-input" id="cfg-office-name" placeholder="שם מנהל הפרויקט / מפקח" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">טלפון משרד / פיקוח</label>
-        <input class="form-input" id="cfg-office-phone" type="tel" placeholder="05X-XXXXXXX" />
-      </div>
+  </div>
+  <div class="screen-body">
+    <div class="card"><div class="card-title" data-t="chooseWorkType"></div><div class="work-type-grid" id="work-type-grid"></div></div>
+    <div id="safety-questions-container"></div>
+    <div class="card">
+      <div class="card-title" data-t="signTitle"></div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:8px;" data-t="signHint"></div>
+      <canvas id="sign-canvas"></canvas>
+      <button class="btn btn-gray" style="margin-top:10px;min-height:40px;font-size:13px;" onclick="clearSignature()"><span data-t="clearSign"></span></button>
     </div>
+    <button class="btn btn-red" style="margin-bottom:10px;" onclick="confirmSafety()"><span data-t="confirmSafety"></span></button>
+    <button class="btn btn-gray" onclick="showScreen('s-safety-history')"><span data-t="pastReports"></span></button>
+  </div>
+</div>
 
-    <div class="settings-section">
-      <div class="section-label">קבלני משנה באתר</div>
+<!-- SAFETY HISTORY -->
+<div class="screen" id="s-safety-history">
+  <div class="topbar">
+    <button class="icon-btn" onclick="goBack()">→</button>
+    <div class="topbar-center"><div class="topbar-title" data-t="archive"></div></div>
+    <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
+  </div>
+  <div class="screen-body"><div id="safety-history-list"></div></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="screen" id="s-settings">
+  <div class="topbar">
+    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
+    <div class="topbar-center"><div class="topbar-title" data-t="settingsTitle"></div></div>
+    <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
+  </div>
+  <div class="screen-body">
+    <div class="card">
+      <div class="card-title" data-t="siteInfo"></div>
+      <div class="form-group"><label data-t="projectName"></label><input id="set-project" type="text" data-tp="projectPlaceholder"></div>
+      <div class="form-group"><label data-t="managerName"></label><input id="set-manager" type="text" data-tp="managerPlaceholder"></div>
+      <div class="form-group"><label data-t="managerPhone"></label><input id="set-phone" type="tel" placeholder="050-0000000"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="officeSection"></div>
+      <div class="form-group"><label data-t="officeName"></label><input id="set-office-name" type="text"></div>
+      <div class="form-group"><label data-t="officePhone"></label><input id="set-office-phone" type="tel"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="contractorsSection"></div>
       <div id="contractors-list"></div>
-      <button class="btn btn-ghost" onclick="openAddContractor()">+ הוסף קבלן משנה</button>
+      <button class="btn btn-outline" style="margin-top:8px;" onclick="openAddContractor()"><span data-t="addContractor"></span></button>
     </div>
-
-    <div style="margin-top:24px">
-      <button class="btn btn-primary" onclick="saveSettings()">שמור הגדרות</button>
-    </div>
+    <button class="btn btn-blue" onclick="saveSettings()"><span data-t="saveSettings"></span></button>
   </div>
 </div>
 
-<!-- ===================== SCREEN: JOURNAL ===================== -->
-<div id="s-journal" class="screen">
-  <div class="topbar no-print">
-    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
-    <div class="topbar-center">
-      <div class="topbar-title">יומן עבודה יומי</div>
-      <div class="topbar-sub" id="jnl-date-sub"></div>
-    </div>
-    <button class="icon-btn" onclick="showScreen('s-journal-history')">📂</button>
-  </div>
-  <div class="content">
-
-    <!-- VOICE -->
-    <div class="voice-card">
-      <div class="section-label">הקלטת קול (מדבר ← מתמלל)</div>
-      <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎙️</button>
-      <div class="voice-status" id="voice-status">לחץ לדבר בחופשיות על מה שהיה היום</div>
-      <div class="voice-transcript" id="voice-text" style="display:none"></div>
-      <div style="margin-top:12px">
-        <label class="form-label">או הקלד ידנית</label>
-        <textarea class="form-textarea" id="jnl-text" placeholder="מה קרה היום באתר? מי עבד, מה בוצע, מה עוכב..."></textarea>
-      </div>
-    </div>
-
-    <!-- WORKERS -->
-    <div class="card">
-      <div class="section-label">כוח אדם היום</div>
-      <table class="worker-table">
-        <thead>
-          <tr><th>מקצוע</th><th style="text-align:center;width:70px">כמות</th></tr>
-        </thead>
-        <tbody id="workers-body">
-          <tr><td>טייחים</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="טייחים"></td></tr>
-          <tr><td>חשמלאים</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="חשמלאים"></td></tr>
-          <tr><td>אינסטלטורים</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="אינסטלטורים"></td></tr>
-          <tr><td>פועלים כלליים</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="פועלים כלליים"></td></tr>
-          <tr><td>נגרים / קופסאי</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="נגרים"></td></tr>
-          <tr><td>אחר</td><td><input type="number" min="0" max="99" value="0" class="w-input" data-trade="אחר"></td></tr>
-          <tr class="worker-total"><td>סה"כ פועלים</td><td id="worker-total" style="text-align:center">0</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- WEATHER -->
-    <div class="card">
-      <div class="section-label">מזג אוויר</div>
-      <div class="weather-row">
-        <div class="w-opt active" data-w="☀️" onclick="selectWeather(this)"><span class="w-emoji">☀️</span><span class="w-label">שמש</span></div>
-        <div class="w-opt" data-w="⛅" onclick="selectWeather(this)"><span class="w-emoji">⛅</span><span class="w-label">מעונן חלק</span></div>
-        <div class="w-opt" data-w="🌧️" onclick="selectWeather(this)"><span class="w-emoji">🌧️</span><span class="w-label">גשם</span></div>
-        <div class="w-opt" data-w="🌬️" onclick="selectWeather(this)"><span class="w-emoji">🌬️</span><span class="w-label">רוח</span></div>
-        <div class="w-opt" data-w="🥵" onclick="selectWeather(this)"><span class="w-emoji">🥵</span><span class="w-label">חום קיצוני</span></div>
-      </div>
-    </div>
-
-    <!-- DELAYS -->
-    <div class="card">
-      <div class="section-label">עיכובים / חריגים</div>
-      <textarea class="form-textarea" id="jnl-delays" placeholder="האם היו עיכובים? חוסר בחומרים? בעיות ציוד? השאר ריק אם הכל רץ חלק" style="min-height:70px"></textarea>
-    </div>
-
-    <!-- TASKS TOMORROW -->
-    <div class="card">
-      <div class="section-label">משימות למחר</div>
-      <textarea class="form-textarea" id="jnl-tasks" placeholder="מה מתוכנן למחר?" style="min-height:70px"></textarea>
-    </div>
-
-    <!-- PHOTOS -->
-    <div class="card">
-      <div class="section-label">תמונות מהיום</div>
-      <div class="photo-grid" id="jnl-photos">
-        <label class="p-add">
-          <input type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="addPhotos(this,'jnl')">
-          📷
-        </label>
-      </div>
-    </div>
-
-    <!-- SUBMIT -->
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <button class="btn btn-green" onclick="saveJournal()">✅ שמור יומן והפק דוח PDF</button>
-      <button class="btn btn-ghost" onclick="sendJournalWhatsApp()">📲 שלח לוואטסאפ</button>
+<!-- REPORT -->
+<div class="screen" id="s-report">
+  <div class="topbar">
+    <button class="icon-btn" onclick="goBack()">→</button>
+    <div class="topbar-center"><div class="topbar-title" id="report-topbar-title">דוח</div></div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
+      <button class="icon-btn no-print" onclick="window.print()">🖨️</button>
     </div>
   </div>
+  <div class="screen-body"><div id="report-content" class="report-container"></div></div>
 </div>
 
-<!-- ===================== SCREEN: JOURNAL HISTORY ===================== -->
-<div id="s-journal-history" class="screen">
-  <div class="topbar no-print">
-    <button class="icon-btn" onclick="showScreen('s-journal')">→</button>
-    <div class="topbar-center">
-      <div class="topbar-title">ארכיון יומנים</div>
-    </div>
-    <div style="width:44px"></div>
-  </div>
-  <div class="content" id="journal-history-list">
-    <div class="empty-state">
-      <div class="empty-icon">📂</div>
-      <div class="empty-text">עדיין אין יומנים שמורים.<br>צור את הראשון!</div>
-    </div>
-  </div>
-</div>
+</div><!-- #app -->
 
-<!-- ===================== SCREEN: DEFECTS ===================== -->
-<div id="s-defects" class="screen">
-  <div class="topbar no-print">
-    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
-    <div class="topbar-center">
-      <div class="topbar-title">ליקויים ומשימות</div>
-    </div>
-    <div style="width:44px"></div>
-  </div>
-  <div class="content">
-    <div class="filter-tabs">
-      <div class="ftab active" data-filter="all" onclick="filterDefects(this)">הכל</div>
-      <div class="ftab" data-filter="open" onclick="filterDefects(this)">🔴 פתוח</div>
-      <div class="ftab" data-filter="progress" onclick="filterDefects(this)">🟠 בטיפול</div>
-      <div class="ftab" data-filter="done" onclick="filterDefects(this)">🟢 בוצע</div>
-    </div>
-    <div id="defects-list"></div>
-  </div>
-  <button class="fab no-print" onclick="openAddDefect()">＋</button>
-</div>
-
-<!-- ===================== SCREEN: SAFETY ===================== -->
-<div id="s-safety" class="screen">
-  <div class="topbar no-print">
-    <button class="icon-btn" onclick="showScreen('s-home')">→</button>
-    <div class="topbar-center">
-      <div class="topbar-title">בטיחות יומית</div>
-      <div class="topbar-sub" id="safety-date-sub"></div>
-    </div>
-    <button class="icon-btn" onclick="showScreen('s-safety-history')">📂</button>
-  </div>
-  <div class="content">
-
-    <div class="safety-progress-wrap">
-      <div class="progress-bar"><div class="progress-fill" id="sf-progress" style="width:0%"></div></div>
-      <div class="progress-label" id="sf-progress-label">0 / 12 שאלות נענו</div>
-    </div>
-
-    <div id="safety-questions"></div>
-
-    <!-- SIGNATURE -->
-    <div class="card" style="margin-top:4px">
-      <div class="section-label">חתימת מנהל העבודה</div>
-      <div class="sig-wrap">
-        <div class="sig-hint" id="sig-hint">חתום כאן עם האצבע</div>
-        <canvas id="sig-canvas" class="sig-canvas" height="110"></canvas>
-        <button class="sig-clear" onclick="clearSig()">🗑️ נקה חתימה</button>
-      </div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
-      <button class="btn btn-red" onclick="saveSafety()">✅ אשר ושלח דוח בטיחות</button>
-      <button class="btn btn-ghost" onclick="showScreen('s-safety-history')">📂 דוחות קודמים</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== SCREEN: SAFETY HISTORY ===================== -->
-<div id="s-safety-history" class="screen">
-  <div class="topbar no-print">
-    <button class="icon-btn" onclick="showScreen('s-safety')">→</button>
-    <div class="topbar-center"><div class="topbar-title">ארכיון בטיחות</div></div>
-    <div style="width:44px"></div>
-  </div>
-  <div class="content" id="safety-history-list">
-    <div class="empty-state">
-      <div class="empty-icon">🦺</div>
-      <div class="empty-text">עדיין אין דוחות בטיחות.<br>בצע את הבדיקה הראשונה!</div>
-    </div>
-  </div>
-</div>
-
-<!-- ===================== SCREEN: PRINT REPORT ===================== -->
-<div id="s-report" class="screen">
-  <div class="topbar no-print">
-    <button class="icon-btn" onclick="closePrintScreen()">→</button>
-    <div class="topbar-center"><div class="topbar-title">תצוגה לפני הדפסה</div></div>
-    <button class="icon-btn" onclick="window.print()">🖨️</button>
-  </div>
-  <div class="content no-print" style="margin-bottom:0;padding-bottom:16px">
-    <button class="btn btn-primary" onclick="window.print()">🖨️ הדפס / שמור PDF</button>
-  </div>
-  <div id="report-content" class="print-report"></div>
-</div>
-
-<!-- ===================== MODAL: ADD CONTRACTOR ===================== -->
-<div id="modal-contractor" class="modal-wrap" onclick="closeModalIfOutside(event,'modal-contractor')">
+<!-- DEFECT MODAL -->
+<div class="modal-overlay hidden" id="modal-defect">
   <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">הוסף קבלן משנה</div>
+    <div class="modal-title" data-t="addDefectTitle"></div>
     <div class="form-group">
-      <label class="form-label">שם הקבלן / חברה</label>
-      <input class="form-input" id="mc-name" placeholder="שם מלא" />
+      <label data-t="defPhoto"></label>
+      <div class="photos-grid" id="defect-photos-grid"></div>
+      <input type="file" id="defect-photo-input" accept="image/*" multiple style="display:none" onchange="handleDefectPhotos(event)">
     </div>
+    <div class="form-group"><label data-t="defDesc"></label><textarea id="def-desc" data-tp="defDescPlaceholder" rows="3"></textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label data-t="defFloor"></label><input id="def-floor" type="text"></div>
+      <div class="form-group"><label data-t="defArea"></label><input id="def-area" type="text"></div>
+    </div>
+    <div class="form-group"><label data-t="defContractor"></label><select id="def-contractor"></select></div>
+    <div class="form-group"><label data-t="defDeadline"></label><input id="def-deadline" type="date"></div>
     <div class="form-group">
-      <label class="form-label">מקצוע / תחום</label>
-      <select class="form-select" id="mc-trade">
-        <option>טיח</option><option>חשמל</option><option>אינסטלציה</option>
-        <option>נגרות</option><option>ריצוף</option><option>גבס</option>
-        <option>צבע</option><option>אלומיניום / חלונות</option>
-        <option>מיזוג אוויר</option><option>פיגומים</option><option>אחר</option>
-      </select>
+      <label data-t="defSeverity"></label>
+      <div style="display:flex;gap:8px;" id="sev-btns">
+        <button class="status-btn" data-sev="urgent" onclick="selectSev('urgent')" data-t="sevUrgent"></button>
+        <button class="status-btn" data-sev="normal" onclick="selectSev('normal')" data-t="sevNormal"></button>
+        <button class="status-btn" data-sev="low" onclick="selectSev('low')" data-t="sevLow"></button>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">טלפון (לשליחת וואטסאפ)</label>
-      <input class="form-input" id="mc-phone" type="tel" placeholder="05X-XXXXXXX" />
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" onclick="closeModal('modal-contractor')">ביטול</button>
-      <button class="btn btn-orange" onclick="addContractor()">הוסף קבלן</button>
+    <div class="modal-actions">
+      <button class="btn btn-gray" style="flex:1;" onclick="closeModal('modal-defect')"><span data-t="cancel"></span></button>
+      <button class="btn btn-blue" style="flex:2;" onclick="saveDefect()"><span data-t="saveAndSend"></span></button>
     </div>
   </div>
 </div>
 
-<!-- ===================== MODAL: ADD DEFECT ===================== -->
-<div id="modal-defect" class="modal-wrap" onclick="closeModalIfOutside(event,'modal-defect')">
+<!-- CONTRACTOR MODAL -->
+<div class="modal-overlay hidden" id="modal-contractor">
   <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">ליקוי / משימה חדשה</div>
-
-    <div class="form-group">
-      <label class="form-label">תמונה (מומלץ)</label>
-      <div class="photo-grid" id="defect-photo-grid" style="grid-template-columns:repeat(2,1fr)">
-        <label class="p-add" style="aspect-ratio:16/9">
-          <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotos(this,'defect')">
-          📷 צלם
-        </label>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">תיאור הליקוי</label>
-      <div style="display:flex;gap:8px;align-items:flex-start">
-        <textarea class="form-textarea" id="def-desc" placeholder="תאר מה צריך תיקון..." style="flex:1;min-height:70px"></textarea>
-        <button onclick="toggleVoiceDefect()" id="def-voice-btn" style="width:50px;height:50px;border-radius:10px;border:2px solid #dce3e9;background:white;font-size:22px;cursor:pointer;flex-shrink:0">🎙️</button>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">מיקום באתר</label>
-      <div style="display:flex;gap:8px">
-        <input class="form-input" id="def-floor" placeholder="קומה" style="width:80px;flex-shrink:0" />
-        <input class="form-input" id="def-location" placeholder="דירה / אזור" />
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">קבלן אחראי</label>
-      <select class="form-select" id="def-contractor"></select>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">תאריך יעד לתיקון</label>
-      <input class="form-input" id="def-deadline" type="date" />
-    </div>
-
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn btn-ghost" onclick="closeModal('modal-defect')">ביטול</button>
-      <button class="btn btn-orange" onclick="saveDefect()">שמור ← שלח לקבלן</button>
+    <div class="modal-title" data-t="addContractorTitle"></div>
+    <div class="form-group"><label data-t="cName"></label><input id="c-name" type="text"></div>
+    <div class="form-group"><label data-t="cTrade"></label><select id="c-trade"></select></div>
+    <div class="form-group"><label data-t="cPhone"></label><input id="c-phone" type="tel"></div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" style="flex:1;" onclick="closeModal('modal-contractor')"><span data-t="cancel"></span></button>
+      <button class="btn btn-blue" style="flex:2;" onclick="saveContractor()"><span data-t="save"></span></button>
     </div>
   </div>
 </div>
 
-<script>
-// ===================== STATE =====================
-let APP = {
-  settings: loadJSON('sb_settings') || {
-    projectName:'',managerName:'',managerPhone:'',
-    officeName:'',officePhone:'',contractors:[]
-  },
-  journal: loadJSON('sb_journal') || [],
-  defects: loadJSON('sb_defects') || [],
-  safety:  loadJSON('sb_safety')  || [],
-
-  // transient
-  jnlPhotos: [],
-  defectPhoto: null,
-  currentFilter: 'all',
-  weather: '☀️',
-  safetyAnswers: {},
-  sigCanvas: null,
-  sigCtx: null,
-  sigDrawing: false,
-  recognition: null,
-  voiceActive: false,
-  voiceTarget: 'journal'
-};
-
-// ===================== UTILS =====================
-function loadJSON(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
-function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{toast('שגיאה בשמירה — אחסון מלא?')}}
-
-function toast(msg,dur=2600){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),dur);
+<div id="toast"></div><script>
+const STRINGS={
+he:{appTagline:'יומן ומשימות שטח — הכל בדקה אחת',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
+btn1Title:'יומן עבודה יומי',btn1Desc:'דבר דקה אחת ← יומן חוקי מסודר ישלח לוואטסאפ',
+btn2Title:'ליקויים ומשימות',btn2Desc:'צלם ← הקצה לקבלן ← עקוב אחרי סטטוס',
+btn3Title:'בטיחות יומית',btn3Desc:'12 שאלות בטיחות ← דוח חתום עם GPS ← הגנה משפטית',
+journalTitle:'יומן עבודה יומי',voiceSectionTitle:'הקלטת קול (מדבר ← מתמלל)',voiceHint:'לחץ לדבר בחופשיות על מה שהיה היום',voiceOrType:'או הקלד ידנית',
+journalPlaceholder:'מה קרה היום באתר? מי עבד, מה בוצע, מה עוכב...',workersTitle:'כוח אדם היום',weatherTitle:'מזג אוויר',
+delaysTitle:'עיכובים / חריגים',delaysPlaceholder:'האם היו עיכובים? חוסר חומרים? השאר ריק אם הכל רץ חלק',
+tasksTitle:'משימות למחר',tasksPlaceholder:'מה מתוכנן למחר?',photosTitle:'תמונות מהיום',
+saveJournal:'✅ שמור יומן והפק דוח PDF',sendWA:'📲 שלח לוואטסאפ',
+tradeCol:'מקצוע',qtyCol:'כמות',totalWorkers:'סה"כ פועלים',
+w1:'טייחים',w2:'חשמלאים',w3:'אינסטלטורים',w4:'פועלים כלליים',w5:'נגרים / קופסאי',w6:'אחר',
+wi0:'☀️',wi1:'⛅',wi2:'🌧️',wi3:'💨',wi4:'🔥',wl0:'שמש',wl1:'מעונן',wl2:'גשם',wl3:'רוח',wl4:'חום קיצוני',
+defectsTitle:'ליקויים ומשימות',filterAll:'הכל',filterOpen:'🔴 פתוח',filterProgress:'🟠 בטיפול',filterDone:'🟢 בוצע',
+addDefectTitle:'ליקוי / משימה חדשה',defPhoto:'תמונה (מומלץ)',defDesc:'תיאור הליקוי',defDescPlaceholder:'תאר מה צריך תיקון...',
+defFloor:'קומה',defArea:'דירה / אזור',defContractor:'קבלן אחראי',defDeadline:'תאריך יעד לתיקון',
+defSeverity:'חומרה',sevUrgent:'🔴 דחוף',sevNormal:'🟠 רגיל',sevLow:'🟢 נמוך',
+saveAndSend:'שמור ← שלח לקבלן',btnDone:'✅ בוצע',btnProgress:'⏳ בטיפול',btnWA:'📲 וואטסאפ',
+noDeadline:'ללא יעד',overdue:'⚠️ באיחור',targetDate:'יעד: ',
+safetyTitle:'בטיחות יומית',chooseWorkType:'בחר סוג עבודה',
+wtGeneral:'כללי',wtStructure:'שלד',wtFinishing:'גמר',wtScaffolding:'פיגומים',wtExcavation:'חפירות',
+signTitle:'חתימת מנהל העבודה',signHint:'חתום כאן עם האצבע',clearSign:'🗑️ נקה',
+confirmSafety:'✅ אשר ושלח דוח בטיחות',pastReports:'📂 דוחות קודמים',questionsAnswered:'שאלות נענו',
+settingsTitle:'הגדרות פרויקט',siteInfo:'פרטי האתר',projectName:'שם הפרויקט / האתר',projectPlaceholder:'לדוגמה: מגדל רמות קומות 1-12',
+managerName:'שם מנהל העבודה',managerPlaceholder:'שם מלא',managerPhone:'מספר טלפון מנהל',
+officeSection:'משרד / פיקוח',officeName:'שם איש קשר במשרד',officePhone:'טלפון משרד / פיקוח',
+contractorsSection:'קבלני משנה באתר',addContractor:'+ הוסף קבלן משנה',saveSettings:'שמור הגדרות',
+addContractorTitle:'הוסף קבלן משנה',cName:'שם הקבלן / חברה',cTrade:'מקצוע / תחום',cPhone:'טלפון',
+tPlaster:'טיח',tElec:'חשמל',tPlumb:'אינסטלציה',tCarpentry:'נגרות',tTiling:'ריצוף',tGypsum:'גבס',tPaint:'צבע',tAlu:'אלומיניום / חלונות',tAC:'מיזוג אוויר',tScaffold:'פיגומים',tOther:'אחר',
+cancel:'ביטול',save:'שמור',archive:'📂 ארכיון',
+offlineNote:'כל הנתונים שמורים בטלפון שלך בלבד · עובד ללא אינטרנט',
+emptyJournal:'עדיין אין יומנים שמורים.\nצור את הראשון!',emptySafety:'עדיין אין דוחות בטיחות.\nבצע את הבדיקה הראשונה!',
+emptyDefects:'אין ליקויים פתוחים!\nלחץ + להוסיף',emptyDefectsFilter:'אין ליקויים בסטטוס זה',
+deleteConfirm:'למחוק?',deleted:'נמחק',saved:'✅ נשמר בהצלחה!',
+voiceNotSupported:'הקלטת קול לא נתמכת — נסה Chrome באנדרואיד',voiceDenied:'אנא אפשר גישה למיקרופון בהגדרות הדפדפן',voiceError:'שגיאת הקלטה — נסה שוב',
+reportJournalTitle:'יומן עבודה — ',reportSafetyTitle:'דוח בטיחות יומי',
+reportProject:'פרויקט: ',reportManager:'מנהל עבודה: ',reportDate:'תאריך: ',reportGenerated:'הופק: ',
+reportWorkDesc:'תיאור יום העבודה',reportManpower:'כוח אדם',reportConditions:'תנאים ועיכובים',
+reportWeather:'מזג אוויר: ',reportDelays:'עיכובים/חריגים: ',reportTasks:'משימות למחר: ',reportPhotos:'תמונות מהיום',
+reportSafetyCheck:'פרטי בדיקת הבטיחות',reportSafetyStatus0:'תקין — כל הבדיקות עברו',reportSafetySignature:'חתימת מנהל העבודה',
+reportFooter:'מסמך זה הופק ע"י דקה — יומן ומשימות שטח',reportOk:'תקין',reportFail:'ליקוי',
+sq1:'כל הפתחים, שוחות ומרפסות מגודרים?',sq1a:'גדר מיידית — סכנת נפילה!',
+sq2:'פיגומים ותשתיות תקינים ובטוחים?',sq2a:'עצור עבודה על פיגום לא תקין!',
+sq3:'כל הפועלים עם קסדות ונעלי בטיחות?',sq3a:'חובה לעצור עבודה ללא ציוד מגן',
+sq4:'ציוד חשמלי זמני תקין (לוחות, כבלים)?',sq4a:'חשמל פגום = סכנת מוות',
+sq5:'ארגז עזרה ראשונה נגיש ומאויש?',sq5a:'הבא ארגז לפני תחילת עבודה',
+sq6:'שילוט בטיחות תקין (עברית + שפות נוספות)?',sq6a:'שים שלטים בשפת העובדים הזרים',
+sq7:'אין חפירות פתוחות ללא גידור?',sq7a:'גדר חפירות מיידית',
+sq8:'כלי הרמה (עגורן, מנוף) תקינים ומורשים?',sq8a:'בדוק תעודת כשירות',
+sq9:'אין עבודות חשמל HIGH VOLTAGE ללא אישור?',sq9a:'דרש אישור מהממונה על הבטיחות',
+sq10:'כיבויי אש ומטפים תקינים?',sq10a:'הוצא לטעינה מיידית',
+sq11:'מים לשתיה זמינים לכל פועלי האתר?',sq11a:'חובה חוקית בימי חום',
+sq12:'כניסות האתר סגורות ומוגנות מפני חדירת זרים?',sq12a:'נעל שערים ובדוק גדר',
+sq_struct1:'בטון רטוב — יש גידורים מתאימים?',sq_struct1a:'עצור יציקה — סכנה!',
+sq_struct2:'עובדים עם רתמות בגובה מעל 2 מטר?',sq_struct2a:'חובת רתמה מעל 2 מטר',
+sq_fin1:'אין עבודה עם חומרים כימיים ללא כפפות?',sq_fin1a:'חובת כפפות ומסכה',
+sq_fin2:'אוורור מספק בחדרים סגורים?',sq_fin2a:'פתח חלונות / הפעל אוורור',
+sq_scaf1:'גובה פיגום לא עולה על המותר ללא בדיקה?',sq_scaf1a:'דרוש בדיקת מהנדס',
+sq_scaf2:'לוחות פיגום מאובטחים ולא שבורים?',sq_scaf2a:'החלף לוח מיידית',
+sq_exc1:'שיפוע דפנות החפירה תקין?',sq_exc1a:'סכנת קריסה — עצור!',
+sq_exc2:'יש תאורה מספקת בחפירה?',sq_exc2a:'הוסף תאורה לפני כניסה'},
+ar:{appTagline:'يومية ومهام الميدان — كل شيء في دقيقة',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
+btn1Title:'يومية العمل اليومية',btn1Desc:'تكلم دقيقة ← يومية قانونية تُرسل للواتساب',
+btn2Title:'العيوب والمهام',btn2Desc:'التقط صورة ← أسند للمقاول ← تابع الحالة',
+btn3Title:'السلامة اليومية',btn3Desc:'12 سؤال أمان ← تقرير موقّع بـGPS ← حماية قانونية',
+journalTitle:'يومية العمل اليومية',voiceSectionTitle:'تسجيل الصوت (تكلم ← تفريغ)',voiceHint:'انقر للتحدث بحرية عن يوم العمل',voiceOrType:'أو اكتب يدوياً',
+journalPlaceholder:'ماذا حدث في الموقع اليوم؟ من عمل، ماذا أُنجز، ماذا تأخر...',workersTitle:'القوى العاملة اليوم',weatherTitle:'الطقس',
+delaysTitle:'التأخيرات / الانحرافات',delaysPlaceholder:'هل كانت هناك تأخيرات؟ نقص في المواد؟ اتركه فارغاً إن سار كل شيء بسلاسة',
+tasksTitle:'مهام الغد',tasksPlaceholder:'ما المخطط ليوم الغد؟',photosTitle:'صور اليوم',
+saveJournal:'✅ احفظ اليومية وأنشئ تقرير PDF',sendWA:'📲 أرسل للواتساب',
+tradeCol:'المهنة',qtyCol:'الكمية',totalWorkers:'مجموع العمال',
+w1:'مبيّضون',w2:'كهربائيون',w3:'سباكون',w4:'عمال عامون',w5:'نجارون',w6:'أخرى',
+wi0:'☀️',wi1:'⛅',wi2:'🌧️',wi3:'💨',wi4:'🔥',wl0:'مشمس',wl1:'غائم جزئياً',wl2:'ممطر',wl3:'عاصف',wl4:'حر شديد',
+defectsTitle:'العيوب والمهام',filterAll:'الكل',filterOpen:'🔴 مفتوح',filterProgress:'🟠 قيد المعالجة',filterDone:'🟢 منجز',
+addDefectTitle:'عيب / مهمة جديدة',defPhoto:'صورة (مُوصى به)',defDesc:'وصف العيب',defDescPlaceholder:'صِف ما يحتاج إصلاحاً...',
+defFloor:'طابق',defArea:'شقة / منطقة',defContractor:'المقاول المسؤول',defDeadline:'تاريخ الإصلاح المستهدف',
+defSeverity:'الأهمية',sevUrgent:'🔴 عاجل',sevNormal:'🟠 عادي',sevLow:'🟢 منخفض',
+saveAndSend:'احفظ ← أرسل للمقاول',btnDone:'✅ منجز',btnProgress:'⏳ قيد المعالجة',btnWA:'📲 واتساب',
+noDeadline:'بدون موعد',overdue:'⚠️ متأخر',targetDate:'الموعد: ',
+safetyTitle:'السلامة اليومية',chooseWorkType:'اختر نوع العمل',
+wtGeneral:'عام',wtStructure:'هيكل',wtFinishing:'تشطيب',wtScaffolding:'سقالات',wtExcavation:'حفر',
+signTitle:'توقيع مدير العمل',signHint:'وقّع هنا بإصبعك',clearSign:'🗑️ مسح',
+confirmSafety:'✅ أكّد وأرسل تقرير السلامة',pastReports:'📂 تقارير سابقة',questionsAnswered:'أسئلة تم الإجابة عليها',
+settingsTitle:'إعدادات المشروع',siteInfo:'تفاصيل الموقع',projectName:'اسم المشروع / الموقع',projectPlaceholder:'مثال: برج رامات طوابق 1-12',
+managerName:'اسم مدير العمل',managerPlaceholder:'الاسم الكامل',managerPhone:'رقم هاتف المدير',
+officeSection:'المكتب / الإشراف',officeName:'اسم جهة الاتصال',officePhone:'هاتف المكتب / الإشراف',
+contractorsSection:'مقاولو الباطن في الموقع',addContractor:'+ أضف مقاول باطن',saveSettings:'حفظ الإعدادات',
+addContractorTitle:'أضف مقاول باطن',cName:'اسم المقاول / الشركة',cTrade:'المهنة / المجال',cPhone:'الهاتف',
+tPlaster:'تبييض',tElec:'كهرباء',tPlumb:'سباكة',tCarpentry:'نجارة',tTiling:'بلاط',tGypsum:'جبس',tPaint:'دهان',tAlu:'ألمنيوم / نوافذ',tAC:'تكييف هواء',tScaffold:'سقالات',tOther:'أخرى',
+cancel:'إلغاء',save:'حفظ',archive:'📂 أرشيف',
+offlineNote:'جميع البيانات محفوظة في هاتفك فقط · يعمل بدون إنترنت',
+emptyJournal:'لا توجد يوميات بعد.\nأنشئ الأولى!',emptySafety:'لا توجد تقارير سلامة بعد.\nأجرِ الفحص الأول!',
+emptyDefects:'لا توجد عيوب مفتوحة!\nانقر + للإضافة',emptyDefectsFilter:'لا توجد عيوب بهذه الحالة',
+deleteConfirm:'حذف؟',deleted:'تم الحذف',saved:'✅ تم الحفظ بنجاح!',
+voiceNotSupported:'التسجيل الصوتي غير مدعوم — جرّب Chrome على أندرويد',voiceDenied:'يرجى السماح بالوصول إلى الميكروفون في إعدادات المتصفح',voiceError:'خطأ في التسجيل — حاول مجدداً',
+reportJournalTitle:'يومية العمل — ',reportSafetyTitle:'تقرير السلامة اليومي',
+reportProject:'المشروع: ',reportManager:'مدير العمل: ',reportDate:'التاريخ: ',reportGenerated:'أُنشئ: ',
+reportWorkDesc:'وصف يوم العمل',reportManpower:'القوى العاملة',reportConditions:'الأحوال والتأخيرات',
+reportWeather:'الطقس: ',reportDelays:'التأخيرات: ',reportTasks:'مهام الغد: ',reportPhotos:'صور اليوم',
+reportSafetyCheck:'تفاصيل فحص السلامة',reportSafetyStatus0:'سليم — اجتازت جميع الفحوصات',reportSafetySignature:'توقيع مدير العمل',
+reportFooter:'هذا المستند أُنشئ بواسطة دقيقة — يومية ومهام الميدان',reportOk:'سليم',reportFail:'عيب',
+sq1:'هل جميع الفتحات والشقوق والشرفات مسوّرة؟',sq1a:'سوّر فوراً — خطر السقوط!',
+sq2:'هل السقالات والبنية التحتية سليمة وآمنة؟',sq2a:'أوقف العمل على السقالة غير الصالحة!',
+sq3:'هل جميع العمال يرتدون خوذات وأحذية السلامة؟',sq3a:'يجب إيقاف العمل بدون معدات الحماية',
+sq4:'هل المعدات الكهربائية المؤقتة سليمة (لوحات، كابلات)؟',sq4a:'الكهرباء المعطوبة = خطر الوفاة',
+sq5:'هل صندوق الإسعافات الأولية متاح ومجهّز؟',sq5a:'أحضر الصندوق قبل بدء العمل',
+sq6:'هل لافتات السلامة سليمة (عبري + لغات أخرى)؟',sq6a:'ضع لافتات بلغة العمال الأجانب',
+sq7:'هل لا توجد حفريات مفتوحة بدون سياج؟',sq7a:'سوّر الحفريات فوراً',
+sq8:'هل معدات الرفع (رافعة) سليمة ومرخصة؟',sq8a:'تحقق من شهادة الأهلية',
+sq9:'هل لا توجد أعمال كهربائية بجهد عالٍ بدون تصريح؟',sq9a:'اطلب إذناً من مسؤول السلامة',
+sq10:'هل طفايات الحريق سليمة؟',sq10a:'أرسله للشحن فوراً',
+sq11:'هل الماء الصالح للشرب متوفر لجميع العمال؟',sq11a:'إلزام قانوني في أيام الحرارة',
+sq12:'هل مداخل الموقع مغلقة ومحمية من دخول الغرباء؟',sq12a:'أغلق البوابات وافحص السياج',
+sq_struct1:'الخرسانة الرطبة — هل توجد حواجز مناسبة؟',sq_struct1a:'أوقف الصب — خطر!',
+sq_struct2:'هل العمال يرتدون أحزمة على ارتفاع يزيد عن 2 متر؟',sq_struct2a:'حزام الأمان إلزامي فوق 2 متر',
+sq_fin1:'هل لا يوجد عمل بمواد كيميائية بدون قفازات؟',sq_fin1a:'القفازات والكمامة إلزامية',
+sq_fin2:'هل التهوية كافية في الغرف المغلقة؟',sq_fin2a:'افتح النوافذ / شغّل التهوية',
+sq_scaf1:'هل ارتفاع السقالة لا يتجاوز الحد المسموح؟',sq_scaf1a:'يلزم فحص مهندس',
+sq_scaf2:'هل ألواح السقالة مثبّتة وغير مكسورة؟',sq_scaf2a:'استبدل اللوح فوراً',
+sq_exc1:'هل ميل جدران الحفرية سليم؟',sq_exc1a:'خطر الانهيار — أوقف!',
+sq_exc2:'هل الإضاءة كافية في الحفرية؟',sq_exc2a:'أضف إضاءة قبل الدخول'}
+};const APP={lang:'he',settings:{},screenHistory:['s-home'],currentFilter:'all',selectedSev:'normal',currentWorkType:'general',safetyAnswers:{},safetyPhotos:{},jnlPhotos:[],defectPhotos:[],gps:null};
+function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function T(k){return(STRINGS[APP.lang]||STRINGS.he)[k]||k;}
+function applyLang(){
+  document.documentElement.lang=APP.lang;
+  document.querySelectorAll('[data-t]').forEach(function(el){el.textContent=T(el.getAttribute('data-t'));});
+  document.querySelectorAll('[data-tp]').forEach(function(el){el.placeholder=T(el.getAttribute('data-tp'));});
+  document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===APP.lang);});
 }
-
-function heDate(d){
-  if(!d)d=new Date();
-  const days=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
-  const months=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-  return `יום ${days[d.getDay()]}, ${d.getDate()} ב${months[d.getMonth()]} ${d.getFullYear()}`;
+function setLang(lang){
+  APP.lang=lang;APP.settings.lang=lang;saveJSON('sb_settings',APP.settings);applyLang();
+  var a=document.querySelector('.screen.active');if(!a)return;var id=a.id;
+  if(id==='s-safety'){renderWorkTypes();renderSafetyQuestions();}
+  if(id==='s-defects'){renderDefectFilters();renderDefects();}
+  if(id==='s-journal-history')renderJournalHistory();
+  if(id==='s-safety-history')renderSafetyHistory();
+  if(id==='s-journal'){renderWorkersTable();renderWeatherGrid();}
+  if(id==='s-settings')renderContractors();
 }
-function isoDate(d){if(!d)d=new Date();return d.toISOString().slice(0,10)}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
-
-// ===================== NAVIGATION =====================
-let _screenStack=['s-home'];
-
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0,0);
-  if(id!==_screenStack[_screenStack.length-1]) _screenStack.push(id);
-
-  // hooks
-  if(id==='s-home') refreshHome();
-  if(id==='s-settings') loadSettingsForm();
-  if(id==='s-journal') initJournal();
-  if(id==='s-journal-history') renderJournalHistory();
-  if(id==='s-defects') renderDefects();
-  if(id==='s-safety') initSafety();
-  if(id==='s-safety-history') renderSafetyHistory();
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  var el=document.getElementById(id);if(el)el.classList.add('active');
+  if(APP.screenHistory[APP.screenHistory.length-1]!==id)APP.screenHistory.push(id);
+  onScreenEnter(id);
 }
-
-function closePrintScreen(){
-  _screenStack.pop();
-  showScreen(_screenStack[_screenStack.length-1]||'s-home');
+function goBack(){
+  if(APP.screenHistory.length>1)APP.screenHistory.pop();
+  var prev=APP.screenHistory[APP.screenHistory.length-1]||'s-home';
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  var el=document.getElementById(prev);if(el)el.classList.add('active');
+  onScreenEnter(prev);
 }
-
-// ===================== HOME =====================
+function onScreenEnter(id){
+  if(id==='s-home')refreshHome();
+  if(id==='s-journal')initJournal();
+  if(id==='s-journal-history')renderJournalHistory();
+  if(id==='s-defects'){renderDefectFilters();renderDefects();}
+  if(id==='s-safety')initSafety();
+  if(id==='s-safety-history')renderSafetyHistory();
+  if(id==='s-settings')loadSettingsForm();
+}
 function refreshHome(){
-  const s=APP.settings;
-  document.getElementById('home-project-name').textContent=s.projectName||'לחץ להגדרת פרויקט ⚙️';
-  document.getElementById('home-date').textContent=heDate();
-
-  // stats
-  document.getElementById('stat-journal').textContent=APP.journal.length;
-  const openDef=APP.defects.filter(d=>d.status!=='done').length;
-  document.getElementById('stat-open').textContent=openDef;
-  const now=new Date();
-  const weekAgo=new Date(now-7*864e5);
-  const weekSafety=APP.safety.filter(s=>{try{return new Date(s.date)>=weekAgo}catch{return false}}).length;
-  document.getElementById('stat-safety').textContent=weekSafety;
+  var s=APP.settings;
+  var pn=document.getElementById('home-project-name');
+  var mn=document.getElementById('home-manager-name');
+  if(s.projectName){pn.textContent=s.projectName;mn.textContent=s.managerName||'';}
+  else{pn.textContent=T('setupProject');mn.textContent='';}
+  var journals=loadJSON('sb_journals',[]);
+  var defects=loadJSON('sb_defects',[]);
+  var safety=loadJSON('sb_safety',[]);
+  document.getElementById('stat-journal').textContent=journals.length;
+  document.getElementById('stat-defects').textContent=defects.filter(function(d){return d.status!=='done';}).length;
+  var weekAgo=Date.now()-7*24*3600*1000;
+  document.getElementById('stat-safety').textContent=safety.filter(function(r){return r.ts>weekAgo;}).length;
 }
-
-// ===================== SETTINGS =====================
-function loadSettingsForm(){
-  const s=APP.settings;
-  document.getElementById('cfg-project').value=s.projectName||'';
-  document.getElementById('cfg-manager').value=s.managerName||'';
-  document.getElementById('cfg-phone').value=s.managerPhone||'';
-  document.getElementById('cfg-office-name').value=s.officeName||'';
-  document.getElementById('cfg-office-phone').value=s.officePhone||'';
-  renderContractorsList();
-}
-
-function saveSettings(){
-  APP.settings.projectName=document.getElementById('cfg-project').value.trim();
-  APP.settings.managerName=document.getElementById('cfg-manager').value.trim();
-  APP.settings.managerPhone=document.getElementById('cfg-phone').value.trim();
-  APP.settings.officeName=document.getElementById('cfg-office-name').value.trim();
-  APP.settings.officePhone=document.getElementById('cfg-office-phone').value.trim();
-  saveJSON('sb_settings',APP.settings);
-  toast('✅ ההגדרות נשמרו בהצלחה');
-  showScreen('s-home');
-}
-
-function renderContractorsList(){
-  const el=document.getElementById('contractors-list');
-  if(!APP.settings.contractors.length){el.innerHTML='<p style="color:#bdc3c7;font-size:14px;margin-bottom:12px">עוד לא הוספת קבלנים</p>';return}
-  el.innerHTML=APP.settings.contractors.map((c,i)=>`
-    <div class="contractor-item">
-      <span class="c-trade">${c.trade}</span>
-      <span class="c-name">${c.name}</span>
-      <span style="font-size:12px;color:#bdc3c7">${c.phone||''}</span>
-      <button class="c-del" onclick="removeContractor(${i})">✕</button>
-    </div>`).join('');
-}
-
-function openAddContractor(){
-  document.getElementById('mc-name').value='';
-  document.getElementById('mc-phone').value='';
-  openModal('modal-contractor');
-}
-function addContractor(){
-  const name=document.getElementById('mc-name').value.trim();
-  const trade=document.getElementById('mc-trade').value;
-  const phone=document.getElementById('mc-phone').value.trim();
-  if(!name){toast('יש להזין שם קבלן');return}
-  APP.settings.contractors.push({name,trade,phone});
-  saveJSON('sb_settings',APP.settings);
-  renderContractorsList();
-  closeModal('modal-contractor');
-  toast('✅ הקבלן נוסף');
-}
-function removeContractor(i){
-  APP.settings.contractors.splice(i,1);
-  saveJSON('sb_settings',APP.settings);
-  renderContractorsList();
-}
-
-// ===================== VOICE =====================
-function initRecognition(target){
-  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){return null}
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const r=new SR();
-  r.lang='he-IL';r.continuous=true;r.interimResults=true;
-  r.onresult=(e)=>{
-    let t='';
-    for(let i=0;i<e.results.length;i++) t+=e.results[i][0].transcript+(e.results[i].isFinal?'\n':'');
-    if(target==='journal'){
-      document.getElementById('voice-text').style.display='block';
-      document.getElementById('voice-text').textContent=t;
-      document.getElementById('jnl-text').value=t;
-    } else if(target==='defect'){
-      document.getElementById('def-desc').value=t;
-    }
-  };
-  r.onerror=(e)=>{if(e.error!=='aborted')toast('שגיאת הקלטה: '+e.error)};
-  return r;
-}
-
-function toggleVoice(){
-  if(APP.voiceActive){
-    APP.recognition&&APP.recognition.stop();
-    APP.voiceActive=false;
-    document.getElementById('voice-btn').innerHTML='🎙️';
-    document.getElementById('voice-btn').classList.remove('recording');
-    document.getElementById('voice-status').textContent='לחץ לדבר בחופשיות על מה שהיה היום';
-  } else {
-    APP.recognition=initRecognition('journal');
-    if(!APP.recognition){toast('הדפדפן לא תומך בהקלטה — הקלד ידנית');return}
-    APP.recognition.start();
-    APP.voiceActive=true;
-    document.getElementById('voice-btn').innerHTML='⏹️';
-    document.getElementById('voice-btn').classList.add('recording');
-    document.getElementById('voice-status').textContent='מקליט... דבר בחופשיות. לחץ שוב לסיום.';
+var _recog=null,_voiceTarget=null,_voiceActive=false;
+function toggleVoice(target,btnId){
+  if(_voiceActive){
+    _voiceActive=false;try{if(_recog)_recog.stop();}catch(e){}
+    var b=document.getElementById(btnId);if(b){b.innerHTML='🎙️';b.classList.remove('recording');}return;
   }
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast(T('voiceNotSupported'));return;}
+  _recog=new SR();_recog.lang=APP.lang==='ar'?'ar-IL':'he-IL';_recog.continuous=true;_recog.interimResults=true;
+  _recog.onresult=function(e){var t='';for(var i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;var el=document.getElementById(_voiceTarget);if(el)el.value=t;};
+  _recog.onerror=function(err){if(err.error==='not-allowed')toast(T('voiceDenied'));else if(err.error!=='aborted')toast(T('voiceError'));_voiceActive=false;var b=document.getElementById(btnId);if(b){b.innerHTML='🎙️';b.classList.remove('recording');}};
+  _recog.onend=function(){if(_voiceActive){try{_recog.start();}catch(e){}}};
+  try{_recog.start();_voiceActive=true;_voiceTarget=target;var b=document.getElementById(btnId);if(b){b.innerHTML='⏹️';b.classList.add('recording');}}catch(e){toast(T('voiceError'));}
 }
-
-let defVoiceActive=false;
-function toggleVoiceDefect(){
-  if(defVoiceActive){
-    APP.recognition&&APP.recognition.stop();
-    defVoiceActive=false;
-    document.getElementById('def-voice-btn').innerHTML='🎙️';
-  } else {
-    APP.recognition=initRecognition('defect');
-    if(!APP.recognition){toast('הדפדפן לא תומך בהקלטה');return}
-    APP.recognition.start();
-    defVoiceActive=true;
-    document.getElementById('def-voice-btn').innerHTML='⏹️';
-  }
-}
-
-// ===================== PHOTOS =====================
-function addPhotos(input,target){
-  const files=Array.from(input.files);
-  files.forEach(f=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const src=e.target.result;
-      if(target==='jnl'){
-        APP.jnlPhotos.push(src);
-        renderPhotoGrid('jnl-photos',APP.jnlPhotos,'jnl');
-      } else if(target==='defect'){
-        APP.defectPhoto=src;
-        renderDefectPhoto();
-      }
-    };
-    reader.readAsDataURL(f);
-  });
-  input.value='';
-}
-
-function renderPhotoGrid(gridId,arr,target){
-  const g=document.getElementById(gridId);
-  g.innerHTML=arr.map((src,i)=>`
-    <div class="p-thumb">
-      <img src="${src}">
-      <button class="p-del" onclick="removePhoto('${target}',${i})">✕</button>
-    </div>`).join('')+`
-    <label class="p-add">
-      <input type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="addPhotos(this,'${target}')">
-      📷
-    </label>`;
-}
-
-function removePhoto(target,i){
-  if(target==='jnl'){APP.jnlPhotos.splice(i,1);renderPhotoGrid('jnl-photos',APP.jnlPhotos,'jnl')}
-}
-
-function renderDefectPhoto(){
-  const g=document.getElementById('defect-photo-grid');
-  if(APP.defectPhoto){
-    g.innerHTML=`<div class="p-thumb" style="aspect-ratio:16/9">
-      <img src="${APP.defectPhoto}" style="width:100%;height:100%;object-fit:cover">
-      <button class="p-del" onclick="APP.defectPhoto=null;renderDefectPhoto()">✕</button>
-    </div>
-    <label class="p-add" style="aspect-ratio:16/9">
-      <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotos(this,'defect')">📷 חלף
-    </label>`;
-  } else {
-    g.innerHTML=`<label class="p-add" style="aspect-ratio:16/9;grid-column:1/-1">
-      <input type="file" accept="image/*" capture="environment" style="display:none" onchange="addPhotos(this,'defect')">
-      📷 צלם את הליקוי
-    </label>`;
-  }
-}
-
-// ===================== JOURNAL =====================
+var WKEYS=['w1','w2','w3','w4','w5','w6'];
+var currentWeather=-1;
 function initJournal(){
-  document.getElementById('jnl-date-sub').textContent=heDate();
-  document.querySelectorAll('.w-input').forEach(i=>i.value=0);
-  document.getElementById('worker-total').textContent=0;
-  document.getElementById('jnl-delays').value='';
-  document.getElementById('jnl-tasks').value='';
-  document.getElementById('jnl-text').value='';
-  document.getElementById('voice-text').style.display='none';
-  document.getElementById('voice-text').textContent='';
-  document.getElementById('voice-status').textContent='לחץ לדבר בחופשיות על מה שהיה היום';
-  document.getElementById('voice-btn').innerHTML='🎙️';
-  document.getElementById('voice-btn').classList.remove('recording');
-  APP.jnlPhotos=[];
-  APP.voiceActive=false;
-  renderPhotoGrid('jnl-photos',APP.jnlPhotos,'jnl');
-  document.querySelectorAll('.w-input').forEach(inp=>inp.addEventListener('input',updateWorkerTotal));
+  var today=new Date();
+  document.getElementById('jnl-date-sub').textContent=today.toLocaleDateString(APP.lang==='ar'?'ar-IL':'he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('jnl-text').value='';document.getElementById('jnl-delays').value='';document.getElementById('jnl-tasks').value='';
+  APP.jnlPhotos=[];currentWeather=-1;
+  renderWorkersTable();renderWeatherGrid();renderJnlPhotos();
 }
-
-function updateWorkerTotal(){
-  let sum=0;
-  document.querySelectorAll('.w-input').forEach(i=>sum+=parseInt(i.value)||0);
-  document.getElementById('worker-total').textContent=sum;
+function renderWorkersTable(){
+  var tb=document.getElementById('workers-tbody');if(!tb)return;
+  var h='';for(var i=0;i<WKEYS.length;i++){var k=WKEYS[i];h+='<tr><td>'+T(k)+'</td><td><input type="number" min="0" value="0" id="w-'+k+'" oninput="calcTotal()" style="text-align:center;"></td></tr>';}
+  tb.innerHTML=h;
 }
-
-function selectWeather(el){
-  document.querySelectorAll('.w-opt').forEach(e=>e.classList.remove('active'));
-  el.classList.add('active');
-  APP.weather=el.dataset.w;
+function calcTotal(){var t=0;for(var i=0;i<WKEYS.length;i++){var e=document.getElementById('w-'+WKEYS[i]);if(e)t+=parseInt(e.value)||0;}document.getElementById('workers-total').textContent=t;}
+function renderWeatherGrid(){
+  var g=document.getElementById('weather-grid');if(!g)return;
+  var h='';for(var i=0;i<5;i++){var a=currentWeather===i?' active':'';h+='<div class="weather-btn'+a+'" onclick="selWeather('+i+')"><span class="w-icon">'+T('wi'+i)+'</span><span class="w-label">'+T('wl'+i)+'</span></div>';}
+  g.innerHTML=h;
 }
-
-function getWorkers(){
-  const w={};
-  document.querySelectorAll('.w-input').forEach(i=>{
-    const n=parseInt(i.value)||0;
-    if(n>0)w[i.dataset.trade]=n;
-  });
-  return w;
+function selWeather(i){currentWeather=i;renderWeatherGrid();}
+function renderJnlPhotos(){
+  var g=document.getElementById('jnl-photos-grid');if(!g)return;
+  var h='';for(var i=0;i<APP.jnlPhotos.length;i++)h+='<div class="photo-thumb"><img src="'+APP.jnlPhotos[i]+'"><button class="photo-del" onclick="removeJnlPhoto('+i+')">×</button></div>';
+  h+='<div class="photo-add" onclick="document.getElementById(\'jnl-photo-input\').click()"><span class="photo-add-icon">📷</span><span>+</span></div>';
+  g.innerHTML=h;
 }
-
+function handleJnlPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){APP.jnlPhotos.push(ev.target.result);renderJnlPhotos();};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
+function removeJnlPhoto(i){APP.jnlPhotos.splice(i,1);renderJnlPhotos();}
+function getWorkers(){var d=[];for(var i=0;i<WKEYS.length;i++){var el=document.getElementById('w-'+WKEYS[i]);var q=el?parseInt(el.value)||0:0;if(q>0)d.push({trade:T(WKEYS[i]),qty:q});}return d;}
 function saveJournal(){
-  const text=document.getElementById('jnl-text').value.trim();
-  if(!text){toast('יש להוסיף תיאור — דבר או הקלד');return}
-  const entry={
-    id:uid(),date:isoDate(),dateHe:heDate(),
-    text,workers:getWorkers(),weather:APP.weather,
-    delays:document.getElementById('jnl-delays').value.trim(),
-    tasks:document.getElementById('jnl-tasks').value.trim(),
-    photos:APP.jnlPhotos.slice(),
-    manager:APP.settings.managerName,
-    project:APP.settings.projectName
-  };
-  APP.journal.unshift(entry);
-  saveJSON('sb_journal',APP.journal);
-  toast('✅ יומן נשמר!');
-  printJournalReport(entry);
+  var txt=document.getElementById('jnl-text').value.trim();
+  if(!txt){toast(APP.lang==='ar'?'أدخل وصف اليوم':'יש להזין תיאור יום העבודה');return;}
+  var entry={id:Date.now(),date:new Date().toISOString(),ts:Date.now(),text:txt,workers:getWorkers(),weather:currentWeather,delays:document.getElementById('jnl-delays').value.trim(),tasks:document.getElementById('jnl-tasks').value.trim(),photos:APP.jnlPhotos.slice(),lang:APP.lang};
+  var journals=loadJSON('sb_journals',[]);journals.unshift(entry);saveJSON('sb_journals',journals);
+  toast(T('saved'));showJournalReport(entry);
 }
-
-function sendJournalWhatsApp(){
-  const text=document.getElementById('jnl-text').value.trim();
-  if(!text){toast('יש להוסיף תיאור תחילה');return}
-  const workers=getWorkers();
-  const wList=Object.entries(workers).map(([k,v])=>`• ${k}: ${v}`).join('\n');
-  const total=Object.values(workers).reduce((a,b)=>a+b,0);
-  const delays=document.getElementById('jnl-delays').value.trim();
-  const tasks=document.getElementById('jnl-tasks').value.trim();
-  const s=APP.settings;
-  let msg=`📋 *יומן עבודה — ${s.projectName||'אתר'}*\n`;
-  msg+=`📅 ${heDate()}\n`;
-  msg+=`👷 מנהל עבודה: ${s.managerName||''}\n\n`;
-  msg+=`*תיאור יום העבודה:*\n${text}\n\n`;
-  if(total>0){msg+=`*כוח אדם (סה"כ ${total}):*\n${wList}\n\n`}
-  msg+=`*מזג אוויר:* ${APP.weather}\n\n`;
-  if(delays) msg+=`*עיכובים/חריגים:*\n${delays}\n\n`;
-  if(tasks) msg+=`*משימות למחר:*\n${tasks}\n\n`;
-  msg+=`_נשלח מ-SiteBoss_`;
-  const phone=s.officePhone.replace(/[-\s]/g,'');
-  const target=phone?`https://wa.me/972${phone.replace(/^0/,'')}?text=`:`https://wa.me/?text=`;
-  window.open(target+encodeURIComponent(msg),'_blank');
+function sendJournalWA(){
+  var s=APP.settings;var msg=(s.projectName||'אתר')+'\n'+new Date().toLocaleDateString('he-IL')+'\n\n';
+  var txt=document.getElementById('jnl-text').value.trim();if(txt)msg+=txt+'\n\n';
+  var workers=getWorkers();if(workers.length){msg+=T('workersTitle')+':\n';for(var i=0;i<workers.length;i++)msg+=workers[i].trade+': '+workers[i].qty+'\n';msg+='\n';}
+  if(currentWeather>=0)msg+=T('weatherTitle')+': '+T('wl'+currentWeather)+'\n';
+  var d=document.getElementById('jnl-delays').value.trim();if(d)msg+=T('delaysTitle')+':\n'+d+'\n\n';
+  var t=document.getElementById('jnl-tasks').value.trim();if(t)msg+=T('tasksTitle')+':\n'+t+'\n';
+  var phone=s.officePhone||'';
+  window.open('https://wa.me/'+(phone?phone.replace(/\D/g,''):'')+'?text='+encodeURIComponent(msg),'_blank');
 }
-
-function printJournalReport(entry){
-  const s=APP.settings;
-  const wList=Object.entries(entry.workers).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('');
-  const total=Object.values(entry.workers).reduce((a,b)=>a+b,0);
-  const imgs=entry.photos.map(p=>`<img class="pr-img" src="${p}">`).join('');
-
-  let html=`<div class="print-report">
-    <div class="pr-header">
-      <div>
-        <div class="pr-logo">SiteBoss – יומן עבודה</div>
-        <div style="font-size:13px;color:#555;margin-top:4px">${s.projectName||'שם הפרויקט'}</div>
-      </div>
-      <div class="pr-meta">
-        <div>${entry.dateHe}</div>
-        <div>מנהל עבודה: ${entry.manager||s.managerName||''}</div>
-        <div>הופק: ${new Date().toLocaleTimeString('he-IL')}</div>
-      </div>
-    </div>
-
-    <div class="pr-section">
-      <div class="pr-st">תיאור יום העבודה</div>
-      <p style="font-size:14px;line-height:1.7;white-space:pre-wrap">${entry.text}</p>
-    </div>
-
-    ${total>0?`<div class="pr-section">
-      <div class="pr-st">כוח אדם (סה"כ: ${total})</div>
-      <table class="pr-table">
-        <thead><tr><th>מקצוע</th><th>כמות</th></tr></thead>
-        <tbody>${wList}</tbody>
-      </table>
-    </div>`:''}
-
-    <div class="pr-section">
-      <div class="pr-st">תנאים ועיכובים</div>
-      <div class="pr-row"><strong>מזג אוויר:</strong> ${entry.weather}</div>
-      ${entry.delays?`<div class="pr-row"><strong>עיכובים/חריגים:</strong> <span style="white-space:pre-wrap">${entry.delays}</span></div>`:''}
-      ${entry.tasks?`<div class="pr-row"><strong>משימות למחר:</strong> <span style="white-space:pre-wrap">${entry.tasks}</span></div>`:''}
-    </div>
-
-    ${imgs?`<div class="pr-section"><div class="pr-st">תמונות מהיום</div>${imgs}</div>`:''}
-
-    <div style="margin-top:30px;border-top:1px solid #ddd;padding-top:12px;font-size:11px;color:#aaa;text-align:center">
-      מסמך זה הופק ע"י SiteBoss — מנהל עבודה פלוס · ${new Date().toLocaleString('he-IL')}
-    </div>
-  </div>`;
-
-  document.getElementById('report-content').innerHTML=html;
-  showScreen('s-report');
-}
-
 function renderJournalHistory(){
-  const el=document.getElementById('journal-history-list');
-  if(!APP.journal.length){
-    el.innerHTML='<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-text">עדיין אין יומנים שמורים.<br>צור את הראשון!</div></div>';
-    return;
+  var list=document.getElementById('journal-history-list');if(!list)return;
+  var journals=loadJSON('sb_journals',[]);
+  if(!journals.length){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);white-space:pre-line;">'+T('emptyJournal')+'</div>';return;}
+  var h='';
+  for(var i=0;i<journals.length;i++){
+    var j=journals[i];var d=new Date(j.date);
+    var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
+    var tw=0;if(j.workers)for(var k=0;k<j.workers.length;k++)tw+=j.workers[k].qty;
+    var jstr=JSON.stringify(j).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    h+='<div class="history-item" onclick="showJournalReport(\''+jstr+'\')"><div class="history-item-date">'+ds+'</div><div class="history-item-sub">'+T('totalWorkers')+': '+tw+'</div></div>';
   }
-  el.innerHTML=APP.journal.map(e=>{
-    const total=Object.values(e.workers).reduce((a,b)=>a+b,0);
-    return `<div class="log-card">
-      <div class="log-header">
-        <span class="log-date">${e.dateHe}</span>
-        <span class="log-workers">${total>0?`👷 ${total} פועלים`:''}</span>
-      </div>
-      <div class="log-body">
-        <div class="log-text">${e.text.slice(0,200)}${e.text.length>200?'...':''}</div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn btn-ghost btn-sm" onclick="printJournalReport(APP.journal.find(x=>x.id==='${e.id}'))">🖨️ הדפס</button>
-          <button class="btn btn-ghost btn-sm" onclick="deleteJournal('${e.id}')">🗑️ מחק</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  list.innerHTML=h;
 }
-
-function deleteJournal(id){
-  if(!confirm('למחוק יומן זה?')) return;
-  APP.journal=APP.journal.filter(e=>e.id!==id);
-  saveJSON('sb_journal',APP.journal);
-  renderJournalHistory();
-  toast('יומן נמחק');
+function showJournalReport(entryOrStr){
+  var entry=typeof entryOrStr==='string'?JSON.parse(entryOrStr):entryOrStr;
+  var el=document.getElementById('report-content');var s=APP.settings;
+  var d=new Date(entry.date);var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('report-topbar-title').textContent=T('reportJournalTitle')+ds;
+  var h='<div class="report-logo"><div class="report-logo-title">דקה</div><div class="report-logo-sub">'+T('appTagline')+'</div></div>';
+  h+='<div class="report-header"><p><strong>'+T('reportProject')+'</strong>'+(s.projectName||'—')+'</p><p><strong>'+T('reportManager')+'</strong>'+(s.managerName||'—')+'</p><p><strong>'+T('reportDate')+'</strong>'+ds+'</p></div>';
+  h+='<div class="report-section-title">'+T('reportWorkDesc')+'</div><p>'+(entry.text||'').replace(/\n/g,'<br>')+'</p>';
+  if(entry.workers&&entry.workers.length){
+    h+='<div class="report-section-title">'+T('reportManpower')+'</div><table style="width:100%;border-collapse:collapse;font-size:13px;"><tr><th style="text-align:right;padding:6px;border-bottom:1px solid #dce3e9;">'+T('tradeCol')+'</th><th style="text-align:center;padding:6px;border-bottom:1px solid #dce3e9;">'+T('qtyCol')+'</th></tr>';
+    var tw=0;for(var i=0;i<entry.workers.length;i++){h+='<tr><td style="padding:5px 6px;">'+entry.workers[i].trade+'</td><td style="text-align:center;">'+entry.workers[i].qty+'</td></tr>';tw+=entry.workers[i].qty;}
+    h+='<tr style="font-weight:700;"><td style="padding:5px 6px;">'+T('totalWorkers')+'</td><td style="text-align:center;">'+tw+'</td></tr></table>';
+  }
+  if(entry.weather>=0||entry.delays||entry.tasks){
+    h+='<div class="report-section-title">'+T('reportConditions')+'</div>';
+    if(entry.weather>=0)h+='<p>'+T('reportWeather')+T('wl'+entry.weather)+'</p>';
+    if(entry.delays)h+='<p>'+T('reportDelays')+'</p><p>'+esc(entry.delays).replace(/\n/g,'<br>')+'</p>';
+    if(entry.tasks)h+='<p>'+T('reportTasks')+'</p><p>'+esc(entry.tasks).replace(/\n/g,'<br>')+'</p>';
+  }
+  if(entry.photos&&entry.photos.length){h+='<div class="report-section-title">'+T('reportPhotos')+'</div><div class="photos-grid">';for(var p=0;p<entry.photos.length;p++)h+='<div class="photo-thumb"><img src="'+entry.photos[p]+'"></div>';h+='</div>';}
+  h+='<div class="report-footer">'+T('reportFooter')+'<br>'+T('reportGenerated')+new Date().toLocaleString('he-IL')+'</div>';
+  el.innerHTML=h;showScreen('s-report');
+}function renderDefectFilters(){
+  var el=document.getElementById('defect-filters');if(!el)return;
+  var fs=[{k:'all',l:'filterAll'},{k:'open',l:'filterOpen'},{k:'progress',l:'filterProgress'},{k:'done',l:'filterDone'}];
+  var h='';for(var i=0;i<fs.length;i++){var f=fs[i];h+='<div class="filter-tab'+(APP.currentFilter===f.k?' active':'')+'" onclick="setDefFilter(\''+f.k+'\')">'+T(f.l)+'</div>';}
+  el.innerHTML=h;
 }
-
-// ===================== DEFECTS =====================
+function setDefFilter(f){APP.currentFilter=f;renderDefectFilters();renderDefects();}
 function renderDefects(){
-  const el=document.getElementById('defects-list');
-  let arr=APP.defects;
-  if(APP.currentFilter!=='all') arr=arr.filter(d=>d.status===APP.currentFilter);
-  if(!arr.length){
-    el.innerHTML='<div class="empty-state"><div class="empty-icon">👍</div><div class="empty-text">'+
-      (APP.currentFilter==='all'?'אין ליקויים פתוחים!<br>לחץ + להוסיף':'אין ליקויים בסטטוס זה')+'</div></div>';
-    return;
+  var list=document.getElementById('defects-list');if(!list)return;
+  var defects=loadJSON('sb_defects',[]);
+  var filtered=defects.filter(function(d){return APP.currentFilter==='all'||d.status===APP.currentFilter;});
+  if(!defects.length){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);white-space:pre-line;">'+T('emptyDefects')+'</div>';return;}
+  if(!filtered.length){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);">'+T('emptyDefectsFilter')+'</div>';return;}
+  var h='';
+  for(var i=0;i<filtered.length;i++){
+    var d=filtered[i];
+    var sc='sev-'+(d.severity||'normal');
+    var sk=d.severity==='urgent'?'sevUrgent':d.severity==='low'?'sevLow':'sevNormal';
+    var bc=d.severity==='urgent'?'urgent':d.severity==='low'?'low':'normal';
+    var dl='';
+    if(d.deadline){var dlD=new Date(d.deadline);var now=new Date();now.setHours(0,0,0,0);dl=dlD<now&&d.status!=='done'?'<span style="color:var(--red);">'+T('overdue')+'</span>':T('targetDate')+dlD.toLocaleDateString('he-IL');}
+    else dl=T('noDeadline');
+    var oa=d.status==='open'?' active-open':'';var pa=d.status==='progress'?' active-progress':'';var da=d.status==='done'?' active-done':'';
+    h+='<div class="defect-card '+sc+'">';
+    h+='<div class="defect-header"><div class="defect-desc">'+esc(d.desc||'')+'</div><span class="sev-badge '+bc+'">'+T(sk)+'</span></div>';
+    h+='<div class="defect-meta">';
+    if(d.floor||d.area)h+='<span>📍 '+esc((d.floor||'')+(d.area?' / '+d.area:''))+'</span>';
+    if(d.contractor)h+='<span>👷 '+esc(d.contractor)+'</span>';
+    h+='<span>'+dl+'</span></div>';
+    if(d.photos&&d.photos.length){h+='<div class="photos-grid" style="margin-bottom:10px;">';for(var p=0;p<Math.min(d.photos.length,3);p++)h+='<div class="photo-thumb"><img src="'+d.photos[p]+'"></div>';h+='</div>';}
+    h+='<div class="defect-actions">';
+    h+='<button class="status-btn'+oa+'" onclick="setDefStatus('+d.id+',\'open\')">'+T('filterOpen')+'</button>';
+    h+='<button class="status-btn'+pa+'" onclick="setDefStatus('+d.id+',\'progress\')">'+T('btnProgress')+'</button>';
+    h+='<button class="status-btn'+da+'" onclick="setDefStatus('+d.id+',\'done\')">'+T('btnDone')+'</button>';
+    h+='<button class="status-btn" onclick="sendDefWA('+d.id+')">'+T('btnWA')+'</button>';
+    h+='<button class="status-btn" onclick="delDefect('+d.id+')" style="background:#fdecea;color:var(--red);">🗑️</button>';
+    h+='</div></div>';
   }
-  el.innerHTML=arr.map(function(d){
-    var dClass=d.status==='done'?'s-done':d.status==='progress'?'s-progress':'s-open';
-    var isLate=d.deadline&&new Date(d.deadline)<new Date()&&d.status!=='done';
-    var photoHtml=d.photo?'<img class="def-photo" src="'+d.photo+'">'  :'';
-    var deadlineClass='def-deadline'+(isLate?' late':'');
-    var deadlineText=d.deadline?'יעד: '+d.deadline+(isLate?' ⚠️ באיחור':''):'ללא יעד';
-    var actionBtns='';
-    if(d.status!=='done'){
-      actionBtns+='<button class="btn btn-green btn-sm" onclick="updateDefectStatus(\''+d.id+'\',\'done\')">✅ בוצע</button>';
-      if(d.status==='open') actionBtns+='<button class="btn btn-ghost btn-sm" onclick="updateDefectStatus(\''+d.id+'\',\'progress\')">⏳ בטיפול</button>';
-    }
-    actionBtns+='<button class="btn btn-ghost btn-sm" onclick="sendDefectWhatsApp(\''+d.id+'\')">📲 וואטסאפ</button>';
-    actionBtns+='<button class="btn btn-ghost btn-sm" onclick="deleteDefect(\''+d.id+'\')">🗑️</button>';
-    var shortDesc=d.desc.slice(0,50)+(d.desc.length>50?'...':'');
-    return '<div class="defect-card">'
-      +'<div class="def-top">'
-        +'<span class="status-dot '+dClass+'"></span>'
-        +'<span class="def-title">'+shortDesc+'</span>'
-        +'<span class="def-contractor">'+d.contractor+'</span>'
-      +'</div>'
-      +'<div class="def-body">'
-        +photoHtml
-        +'<div class="def-location">📍 קומה '+(d.floor||'?')+(d.location?' — '+d.location:'')+'</div>'
-        +'<div class="def-desc">'+d.desc+'</div>'
-        +'<div class="def-footer">'
-          +'<span class="'+deadlineClass+'">'+deadlineText+'</span>'
-          +'<span style="font-size:12px;color:#bdc3c7">'+d.date+'</span>'
-        +'</div>'
-        +'<div class="def-actions">'+actionBtns+'</div>'
-      +'</div>'
-    +'</div>';
-  }).join('');
+  list.innerHTML=h;
 }
-
-function filterDefects(el){
-  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  APP.currentFilter=el.dataset.filter;
-  renderDefects();
+function openAddDefect(){APP.defectPhotos=[];APP.selectedSev='normal';document.getElementById('def-desc').value='';document.getElementById('def-floor').value='';document.getElementById('def-area').value='';document.getElementById('def-deadline').value='';renderDefectPhotos();populateContractorSelect();updateSevBtns();openModal('modal-defect');}
+function renderDefectPhotos(){
+  var g=document.getElementById('defect-photos-grid');if(!g)return;
+  var h='';for(var i=0;i<APP.defectPhotos.length;i++)h+='<div class="photo-thumb"><img src="'+APP.defectPhotos[i]+'"><button class="photo-del" onclick="removeDefPhoto('+i+')">×</button></div>';
+  h+='<div class="photo-add" onclick="document.getElementById(\'defect-photo-input\').click()"><span class="photo-add-icon">📷</span><span>+</span></div>';
+  g.innerHTML=h;
 }
-
-function openAddDefect(){
-  APP.defectPhoto=null;
-  renderDefectPhoto();
-  document.getElementById('def-desc').value='';
-  document.getElementById('def-floor').value='';
-  document.getElementById('def-location').value='';
-  document.getElementById('def-deadline').value='';
-  // populate contractors
-  const sel=document.getElementById('def-contractor');
-  sel.innerHTML=(APP.settings.contractors.length?
-    APP.settings.contractors.map(c=>`<option value="${c.name}|${c.phone}">${c.name} (${c.trade})</option>`).join(''):
-    '<option value="|">ללא קבלן — הוסף בהגדרות</option>');
-  openModal('modal-defect');
+function handleDefectPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){APP.defectPhotos.push(ev.target.result);renderDefectPhotos();};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
+function removeDefPhoto(i){APP.defectPhotos.splice(i,1);renderDefectPhotos();}
+function populateContractorSelect(){
+  var sel=document.getElementById('def-contractor');if(!sel)return;
+  var cs=APP.settings.contractors||[];
+  var h='<option value="">'+(APP.lang==='ar'?'اختر مقاولاً':'בחר קבלן')+'</option>';
+  for(var i=0;i<cs.length;i++)h+='<option value="'+esc(cs[i].name)+'">'+esc(cs[i].name)+(cs[i].trade?' ('+esc(cs[i].trade)+')':'')+'</option>';
+  sel.innerHTML=h;
 }
-
+function selectSev(s){APP.selectedSev=s;updateSevBtns();}
+function updateSevBtns(){
+  document.querySelectorAll('#sev-btns .status-btn').forEach(function(b){
+    b.classList.remove('active-open','active-progress','active-done');
+    if(b.dataset.sev===APP.selectedSev){if(APP.selectedSev==='urgent')b.classList.add('active-open');else if(APP.selectedSev==='normal')b.classList.add('active-progress');else b.classList.add('active-done');}
+  });
+}
 function saveDefect(){
-  const desc=document.getElementById('def-desc').value.trim();
-  if(!desc){toast('יש לתאר את הליקוי');return}
-  const cVal=document.getElementById('def-contractor').value;
-  const[cName,cPhone]=cVal.split('|');
-  const d={
-    id:uid(),date:isoDate(),
-    desc,floor:document.getElementById('def-floor').value.trim(),
-    location:document.getElementById('def-location').value.trim(),
-    contractor:cName,contractorPhone:cPhone,
-    deadline:document.getElementById('def-deadline').value,
-    status:'open',photo:APP.defectPhoto
-  };
-  APP.defects.unshift(d);
-  saveJSON('sb_defects',APP.defects);
-  closeModal('modal-defect');
-  renderDefects();
-  toast('✅ ליקוי נשמר');
-  // auto whatsapp
-  if(cPhone) setTimeout(()=>sendDefectWhatsApp(d.id),500);
+  var desc=document.getElementById('def-desc').value.trim();if(!desc){toast(T('defDescPlaceholder'));return;}
+  var defects=loadJSON('sb_defects',[]);
+  var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),desc:desc,floor:document.getElementById('def-floor').value.trim(),area:document.getElementById('def-area').value.trim(),contractor:document.getElementById('def-contractor').value,deadline:document.getElementById('def-deadline').value,severity:APP.selectedSev,status:'open',photos:APP.defectPhotos.slice()};
+  defects.unshift(entry);saveJSON('sb_defects',defects);closeModal('modal-defect');toast(T('saved'));renderDefects();
+  if(entry.contractor){var cs=APP.settings.contractors||[];var c=cs.find(function(x){return x.name===entry.contractor;});if(c&&c.phone)sendDefWADirect(entry,c.phone);}
 }
-
-function sendDefectWhatsApp(id){
-  const d=APP.defects.find(x=>x.id===id);
-  if(!d)return;
-  const s=APP.settings;
-  let msg=`🔧 *דרישה לתיקון ליקוי — ${s.projectName||'האתר'}*\n\n`;
-  msg+=`📋 *תיאור:* ${d.desc}\n`;
-  msg+=`📍 *מיקום:* קומה ${d.floor||'?'} ${d.location?'— '+d.location:''}\n`;
-  if(d.deadline) msg+=`⏰ *יעד לתיקון:* ${d.deadline}\n`;
-  msg+=`\n👷 ${s.managerName||'מנהל העבודה'}\n_נשלח מ-SiteBoss_`;
-  if(d.photo){toast('⚠️ שים לב: לשלוח תמונה ידנית בוואטסאפ')}
-  const phone=d.contractorPhone?d.contractorPhone.replace(/[-\s]/g,''):'';
-  const url=phone?`https://wa.me/972${phone.replace(/^0/,'')}?text=`:`https://wa.me/?text=`;
-  window.open(url+encodeURIComponent(msg),'_blank');
+function setDefStatus(id,status){var ds=loadJSON('sb_defects',[]);for(var i=0;i<ds.length;i++){if(ds[i].id===id){ds[i].status=status;break;}}saveJSON('sb_defects',ds);renderDefects();}
+function delDefect(id){if(!confirm(T('deleteConfirm')))return;var ds=loadJSON('sb_defects',[]);ds=ds.filter(function(d){return d.id!==id;});saveJSON('sb_defects',ds);renderDefects();toast(T('deleted'));}
+function sendDefWA(id){var ds=loadJSON('sb_defects',[]);var d=ds.find(function(x){return x.id===id;});if(!d)return;var cs=APP.settings.contractors||[];var c=d.contractor?cs.find(function(x){return x.name===d.contractor;}):null;sendDefWADirect(d,c?c.phone:'');}
+function sendDefWADirect(d,phone){
+  var sk=d.severity==='urgent'?'sevUrgent':d.severity==='low'?'sevLow':'sevNormal';
+  var msg=T('defectsTitle')+' — '+(APP.settings.projectName||'')+'\n'+T('defSeverity')+': '+T(sk)+'\n'+T('defDesc')+': '+(d.desc||'')+'\n';
+  if(d.floor||d.area)msg+=T('defFloor')+': '+(d.floor||'')+' '+(d.area||'')+'\n';
+  if(d.deadline)msg+=T('defDeadline')+': '+d.deadline+'\n';
+  window.open('https://wa.me/'+(phone?phone.replace(/\D/g,''):'')+'?text='+encodeURIComponent(msg),'_blank');
 }
-
-function updateDefectStatus(id,status){
-  const d=APP.defects.find(x=>x.id===id);
-  if(d){d.status=status;saveJSON('sb_defects',APP.defects);renderDefects();toast('סטטוס עודכן');}
+var WORK_TYPES=[{k:'general',i:'🏗️',l:'wtGeneral'},{k:'structure',i:'🏛️',l:'wtStructure'},{k:'finishing',i:'🪟',l:'wtFinishing'},{k:'scaffolding',i:'🪜',l:'wtScaffolding'},{k:'excavation',i:'⛏️',l:'wtExcavation'}];
+function getSafetyQs(wt){
+  var base=['sq1','sq2','sq3','sq4','sq5','sq6','sq7','sq8','sq9','sq10','sq11','sq12'];
+  var extras={structure:['sq_struct1','sq_struct2'],finishing:['sq_fin1','sq_fin2'],scaffolding:['sq_scaf1','sq_scaf2'],excavation:['sq_exc1','sq_exc2']};
+  return base.concat(extras[wt]||[]).map(function(k){return{qKey:k,aKey:k+'a'};});
 }
-
-function deleteDefect(id){
-  if(!confirm('למחוק ליקוי זה?'))return;
-  APP.defects=APP.defects.filter(x=>x.id!==id);
-  saveJSON('sb_defects',APP.defects);
-  renderDefects();toast('ליקוי נמחק');
-}
-
-// ===================== SAFETY =====================
-const SAFETY_QUESTIONS=[
-  {q:'כל הפתחים, שוחות ומרפסות מגודרים?',alert:'גדר מיידית — סכנת נפילה!'},
-  {q:'פיגומים ותשתיות תקינים ובטוחים?',alert:'עצור עבודה על פיגום לא תקין!'},
-  {q:'כל הפועלים עם קסדות ונעלי בטיחות?',alert:'חובה לענוש ולעצור עבודה ללא ציוד'},
-  {q:'ציוד חשמלי זמני תקין (לוחות, כבלים)?',alert:'חשמל פגום = סכנת מוות'},
-  {q:'ארגז עזרה ראשונה נגיש ומאויש?',alert:'הבא ארגז לפני תחילת עבודה'},
-  {q:'שילוט בטיחות תקין (עברית + שפות נוספות)?',alert:'שים שלטים בשפת העובדים הזרים'},
-  {q:'אין חפירות פתוחות ללא גידור?',alert:'גדר חפירות מיידית'},
-  {q:'כלי הרמה (עגורן, מנוף) תקינים ומורשים?',alert:'בדוק תעודת כשירות'},
-  {q:'אין עבודות חשמל ב-HIGH VOLTAGE ללא אישור?',alert:'דרש אישור מהממונה על הבטיחות'},
-  {q:'כיבויי אש ומטפים תקינים?',alert:'הוצא לטעינה מיידית'},
-  {q:'מים לשתייה זמינים לכל פועלי האתר?',alert:'חובה חוקית בימי חום'},
-  {q:'כניסות האתר סגורות ומוגנות מפני חדירת זרים?',alert:'נעל שערים ובדוק גדר'}
-];
-
 function initSafety(){
-  document.getElementById('safety-date-sub').textContent=heDate();
-  APP.safetyAnswers={};
-  renderSafetyQuestions();
-  initSig();
+  var today=new Date();
+  document.getElementById('safety-date-sub').textContent=today.toLocaleDateString(APP.lang==='ar'?'ar-IL':'he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  APP.safetyAnswers={};APP.safetyPhotos={};APP.currentWorkType='general';
+  renderWorkTypes();renderSafetyQuestions();initSignature();
 }
-
+function renderWorkTypes(){
+  var g=document.getElementById('work-type-grid');if(!g)return;
+  var h='';for(var i=0;i<WORK_TYPES.length;i++){var wt=WORK_TYPES[i];h+='<div class="work-type-btn'+(APP.currentWorkType===wt.k?' active':'')+'" onclick="selWorkType(\''+wt.k+'\')"><span class="work-type-icon">'+wt.i+'</span><span class="work-type-label">'+T(wt.l)+'</span></div>';}
+  g.innerHTML=h;
+}
+function selWorkType(k){APP.currentWorkType=k;APP.safetyAnswers={};renderWorkTypes();renderSafetyQuestions();}
 function renderSafetyQuestions(){
-  const el=document.getElementById('safety-questions');
-  el.innerHTML=SAFETY_QUESTIONS.map((q,i)=>`
-    <div class="sq-card" id="sq-${i}">
-      <div class="sq-main">
-        <div class="sq-num">${i+1}</div>
-        <div class="sq-text">${q.q}</div>
-        <div class="sq-btns">
-          <button class="sq-btn" id="sqok-${i}" onclick="answerSafety(${i},true)">✅</button>
-          <button class="sq-btn" id="sqfail-${i}" onclick="answerSafety(${i},false)">❌</button>
-        </div>
-      </div>
-      <div class="sq-alert" id="sq-alert-${i}">${q.alert}</div>
-    </div>`).join('');
-}
-
-function answerSafety(i,ok){
-  APP.safetyAnswers[i]=ok;
-  const card=document.getElementById(`sq-${i}`);
-  const okBtn=document.getElementById(`sqok-${i}`);
-  const failBtn=document.getElementById(`sqfail-${i}`);
-  const alert=document.getElementById(`sq-alert-${i}`);
-  card.className='sq-card '+(ok?'answered-ok':'answered-fail');
-  okBtn.className='sq-btn '+(ok?'sq-ok':'');
-  failBtn.className='sq-btn '+(ok?'':'sq-fail');
-  alert.className='sq-alert '+(ok?'':'show');
-  updateSafetyProgress();
-}
-
-function updateSafetyProgress(){
-  const answered=Object.keys(APP.safetyAnswers).length;
-  const pct=Math.round(answered/SAFETY_QUESTIONS.length*100);
-  document.getElementById('sf-progress').style.width=pct+'%';
-  document.getElementById('sf-progress-label').textContent=`${answered} / ${SAFETY_QUESTIONS.length} שאלות נענו`;
-}
-
-// ---- SIGNATURE ----
-function initSig(){
-  const c=document.getElementById('sig-canvas');
-  APP.sigCanvas=c;
-  APP.sigCtx=c.getContext('2d');
-  c.width=c.offsetWidth*window.devicePixelRatio;
-  c.height=110*window.devicePixelRatio;
-  APP.sigCtx.scale(window.devicePixelRatio,window.devicePixelRatio);
-  APP.sigCtx.strokeStyle='#2c3e50';APP.sigCtx.lineWidth=2.5;APP.sigCtx.lineCap='round';
-
-  const getPos=(e)=>{
-    const r=c.getBoundingClientRect();
-    const pt=e.touches?e.touches[0]:e;
-    return{x:(pt.clientX-r.left),y:(pt.clientY-r.top)};
-  };
-  c.addEventListener('pointerdown',e=>{
-    APP.sigDrawing=true;
-    const p=getPos(e);APP.sigCtx.beginPath();APP.sigCtx.moveTo(p.x,p.y);
-    document.getElementById('sig-hint').style.display='none';
-    e.preventDefault();
-  },{passive:false});
-  c.addEventListener('pointermove',e=>{
-    if(!APP.sigDrawing)return;
-    const p=getPos(e);APP.sigCtx.lineTo(p.x,p.y);APP.sigCtx.stroke();
-    e.preventDefault();
-  },{passive:false});
-  c.addEventListener('pointerup',()=>{APP.sigDrawing=false});
-  c.addEventListener('pointerleave',()=>{APP.sigDrawing=false});
-}
-
-function clearSig(){
-  const c=APP.sigCanvas,ctx=APP.sigCtx;
-  ctx.clearRect(0,0,c.offsetWidth,110);
-  document.getElementById('sig-hint').style.display='block';
-}
-
-function getSigData(){
-  const c=APP.sigCanvas;
-  const blank=document.createElement('canvas');
-  blank.width=c.width;blank.height=c.height;
-  return c.toDataURL()===blank.toDataURL()?null:c.toDataURL('image/png');
-}
-
-function saveSafety(){
-  const answered=Object.keys(APP.safetyAnswers).length;
-  if(answered<SAFETY_QUESTIONS.length){
-    if(!confirm(`ענית על ${answered} מתוך ${SAFETY_QUESTIONS.length} שאלות. להמשיך בכל זאת?`))return;
+  var c=document.getElementById('safety-questions-container');if(!c)return;
+  var qs=getSafetyQs(APP.currentWorkType);
+  var answered=Object.keys(APP.safetyAnswers).length;
+  var h='<div class="card" style="background:var(--bg);border:none;text-align:center;padding:10px 14px;"><span style="font-size:13px;color:var(--sub);">'+T('questionsAnswered')+': <strong style="color:var(--blue);">'+answered+' / '+qs.length+'</strong></span></div>';
+  for(var i=0;i<qs.length;i++){
+    var q=qs[i];var ans=APP.safetyAnswers[q.qKey];
+    var cls=ans==='ok'?' passed':ans==='fail'?' failed':'';
+    h+='<div class="safety-question'+cls+'"><div class="sq-text">'+(i+1)+'. '+T(q.qKey)+'</div>';
+    h+='<div class="sq-btns"><button class="sq-btn'+(ans==='ok'?' ok':'')+'" onclick="answerSQ(\''+q.qKey+'\',\'ok\')">✅ '+T('reportOk')+'</button>';
+    h+='<button class="sq-btn'+(ans==='fail'?' fail':'')+'" onclick="answerSQ(\''+q.qKey+'\',\'fail\')">❌ '+T('reportFail')+'</button></div>';
+    h+='<div class="sq-alert">⚠️ '+T(q.aKey)+'</div>';
+    if(ans==='fail')h+='<div style="margin-top:8px;"><input type="file" id="sqp'+i+'" accept="image/*" style="display:none" onchange="handleSQPhoto(event,\''+q.qKey+'\')"><button class="btn btn-gray btn-sm" onclick="document.getElementById(\'sqp'+i+'\').click()">📷 '+(APP.lang==='ar'?'إضافة صورة':'הוסף תמונה')+'</button></div>';
+    h+='</div>';
   }
-  const sig=getSigData();
-  if(!sig){toast('יש לחתום לפני אישור');return}
-
-  const entry={
-    id:uid(),date:isoDate(),dateHe:heDate(),
-    answers:SAFETY_QUESTIONS.map((q,i)=>({q:q.q,ok:APP.safetyAnswers[i],alert:q.alert})),
-    sig,manager:APP.settings.managerName,project:APP.settings.projectName,
-    gps:null
-  };
-
-  // try GPS
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(p=>{
-      entry.gps=`${p.coords.latitude.toFixed(5)},${p.coords.longitude.toFixed(5)}`;
-      finalizeSafety(entry);
-    },()=>finalizeSafety(entry),{timeout:4000});
-  } else finalizeSafety(entry);
+  c.innerHTML=h;
 }
-
-function finalizeSafety(entry){
-  APP.safety.unshift(entry);
-  saveJSON('sb_safety',APP.safety);
-  toast('✅ דוח בטיחות נשמר!');
-  printSafetyReport(entry);
+function answerSQ(key,ans){APP.safetyAnswers[key]=ans;renderSafetyQuestions();}
+function handleSQPhoto(e,key){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){APP.safetyPhotos[key]=ev.target.result;toast('📷 '+(APP.lang==='ar'?'تم إضافة الصورة':'תמונה נוספה'));};r.readAsDataURL(f);e.target.value='';}
+var signCanvas,signCtx,signing=false;
+function initSignature(){
+  signCanvas=document.getElementById('sign-canvas');if(!signCanvas)return;
+  signCtx=signCanvas.getContext('2d');signCanvas.width=signCanvas.offsetWidth||400;signCanvas.height=160;
+  signCtx.clearRect(0,0,signCanvas.width,signCanvas.height);
+  signCanvas.onmousedown=function(e){signing=true;var p=sPos(e);signCtx.beginPath();signCtx.moveTo(p.x,p.y);};
+  signCanvas.onmousemove=function(e){if(!signing)return;var p=sPos(e);signCtx.lineTo(p.x,p.y);signCtx.strokeStyle='#222';signCtx.lineWidth=2.5;signCtx.lineCap='round';signCtx.stroke();};
+  signCanvas.onmouseup=function(){signing=false;};signCanvas.onmouseleave=function(){signing=false;};
+  signCanvas.addEventListener('touchstart',function(e){e.preventDefault();signing=true;var t=e.touches[0];var r=signCanvas.getBoundingClientRect();signCtx.beginPath();signCtx.moveTo(t.clientX-r.left,t.clientY-r.top);},{passive:false});
+  signCanvas.addEventListener('touchmove',function(e){e.preventDefault();if(!signing)return;var t=e.touches[0];var r=signCanvas.getBoundingClientRect();signCtx.lineTo(t.clientX-r.left,t.clientY-r.top);signCtx.strokeStyle='#222';signCtx.lineWidth=2.5;signCtx.lineCap='round';signCtx.stroke();},{passive:false});
+  signCanvas.addEventListener('touchend',function(){signing=false;});
 }
-
-function printSafetyReport(entry){
-  const s=APP.settings;
-  const failCount=entry.answers.filter(a=>a.ok===false).length;
-  const okCount=entry.answers.filter(a=>a.ok===true).length;
-  const qs=entry.answers.map((a,i)=>`
-    <div class="pr-q">
-      <span class="${a.ok===true?'r':a.ok===false?'x':''}">${a.ok===true?'✅':a.ok===false?'❌':'—'}</span>
-      ${i+1}. ${a.q}
-      ${a.ok===false?`<span style="color:#e74c3c;font-size:12px"> ← ${a.alert}</span>`:''}
-    </div>`).join('');
-
-  const statusColor=failCount===0?'#27ae60':failCount<=2?'#e67e22':'#e74c3c';
-  const statusText=failCount===0?'תקין — כל הבדיקות עברו':failCount<=2?`${failCount} ליקויים — נדרש טיפול מיידי`:`${failCount} ליקויים חמורים — עצור אתר!`;
-
-  let html=`<div class="print-report">
-    <div class="pr-header">
-      <div>
-        <div class="pr-logo">SiteBoss – דוח בטיחות יומי</div>
-        <div style="font-size:13px;color:#555;margin-top:4px">${s.projectName||'שם הפרויקט'}</div>
-      </div>
-      <div class="pr-meta">
-        <div>${entry.dateHe}</div>
-        <div>מנהל עבודה: ${entry.manager||''}</div>
-        ${entry.gps?`<div>GPS: ${entry.gps}</div>`:''}
-        <div>הופק: ${new Date().toLocaleTimeString('he-IL')}</div>
-      </div>
-    </div>
-
-    <div class="pr-section">
-      <div style="background:${statusColor};color:white;padding:12px 16px;border-radius:8px;font-size:15px;font-weight:700;margin-bottom:14px">
-        ${statusText}
-      </div>
-      <div class="pr-row"><strong>סך שאלות:</strong> ${entry.answers.length}</div>
-      <div class="pr-row"><strong>תקין:</strong> <span style="color:#27ae60;font-weight:700">${okCount}</span></div>
-      <div class="pr-row"><strong>ליקויים:</strong> <span style="color:#e74c3c;font-weight:700">${failCount}</span></div>
-      <div class="pr-row"><strong>לא נענו:</strong> ${entry.answers.length-okCount-failCount}</div>
-    </div>
-
-    <div class="pr-section">
-      <div class="pr-st">פרטי הבדיקה</div>
-      ${qs}
-    </div>
-
-    <div class="pr-section" style="margin-top:20px">
-      <div class="pr-st">חתימת מנהל העבודה</div>
-      <div style="display:flex;align-items:center;gap:20px">
-        <img src="${entry.sig}" style="height:70px;border:1px solid #ddd;border-radius:8px;background:#fafafa">
-        <div>
-          <div style="font-weight:700">${entry.manager||s.managerName||''}</div>
-          <div style="font-size:12px;color:#666">${entry.dateHe}</div>
-          ${entry.gps?`<div style="font-size:11px;color:#aaa">GPS: ${entry.gps}</div>`:''}
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:30px;border-top:1px solid #ddd;padding-top:12px;font-size:11px;color:#aaa;text-align:center">
-      מסמך זה הופק ע"י SiteBoss — מנהל עבודה פלוס · ${new Date().toLocaleString('he-IL')}
-    </div>
-  </div>`;
-
-  document.getElementById('report-content').innerHTML=html;
-  showScreen('s-report');
+function sPos(e){var r=signCanvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
+function clearSignature(){if(signCtx)signCtx.clearRect(0,0,signCanvas.width,signCanvas.height);}
+function confirmSafety(){
+  var qs=getSafetyQs(APP.currentWorkType);var answered=Object.keys(APP.safetyAnswers).length;
+  if(answered<qs.length){toast((APP.lang==='ar'?'يرجى الإجابة على جميع الأسئلة':'יש לענות על כל השאלות')+' ('+answered+'/'+qs.length+')');return;}
+  var signData=signCanvas?signCanvas.toDataURL():'';
+  var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),workType:APP.currentWorkType,answers:Object.assign({},APP.safetyAnswers),questions:qs,signature:signData,lang:APP.lang,gps:APP.gps};
+  var safety=loadJSON('sb_safety',[]);safety.unshift(entry);saveJSON('sb_safety',safety);
+  toast(T('saved'));showSafetyReport(entry);
 }
-
 function renderSafetyHistory(){
-  const el=document.getElementById('safety-history-list');
-  if(!APP.safety.length){
-    el.innerHTML='<div class="empty-state"><div class="empty-icon">🦺</div><div class="empty-text">עדיין אין דוחות בטיחות.<br>בצע את הבדיקה הראשונה!</div></div>';
-    return;
+  var list=document.getElementById('safety-history-list');if(!list)return;
+  var safety=loadJSON('sb_safety',[]);
+  if(!safety.length){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);white-space:pre-line;">'+T('emptySafety')+'</div>';return;}
+  var h='';
+  for(var i=0;i<safety.length;i++){
+    var r=safety[i];var d=new Date(r.date);var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
+    var fails=0;for(var k in r.answers){if(r.answers[k]==='fail')fails++;}
+    var rstr=JSON.stringify(r).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    h+='<div class="history-item" onclick="showSafetyReport(\''+rstr+'\')"><div class="history-item-date">'+ds+'</div><div class="history-item-sub">'+(fails?'❌ '+fails+' ליקויים':'✅ תקין')+'</div></div>';
   }
-  el.innerHTML=APP.safety.map(e=>{
-    const ok=e.answers.filter(a=>a.ok===true).length;
-    const fail=e.answers.filter(a=>a.ok===false).length;
-    const color=fail===0?'var(--green)':fail<=2?'var(--orange)':'var(--red)';
-    return `<div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span style="font-weight:800;font-size:15px">${e.dateHe}</span>
-        <span style="background:${color};color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700">
-          ${fail===0?'✅ תקין':`❌ ${fail} ליקויים`}
-        </span>
-      </div>
-      <div style="font-size:13px;color:var(--gray);margin-bottom:10px">✅ ${ok} תקין &nbsp; ❌ ${fail} ליקויים</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="printSafetyReport(APP.safety.find(x=>x.id==='${e.id}'))">🖨️ הדפס</button>
-        <button class="btn btn-ghost btn-sm" onclick="deleteSafety('${e.id}')">🗑️ מחק</button>
-      </div>
-    </div>`;
-  }).join('');
+  list.innerHTML=h;
 }
-
-function deleteSafety(id){
-  if(!confirm('למחוק דוח זה?'))return;
-  APP.safety=APP.safety.filter(x=>x.id!==id);
-  saveJSON('sb_safety',APP.safety);
-  renderSafetyHistory();
-  toast('דוח נמחק');
+function showSafetyReport(entryOrStr){
+  var entry=typeof entryOrStr==='string'?JSON.parse(entryOrStr):entryOrStr;
+  var el=document.getElementById('report-content');var s=APP.settings;
+  var d=new Date(entry.date);var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('report-topbar-title').textContent=T('reportSafetyTitle');
+  var h='<div class="report-logo"><div class="report-logo-title">דקה</div><div class="report-logo-sub">'+T('appTagline')+'</div></div>';
+  h+='<div class="report-header"><p><strong>'+T('reportProject')+'</strong>'+(s.projectName||'—')+'</p><p><strong>'+T('reportManager')+'</strong>'+(s.managerName||'—')+'</p><p><strong>'+T('reportDate')+'</strong>'+ds+'</p>';
+  if(entry.gps)h+='<p><strong>GPS: </strong>'+entry.gps+'</p>';
+  h+='</div><div class="report-section-title">'+T('reportSafetyCheck')+'</div>';
+  var qs=entry.questions||getSafetyQs(entry.workType||'general');var fails=0;
+  for(var i=0;i<qs.length;i++){var q=qs[i];var ans=entry.answers[q.qKey];if(ans==='fail')fails++;var okf=ans==='ok'?'<span class="report-ok">✅ '+T('reportOk')+'</span>':'<span class="report-fail">❌ '+T('reportFail')+'</span>';h+='<div class="report-sq-row"><span>'+(i+1)+'. '+T(q.qKey)+'</span>'+okf+'</div>';}
+  h+='<div style="text-align:center;padding:12px;font-size:15px;font-weight:800;color:'+(fails?'var(--red)':'var(--green)')+';">'+(fails?'❌ '+fails+' ליקויים':'✅ '+T('reportSafetyStatus0'))+'</div>';
+  if(entry.signature)h+='<div class="report-section-title">'+T('reportSafetySignature')+'</div><div style="border:2px solid #dce3e9;border-radius:10px;padding:10px;margin-top:8px;"><img src="'+entry.signature+'" style="max-width:100%;"></div>';
+  h+='<div class="report-footer">'+T('reportFooter')+'<br>'+T('reportGenerated')+new Date().toLocaleString('he-IL')+'</div>';
+  el.innerHTML=h;showScreen('s-report');
 }
-
-// ===================== MODALS =====================
-function openModal(id){document.getElementById(id).classList.add('open')}
-function closeModal(id){document.getElementById(id).classList.remove('open')}
-function closeModalIfOutside(e,id){if(e.target.id===id)closeModal(id)}
-
-// ===================== INIT =====================
-document.addEventListener('DOMContentLoaded',()=>{
-  refreshHome();
-  // service worker for offline
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-  }
-});
-
-// Prevent zoom on double-tap iOS
-let lastTap=0;
-document.addEventListener('touchend',e=>{
-  const now=Date.now();
-  if(now-lastTap<300){e.preventDefault()}
-  lastTap=now;
-},{passive:false});
+function loadSettingsForm(){
+  var s=APP.settings;
+  document.getElementById('set-project').value=s.projectName||'';document.getElementById('set-manager').value=s.managerName||'';
+  document.getElementById('set-phone').value=s.managerPhone||'';document.getElementById('set-office-name').value=s.officeName||'';
+  document.getElementById('set-office-phone').value=s.officePhone||'';renderContractors();
+}
+function saveSettings(){
+  APP.settings.projectName=document.getElementById('set-project').value.trim();APP.settings.managerName=document.getElementById('set-manager').value.trim();
+  APP.settings.managerPhone=document.getElementById('set-phone').value.trim();APP.settings.officeName=document.getElementById('set-office-name').value.trim();
+  APP.settings.officePhone=document.getElementById('set-office-phone').value.trim();APP.settings.lang=APP.lang;saveJSON('sb_settings',APP.settings);toast(T('saved'));
+}
+function renderContractors(){
+  var list=document.getElementById('contractors-list');if(!list)return;
+  var cs=APP.settings.contractors||[];if(!cs.length){list.innerHTML='';return;}
+  var h='';for(var i=0;i<cs.length;i++){var c=cs[i];h+='<div class="contractor-item"><div class="contractor-info"><div class="c-name">'+esc(c.name)+'</div><div class="c-meta">'+esc(c.trade||'')+(c.phone?' · '+c.phone:'')+'</div></div><button class="contractor-del" onclick="delContractor('+i+')">🗑️</button></div>';}
+  list.innerHTML=h;
+}
+var TRADE_KEYS=['tPlaster','tElec','tPlumb','tCarpentry','tTiling','tGypsum','tPaint','tAlu','tAC','tScaffold','tOther'];
+function openAddContractor(){
+  document.getElementById('c-name').value='';document.getElementById('c-phone').value='';
+  var sel=document.getElementById('c-trade');var h='';for(var i=0;i<TRADE_KEYS.length;i++)h+='<option value="'+TRADE_KEYS[i]+'">'+T(TRADE_KEYS[i])+'</option>';
+  sel.innerHTML=h;openModal('modal-contractor');
+}
+function saveContractor(){
+  var name=document.getElementById('c-name').value.trim();if(!name){toast(APP.lang==='ar'?'أدخل اسم المقاول':'יש להזין שם קבלן');return;}
+  var tradeKey=document.getElementById('c-trade').value;
+  var c={name:name,trade:T(tradeKey),tradeKey:tradeKey,phone:document.getElementById('c-phone').value.trim()};
+  if(!APP.settings.contractors)APP.settings.contractors=[];
+  APP.settings.contractors.push(c);saveJSON('sb_settings',APP.settings);renderContractors();closeModal('modal-contractor');toast(T('saved'));
+}
+function delContractor(idx){if(!confirm(T('deleteConfirm')))return;APP.settings.contractors.splice(idx,1);saveJSON('sb_settings',APP.settings);renderContractors();toast(T('deleted'));}
+function openModal(id){var el=document.getElementById(id);if(el)el.classList.remove('hidden');applyLang();}
+function closeModal(id){var el=document.getElementById(id);if(el)el.classList.add('hidden');}
+var _toastTimer=null;
+function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(function(){el.classList.remove('show');},2500);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getGPS(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(function(p){APP.gps=p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5);},function(){},{timeout:10000});}
+function init(){APP.settings=loadJSON('sb_settings',{});APP.lang=APP.settings.lang||'he';applyLang();refreshHome();getGPS();}
+init();
 </script>
 </body>
 </html>

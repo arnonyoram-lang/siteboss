@@ -1,0 +1,12 @@
+﻿{
+  "name": "SiteBoss - מנהל עבודה פלוס",
+  "short_name": "SiteBoss",
+  "start_url": "./siteboss.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a73e8",
+  "orientation": "portrait",
+  "icons": [
+    {"src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%231a73e8' rx='24'/><text x='96' y='130' font-size='100' text-anchor='middle'>🏗️</text></svg>", "sizes": "192x192", "type": "image/svg+xml"}
+  ]
+}
