@@ -748,7 +748,11 @@ sq_scaf3:'يوجد وصول آمن للسقالة (سلّم/درج)؟',sq_scaf3a
 sq_exc3:'تم تحديد البنى التحتية تحت الأرض (كهرباء/غاز/ماء)؟',sq_exc3a:'تحقق من المخططات قبل الحفر',
 specialTag:'مخصّص',totalQ:'أسئلة'}
 };const APP={lang:'he',settings:{},screenHistory:['s-home'],currentFilter:'all',selectedSev:'normal',currentWorkType:'general',activeStages:[],safetyAnswers:{},safetyPhotos:{},jnlPhotos:[],defectPhotos:[],gps:null};
-function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){
+  // אחסון מלא (לרוב תמונות) — להתריע במקום לאבד נתונים בשקט
+  try{toast(APP.lang==='ar'?'⚠️ الذاكرة ممتلئة — احذف صورًا/تقارير قديمة':'⚠️ הזיכרון מלא — מחק תמונות/דוחות ישנים',5000);}catch(_){}
+  return false;
+}}
 function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function T(k){return(STRINGS[APP.lang]||STRINGS.he)[k]||k;}
 function applyLang(){
@@ -855,15 +859,16 @@ function renderMessages(){
 }
 // נקודת כניסה ל-Firebase: נקרא מהמודול כשמגיעות הודעות חדשות
 window._dkOnMessages=function(msgs){saveJSON('dk_messages',msgs);updateMsgBanner();var act=document.querySelector('.screen.active');if(act&&act.id==='s-messages')renderMessages();};
-var _recog=null,_voiceTarget=null,_voiceActive=false,_voiceFinal='';
+var _recog=null,_voiceTarget=null,_voiceActive=false,_voiceFinal='',_voiceBtn=null;
+function _voiceStopUI(){_voiceActive=false;if(_voiceBtn){_voiceBtn.innerHTML='🎙️';_voiceBtn.classList.remove('recording');}}
 function toggleVoice(target,btnId){
-  if(_voiceActive){
-    _voiceActive=false;try{if(_recog)_recog.stop();}catch(e){}
-    var b=document.getElementById(btnId);if(b){b.innerHTML='🎙️';b.classList.remove('recording');}return;
-  }
+  var b=document.getElementById(btnId);
+  if(_voiceActive){_voiceActive=false;try{if(_recog)_recog.stop();}catch(e){}_voiceStopUI();return;}
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){toast(T('voiceNotSupported'));return;}
-  _voiceTarget=target;
+  // נקה מופע קודם אם נשאר
+  if(_recog){try{_recog.onend=null;_recog.onresult=null;_recog.abort();}catch(e){}_recog=null;}
+  _voiceTarget=target;_voiceBtn=b;
   var el0=document.getElementById(target);
   _voiceFinal=el0&&el0.value?(el0.value.replace(/\s+$/,'')+' '):'';  // המשך מטקסט קיים
   _recog=new SR();_recog.lang=APP.lang==='ar'?'ar-IL':'he-IL';_recog.continuous=true;_recog.interimResults=true;
@@ -873,11 +878,12 @@ function toggleVoice(target,btnId){
       var tr=e.results[i][0].transcript;
       if(e.results[i].isFinal)_voiceFinal+=tr+' ';else interim+=tr;
     }
-    var el=document.getElementById(_voiceTarget);if(el)el.value=(_voiceFinal+interim).replace(/\s+/g,' ').trimStart();
+    var el=document.getElementById(_voiceTarget);if(el)el.value=(_voiceFinal+interim).replace(/[ \t]+/g,' ').replace(/^\s+/,'');
   };
-  _recog.onerror=function(err){if(err.error==='not-allowed')toast(T('voiceDenied'));else if(err.error!=='aborted')toast(T('voiceError'));_voiceActive=false;var b=document.getElementById(btnId);if(b){b.innerHTML='🎙️';b.classList.remove('recording');}};
-  _recog.onend=function(){if(_voiceActive){try{_recog.start();}catch(e){}}};
-  try{_recog.start();_voiceActive=true;var b=document.getElementById(btnId);if(b){b.innerHTML='⏹️';b.classList.add('recording');}}catch(e){toast(T('voiceError'));}
+  _recog.onerror=function(err){if(err.error==='not-allowed')toast(T('voiceDenied'));else if(err.error!=='aborted'&&err.error!=='no-speech')toast(T('voiceError'));};
+  // ללא הפעלה-מחדש אוטומטית (גרמה לכפילות). בסיום — הכפתור חוזר למצב מוכן, הטקסט נשמר.
+  _recog.onend=function(){_voiceStopUI();};
+  try{_recog.start();_voiceActive=true;if(b){b.innerHTML='⏹️';b.classList.add('recording');}}catch(e){toast(T('voiceError'));}
 }
 var WKEYS=['w1','w2','w3','w4','w5'];
 var currentWeather=-1;
