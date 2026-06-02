@@ -140,12 +140,66 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
 .contractor-info .c-meta{font-size:12px;color:var(--sub);}
 .contractor-del{width:32px;height:32px;border-radius:8px;border:none;background:#fdecea;color:var(--red);font-size:16px;cursor:pointer;}
 .fab{position:fixed;bottom:80px;left:16px;width:56px;height:56px;border-radius:50%;background:var(--blue);color:white;font-size:28px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(26,115,232,.4);z-index:100;}
+/* REGISTRATION */
+.register-hero{background:linear-gradient(150deg,var(--blue-dark) 0%,#1e6091 100%);padding:40px 24px 50px;text-align:center;color:white;}
+.register-logo{font-size:42px;font-weight:900;letter-spacing:2px;margin-bottom:8px;}
+.register-tagline{font-size:13px;opacity:.85;}
+.register-body{background:white;border-radius:24px 24px 0 0;margin-top:-18px;padding:28px 20px 40px;min-height:calc(100vh - 130px);}
+.register-welcome{font-size:22px;font-weight:900;color:var(--dark);margin-bottom:4px;}
+.register-sub{font-size:14px;color:var(--sub);margin-bottom:24px;}
+.reg-lang-row{display:flex;gap:10px;margin-top:4px;}
+.reg-lang-btn{flex:1;padding:12px;border-radius:12px;border:2px solid #dce3e9;background:white;text-align:center;font-size:15px;font-weight:700;cursor:pointer;color:var(--sub);transition:all .2s;}
+.reg-lang-btn.active{border-color:var(--blue);background:var(--blue-bg);color:var(--blue);}
+.reg-submit{margin-top:8px;padding:16px;font-size:17px;letter-spacing:.5px;}
+.reg-note{text-align:center;font-size:12px;color:var(--sub);margin-top:14px;opacity:.7;}
 @media print{.topbar,.offline-note,.no-print{display:none!important;}.screen-body{padding-bottom:0!important;overflow:visible!important;}#app{box-shadow:none;}}
 </style>
 </head>
 <body>
 <div id="app">
 <!-- HOME -->
+<!-- REGISTRATION SCREEN -->
+<div class="screen" id="s-register">
+  <div class="register-hero">
+    <div class="register-logo">דקה</div>
+    <div class="register-tagline" data-t="appTagline"></div>
+  </div>
+  <div class="register-body">
+    <div class="register-welcome" data-t="regWelcome"></div>
+    <div class="register-sub" data-t="regSub"></div>
+
+    <div class="form-group">
+      <label class="form-label" data-t="regFullName"></label>
+      <input id="reg-name" type="text" class="form-input" data-tp="regFullNamePh" autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-t="regPhone"></label>
+      <input id="reg-phone" type="tel" class="form-input" placeholder="05X-XXXXXXX" autocomplete="tel">
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-t="regCompany"></label>
+      <input id="reg-company" type="text" class="form-input" data-tp="regCompanyPh" autocomplete="organization">
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-t="regProject"></label>
+      <input id="reg-project" type="text" class="form-input" data-tp="regProjectPh">
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-t="regLang"></label>
+      <div class="reg-lang-row">
+        <div class="reg-lang-btn active" id="reglang-he" onclick="setRegLang('he')">🇮🇱 עברית</div>
+        <div class="reg-lang-btn" id="reglang-ar" onclick="setRegLang('ar')">🇵🇸 عربية</div>
+      </div>
+    </div>
+
+    <button class="btn btn-green reg-submit" onclick="submitRegistration()">
+      <span data-t="regSubmit"></span>
+    </button>
+
+    <div class="reg-note" data-t="regNote"></div>
+  </div>
+</div>
+
 <div class="screen active" id="s-home">
   <div class="topbar">
     <div style="width:40px"></div>
@@ -404,7 +458,14 @@ label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-botto
 
 <div id="toast"></div><script>
 const STRINGS={
-he:{appTagline:'יומן ומשימות שטח — הכל בדקה אחת',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
+he:{appTagline:'יומן ומשימות שטח — הכל בדקה אחת',
+regWelcome:'ברוך הבא 👋',regSub:'מלא פרטים פעם אחת — נשמרים לתמיד',
+regFullName:'שם מלא',regFullNamePh:'ישראל ישראלי',
+regPhone:'מספר טלפון',
+regCompany:'חברה / קבלן ראשי',regCompanyPh:'שם החברה שאתה עובד עבורה',
+regProject:'שם הפרויקט הנוכחי',regProjectPh:'לדוגמה: מגדל רמות קומות 1-12',
+regLang:'שפה מועדפת',regSubmit:'כניסה לאפליקציה ←',
+regNote:'הנתונים שמורים בטלפון שלך בלבד',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
 btn1Title:'יומן עבודה יומי',btn1Desc:'דבר דקה אחת ← יומן חוקי מסודר ישלח לוואטסאפ',
 btn2Title:'ליקויים ומשימות',btn2Desc:'צלם ← הקצה לקבלן ← עקוב אחרי סטטוס',
 btn3Title:'בטיחות יומית',btn3Desc:'12 שאלות בטיחות ← דוח חתום עם GPS ← הגנה משפטית',
@@ -470,7 +531,14 @@ sq_scaf1:'גובה פיגום לא עולה על המותר ללא בדיקה?',
 sq_scaf2:'לוחות פיגום מאובטחים ולא שבורים?',sq_scaf2a:'החלף לוח מיידית',
 sq_exc1:'שיפוע דפנות החפירה תקין?',sq_exc1a:'סכנת קריסה — עצור!',
 sq_exc2:'יש תאורה מספקת בחפירה?',sq_exc2a:'הוסף תאורה לפני כניסה'},
-ar:{appTagline:'يومية ومهام الميدان — كل شيء في دقيقة',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
+ar:{appTagline:'يومية ومهام الميدان — كل شيء في دقيقة',
+regWelcome:'أهلاً وسهلاً 👋',regSub:'أدخل بياناتك مرة واحدة — تُحفظ للأبد',
+regFullName:'الاسم الكامل',regFullNamePh:'محمد محمود',
+regPhone:'رقم الهاتف',
+regCompany:'الشركة / المقاول الرئيسي',regCompanyPh:'اسم الشركة التي تعمل لديها',
+regProject:'اسم المشروع الحالي',regProjectPh:'مثال: برج رامات طوابق 1-12',
+regLang:'اللغة المفضلة',regSubmit:'الدخول إلى التطبيق ←',
+regNote:'البيانات محفوظة في هاتفك فقط',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
 btn1Title:'يومية العمل اليومية',btn1Desc:'تكلم دقيقة ← يومية قانونية تُرسل للواتساب',
 btn2Title:'العيوب والمهام',btn2Desc:'التقط صورة ← أسند للمقاول ← تابع الحالة',
 btn3Title:'السلامة اليومية',btn3Desc:'12 سؤال أمان ← تقرير موقّع بـGPS ← حماية قانونية',
@@ -956,7 +1024,57 @@ var _toastTimer=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(function(){el.classList.remove('show');},2500);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function getGPS(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(function(p){APP.gps=p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5);},function(){},{timeout:10000});}
-function init(){APP.settings=loadJSON('sb_settings',{});APP.lang=APP.settings.lang||'he';applyLang();refreshHome();getGPS();}
+// ===================== REGISTRATION =====================
+function setRegLang(lang){
+  APP.lang=lang;
+  document.getElementById('reglang-he').classList.toggle('active',lang==='he');
+  document.getElementById('reglang-ar').classList.toggle('active',lang==='ar');
+  applyLang();
+}
+
+function submitRegistration(){
+  var name=document.getElementById('reg-name').value.trim();
+  var phone=document.getElementById('reg-phone').value.trim();
+  var company=document.getElementById('reg-company').value.trim();
+  var project=document.getElementById('reg-project').value.trim();
+  if(!name){toast(APP.lang==='ar'?'يرجى إدخال الاسم الكامل':'יש להזין שם מלא');document.getElementById('reg-name').focus();return;}
+  if(!phone){toast(APP.lang==='ar'?'يرجى إدخال رقم الهاتف':'יש להזין מספר טלפון');document.getElementById('reg-phone').focus();return;}
+  // שמור הגדרות
+  APP.settings.managerName=name;
+  APP.settings.managerPhone=phone;
+  APP.settings.companyName=company;
+  APP.settings.projectName=project;
+  APP.settings.lang=APP.lang;
+  APP.settings.registered=true;
+  APP.settings.registeredAt=new Date().toISOString();
+  saveJSON('sb_settings',APP.settings);
+  // TODO: כשמחברים Firebase — שלח כאן לשרת
+  // firebaseRegister({ name, phone, company, project, lang: APP.lang });
+  toast((APP.lang==='ar'?'أهلاً ':' ברוך הבא ')+name+' 👋',3000);
+  showScreen('s-home');
+}
+
+function isRegistered(){
+  var s=loadJSON('sb_settings',{});
+  return !!(s&&s.registered&&s.managerName);
+}
+
+function init(){
+  APP.settings=loadJSON('sb_settings',{});
+  APP.lang=APP.settings.lang||'he';
+  applyLang();
+  if(!isRegistered()){
+    // הצג מסך הרשמה
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+    document.getElementById('s-register').classList.add('active');
+    // סנכרן כפתורי שפה
+    document.getElementById('reglang-he').classList.toggle('active',APP.lang==='he');
+    document.getElementById('reglang-ar').classList.toggle('active',APP.lang==='ar');
+  } else {
+    refreshHome();
+  }
+  getGPS();
+}
 init();
 </script>
 </body>
