@@ -25,12 +25,12 @@
 - מפתחות localStorage: `sb_settings`, `sb_journals`, `sb_defects`, `sb_safety`, `dk_journal_serial`, `dk_messages`, `dk_msg_lastread`.
 - **תמונות נשמרות base64 ב-localStorage** — סיכון אמיתי: מגבלת ~5MB, ו-`saveJSON` עושה `catch(e){}` ששובל שגיאות → אובדן נתונים שקט. לתקן כשעוברים ל-Firebase Storage.
 
-## מצב Firebase — ממתין לחיבור (קריטי)
-- יורם פתח פרויקט Firebase + Firestore. **טרם נמסר ה-`firebaseConfig` (Web app config).**
-- שלח בעבר בטעות את ה-Admin SDK (serverAccount) — צריך את ה-**Web config** (`apiKey, authDomain, projectId...`).
-- **כשמתקבל ה-config:**
-  - באפליקציה: להדביק בבלוק `const FIREBASE_CONFIG = {}` בסוף `siteboss.html` (script type=module). כשמלא → נרשם אוטומטית ל-collection `managers`, ומאזין ל-collection `messages`.
-  - בעמוד אדמין: יש שדה הדבקה ב-UI (נשמר ב-localStorage `dk_admin_fbcfg`).
+## מצב Firebase — ✅ מחובר ופועל (siteboss-b2dd2)
+- פרויקט: `siteboss-b2dd2`. Web config מוטמע ב-`siteboss.html` (בלוק `FIREBASE_CONFIG` בסוף, script type=module) וב-`admin.html` (`DEFAULT_CONFIG`).
+- נבדק חי: רישום מנהל כותב ל-collection `managers` (Write channel 200), וקריאה חזרה עובדת.
+- Firestore Database קיים ומופעל (default, europe).
+- ⚠️ **אבטחה:** המסד ב-Test Mode (פתוח לקריאה/כתיבה, פג אחרי ~30 יום). לפני משתמשים אמיתיים — להגדיר Security Rules (Build→Firestore→Rules). מודל ללא Auth, אז כללים פתוחים-יחסית או Auth אנונימי.
+- ⚠️ עדיין: תמונות base64 ב-localStorage (לא ב-Firebase Storage) — לטפל בהמשך.
 - מודל Firestore מוסכם:
   - `managers` (doc id = טלפון מנוקה): name, phone, company, project, lang, registeredAt, lastSeen
   - `messages`: title, body, link, audience ('all' | array of phones), audienceNames, createdAt(serverTimestamp)
