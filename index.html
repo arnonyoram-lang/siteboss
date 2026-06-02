@@ -731,10 +731,18 @@ function renderJournalHistory(){
     var j=journals[i];var d=new Date(j.date);
     var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
     var tw=0;if(j.workers)for(var k=0;k<j.workers.length;k++)tw+=j.workers[k].qty;
-    var jstr=JSON.stringify(j).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    h+='<div class="history-item" onclick="showJournalReport(\''+jstr+'\')"><div class="history-item-date">'+ds+'</div><div class="history-item-sub">'+T('totalWorkers')+': '+tw+'</div></div>';
+    h+='<div class="history-item" onclick="showJournalReportById('+j.id+')">'
+      +'<div class="history-item-date">'+ds+'</div>'
+      +'<div class="history-item-sub">'+T('totalWorkers')+': '+tw+'</div>'
+      +'</div>';
   }
   list.innerHTML=h;
+}
+function showJournalReportById(id){
+  var journals=loadJSON('sb_journals',[]);
+  var entry=journals.find(function(j){return j.id===id;});
+  if(!entry){toast('לא נמצא יומן');return;}
+  showJournalReport(entry);
 }
 function showJournalReport(entryOrStr){
   var entry=typeof entryOrStr==='string'?JSON.parse(entryOrStr):entryOrStr;
@@ -967,10 +975,19 @@ function renderSafetyHistory(){
   for(var i=0;i<safety.length;i++){
     var r=safety[i];var d=new Date(r.date);var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
     var fails=0;for(var k in r.answers){if(r.answers[k]==='fail')fails++;}
-    var rstr=JSON.stringify(r).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    h+='<div class="history-item" onclick="showSafetyReport(\''+rstr+'\')"><div class="history-item-date">'+ds+'</div><div class="history-item-sub">'+(fails?'❌ '+fails+' ליקויים':'✅ תקין')+'</div></div>';
+    var wt=r.workType?(' · '+T('wt_'+r.workType)):'';
+    h+='<div class="history-item" onclick="showSafetyReportById('+r.id+')">'
+      +'<div class="history-item-date">'+ds+wt+'</div>'
+      +'<div class="history-item-sub">'+(fails?'❌ '+fails+' '+(APP.lang==='ar'?'عيوب':'ליקויים'):'✅ '+(APP.lang==='ar'?'سليم':'תקין'))+'</div>'
+      +'</div>';
   }
   list.innerHTML=h;
+}
+function showSafetyReportById(id){
+  var safety=loadJSON('sb_safety',[]);
+  var entry=safety.find(function(r){return r.id===id;});
+  if(!entry){toast('לא נמצא דוח');return;}
+  showSafetyReport(entry);
 }
 function showSafetyReport(entryOrStr){
   var entry=typeof entryOrStr==='string'?JSON.parse(entryOrStr):entryOrStr;
