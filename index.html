@@ -936,13 +936,24 @@ function sendJournalWA(){
   if(currentWeather>=0)msg+=T('weatherTitle')+': '+T('wl'+currentWeather)+'\n';
   var d=document.getElementById('jnl-delays').value.trim();if(d)msg+=T('delaysTitle')+':\n'+d+'\n\n';
   var t=document.getElementById('jnl-tasks').value.trim();if(t)msg+=T('tasksTitle')+':\n'+t+'\n';
-  var phone=s.officePhone||'';
-  window.open('https://wa.me/'+(phone?phone.replace(/\D/g,''):'')+'?text='+encodeURIComponent(msg),'_blank');
+  openWhatsApp(s.officePhone||'',msg);
 }
-function openOfficeWA(msg){
-  var phone=(APP.settings.officePhone||'').replace(/\D/g,'');
-  window.open('https://wa.me/'+(phone?'972'+phone.replace(/^0/,''):'')+'?text='+encodeURIComponent(msg),'_blank');
+// שליחה אחידה לוואטסאפ — ישר לאפליקציה בטלפון (deep link), לא חלון דפדפן חדש
+function openWhatsApp(phone,text){
+  var p=(phone||'').replace(/\D/g,'');
+  if(p&&p.charAt(0)==='0')p='972'+p.slice(1);            // המרה לפורמט בינלאומי
+  else if(p&&p.indexOf('972')!==0&&p.length<=10)p='972'+p;
+  var enc=encodeURIComponent(text);
+  var isMobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||'');
+  if(isMobile){
+    // פתיחה ישירה של אפליקציית וואטסאפ — אותו חלון, ללא טאב דפדפן
+    window.location.href='whatsapp://send?'+(p?'phone='+p+'&':'')+'text='+enc;
+  } else {
+    // דסקטופ — וואטסאפ ווב בטאב חדש
+    window.open('https://wa.me/'+(p||'')+'?text='+enc,'_blank');
+  }
 }
+function openOfficeWA(msg){openWhatsApp(APP.settings.officePhone||'',msg);}
 function shareReportWA(){
   var cr=window._currentReport;if(!cr){return;}
   var s=APP.settings;var e=cr.entry;
@@ -1206,7 +1217,7 @@ function sendDefWADirect(d,phone){
   var msg=T('defectsTitle')+' — '+(APP.settings.projectName||'')+'\n'+T('defSeverity')+': '+T(sk)+'\n'+T('defDesc')+': '+(d.desc||'')+'\n';
   if(d.floor||d.area)msg+=T('defFloor')+': '+(d.floor||'')+' '+(d.area||'')+'\n';
   if(d.deadline)msg+=T('defDeadline')+': '+d.deadline+'\n';
-  window.open('https://wa.me/'+(phone?phone.replace(/\D/g,''):'')+'?text='+encodeURIComponent(msg),'_blank');
+  openWhatsApp(phone||'',msg);
 }
 var WORK_TYPES=[{k:'general',i:'🏗️',l:'wtGeneral'},{k:'structure',i:'🏛️',l:'wtStructure'},{k:'finishing',i:'🪟',l:'wtFinishing'},{k:'scaffolding',i:'🪜',l:'wtScaffolding'},{k:'excavation',i:'⛏️',l:'wtExcavation'}];
 var SAFETY_EXTRAS={structure:['sq_struct1','sq_struct2','sq_struct3'],finishing:['sq_fin1','sq_fin2','sq_fin3'],scaffolding:['sq_scaf1','sq_scaf2','sq_scaf3'],excavation:['sq_exc1','sq_exc2','sq_exc3']};

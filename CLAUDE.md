@@ -65,6 +65,10 @@
 - שאלות ייעודיות מודגשות צהוב + תווית "⚠️ ייעודי · [שלב]".
 - entry שמור: `stages`(מערך), `stageLabel`(טקסט), `questions`(snapshot), `answers`. showSafetyReport נשען על entry.questions (יש fallback ל-getSafetyQs לתאימות ישנה).
 
+## וואטסאפ
+- כל השליחות עוברות דרך `openWhatsApp(phone,text)` יחיד. במובייל: `whatsapp://send` (ישר לאפליקציה, לא טאב דפדפן). בדסקטופ: wa.me ב-_blank. ממיר טלפון אוטומטית לפורמט 972.
+- דוח (יומן/בטיחות) כולל כפתור "📲 שלח למשרד" → `shareReportWA()` שבונה מ-`window._currentReport`.
+
 ## מלכודות קוד שכבר נתקלנו בהן (להימנע!)
 - **אסור nested template literals** (backtick בתוך `${}` בתוך backtick) — שובר את כל ה-JS. להשתמש בשרשור מחרוזות בפונקציות render.
 - **אסור onclick עם JSON/עברית inline** — שובר HTML. להעביר ID מספרי ולעשות lookup (ראה showJournalReportById / showSafetyReportById).
