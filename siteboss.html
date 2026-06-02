@@ -780,6 +780,21 @@ function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true
   return false;
 }}
 function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+// מראה רשומה ל-Firebase (ללא תמונות כבדות — אלו יעברו ל-Storage בהמשך). חתימות נשמרות.
+function cloudSave(coll,entry){
+  if(!window._dkSaveDoc||!entry)return;
+  var s=APP.settings||{};var owner=(s.managerPhone||'').replace(/\D/g,'');
+  var copy={};for(var k in entry){if(k==='photos')continue;copy[k]=entry[k];}
+  if(entry.photos)copy.photoCount=entry.photos.length;
+  copy.owner=owner;copy.ownerName=s.managerName||'';copy.project=s.projectName||'';
+  copy.cloudAt=new Date().toISOString();
+  try{window._dkSaveDoc(coll,(owner||'x')+'_'+entry.id,copy);}catch(e){}
+}
+function cloudDelete(coll,entry){
+  if(!window._dkDeleteDoc||!entry)return;
+  var owner=((APP.settings&&APP.settings.managerPhone)||'').replace(/\D/g,'');
+  try{window._dkDeleteDoc(coll,(owner||'x')+'_'+entry.id);}catch(e){}
+}
 function T(k){return(STRINGS[APP.lang]||STRINGS.he)[k]||k;}
 function applyLang(){
   document.documentElement.lang=APP.lang;
@@ -992,6 +1007,7 @@ function saveJournal(){
   if(!jnlSignPad||jnlSignPad.isEmpty()){toast(T('signRequired'));var sc=document.getElementById('jnl-sign-canvas');if(sc)sc.scrollIntoView({behavior:'smooth',block:'center'});return;}
   var entry={id:Date.now(),serial:nextJournalSerial(),date:new Date().toISOString(),ts:Date.now(),text:txt,workers:getWorkers(),weather:currentWeather,delays:document.getElementById('jnl-delays').value.trim(),tasks:document.getElementById('jnl-tasks').value.trim(),photos:APP.jnlPhotos.slice(),managerSign:jnlSignPad.dataURL(),manager:APP.settings.managerName||'',locked:true,supervisorApproval:null,lang:APP.lang};
   var journals=loadJSON('sb_journals',[]);journals.unshift(entry);saveJSON('sb_journals',journals);
+  cloudSave('journals',entry);
   toast(T('saved'));showJournalReport(entry);
 }
 function sendJournalWA(){
@@ -1151,6 +1167,7 @@ function saveSupervisorApprove(){
   var entry=null;
   for(var i=0;i<journals.length;i++){if(journals[i].id===_viewedJournalId){journals[i].supervisorApproval={name:name,sign:supSignPad.dataURL(),ts:Date.now()};entry=journals[i];break;}}
   saveJSON('sb_journals',journals);
+  if(entry)cloudSave('journals',entry);
   closeModal('modal-supervisor');
   toast(T('approvedBadge'));
   if(entry)showJournalReport(entry);
@@ -1237,10 +1254,10 @@ function saveDefect(){
   var desc=document.getElementById('def-desc').value.trim();if(!desc){toast(T('defDescPlaceholder'));return;}
   var defects=loadJSON('sb_defects',[]);
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),desc:desc,floor:document.getElementById('def-floor').value.trim(),area:document.getElementById('def-area').value.trim(),contractor:document.getElementById('def-contractor').value,deadline:document.getElementById('def-deadline').value,severity:APP.selectedSev,status:'open',photos:APP.defectPhotos.slice()};
-  defects.unshift(entry);saveJSON('sb_defects',defects);closeModal('modal-defect');toast(T('saved'));renderDefects();
+  defects.unshift(entry);saveJSON('sb_defects',defects);cloudSave('defects',entry);closeModal('modal-defect');toast(T('saved'));renderDefects();
   if(entry.contractor){var cs=APP.settings.contractors||[];var c=cs.find(function(x){return x.name===entry.contractor;});if(c&&c.phone)sendDefWADirect(entry,c.phone);}
 }
-function setDefStatus(id,status){var ds=loadJSON('sb_defects',[]);for(var i=0;i<ds.length;i++){if(ds[i].id===id){ds[i].status=status;break;}}saveJSON('sb_defects',ds);renderDefects();}
+function setDefStatus(id,status){var ds=loadJSON('sb_defects',[]);var ent=null;for(var i=0;i<ds.length;i++){if(ds[i].id===id){ds[i].status=status;ent=ds[i];break;}}saveJSON('sb_defects',ds);if(ent)cloudSave('defects',ent);renderDefects();}
 
 var _fixDefectId=null;
 var _fixPhoto=null;
@@ -1274,20 +1291,21 @@ function saveFix(){
   var when=document.getElementById('fix-when').value;
   var notes=document.getElementById('fix-notes').value.trim();
   if(!by){toast(APP.lang==='ar'?'يرجى إدخال اسم المُصلِح':'יש להזין מי ביצע את התיקון');return;}
-  var ds=loadJSON('sb_defects',[]);
+  var ds=loadJSON('sb_defects',[]);var ent=null;
   for(var i=0;i<ds.length;i++){
     if(ds[i].id===_fixDefectId){
       ds[i].status='done';
       ds[i].fix={by:by,when:when,notes:notes,photo:_fixPhoto||null};
-      break;
+      ent=ds[i];break;
     }
   }
   saveJSON('sb_defects',ds);
+  if(ent)cloudSave('defects',ent);
   closeModal('modal-fix');
   toast(T('fixedLabel')+' ✅');
   renderDefects();
 }
-function delDefect(id){if(!confirm(T('deleteConfirm')))return;var ds=loadJSON('sb_defects',[]);ds=ds.filter(function(d){return d.id!==id;});saveJSON('sb_defects',ds);renderDefects();toast(T('deleted'));}
+function delDefect(id){if(!confirm(T('deleteConfirm')))return;var ds=loadJSON('sb_defects',[]);var ent=ds.find(function(d){return d.id===id;});ds=ds.filter(function(d){return d.id!==id;});saveJSON('sb_defects',ds);if(ent)cloudDelete('defects',ent);renderDefects();toast(T('deleted'));}
 function sendDefWA(id){var ds=loadJSON('sb_defects',[]);var d=ds.find(function(x){return x.id===id;});if(!d)return;var cs=APP.settings.contractors||[];var c=d.contractor?cs.find(function(x){return x.name===d.contractor;}):null;sendDefWADirect(d,c?c.phone:'');}
 function sendDefWADirect(d,phone){
   var sk=d.severity==='urgent'?'sevUrgent':d.severity==='low'?'sevLow':'sevNormal';
@@ -1379,7 +1397,7 @@ function confirmSafety(){
   var stages=(APP.activeStages||[]).slice();
   var stageLabel=stages.length?stages.map(wtLabel).join(', '):wtLabel('general');
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),stages:stages,stageLabel:stageLabel,answers:Object.assign({},APP.safetyAnswers),questions:qs,signature:signData,lang:APP.lang,gps:APP.gps};
-  var safety=loadJSON('sb_safety',[]);safety.unshift(entry);saveJSON('sb_safety',safety);
+  var safety=loadJSON('sb_safety',[]);safety.unshift(entry);saveJSON('sb_safety',safety);cloudSave('safety',entry);
   toast(T('saved'));showSafetyReport(entry);
 }
 function renderSafetyHistory(){
@@ -1639,7 +1657,7 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     const db = fsMod.getFirestore(app);
     // הזדהות אנונימית — מאפשר כללי אבטחה שדורשים auth (לא חוסם אם מושבת בקונסול)
     try{const authMod=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");const auth=authMod.getAuth(app);authMod.signInAnonymously(auth).catch(function(){});}catch(e){}
-    const { doc, setDoc, collection, query, orderBy, onSnapshot } = fsMod;
+    const { doc, setDoc, deleteDoc, collection, query, orderBy, onSnapshot } = fsMod;
 
     // רישום / עדכון מנהל (id = טלפון מנוקה)
     function upsert(data){
@@ -1648,6 +1666,14 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     }
     window._dkRegister = upsert;
     window._dkSync = upsert;
+
+    // שמירת/מחיקת רשומה (יומן/ליקוי/בטיחות) ב-Firestore — משויך למנהל
+    window._dkSaveDoc = function(coll, id, data){
+      try{ return setDoc(doc(db, coll, String(id)), data, { merge:true }).catch(function(){}); }catch(e){ return Promise.resolve(); }
+    };
+    window._dkDeleteDoc = function(coll, id){
+      try{ return deleteDoc(doc(db, coll, String(id))).catch(function(){}); }catch(e){ return Promise.resolve(); }
+    };
 
     // האזנה להודעות מהמשרד
     var myPhone = ((window.APP&&APP.settings&&APP.settings.managerPhone)||'').replace(/\D/g,'');
