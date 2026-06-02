@@ -58,6 +58,13 @@
 - topbar: גרדיאנט כחול + safe-area. admin.html תואם (פס ענבר תחתון, 🦺 בכותרת).
 - screen-body padding-bottom כולל env(safe-area-inset-bottom).
 
+## בטיחות — מבנה עדכני (חשוב)
+- אין בורר סוג עבודה בראש. מציג **12 שאלות בסיס** תמיד.
+- אחרי שאלה 12: כרטיס צ'יפים "➕ שאלות נוספות לשלב שאתה בו עכשיו" — **multi-select** (שלד/גמר/פיגומים/חפירות), כל אחד מוסיף 3 שאלות ייעודיות (מקס 12+12=24, בפועל בוחרים 1-2).
+- State: `APP.activeStages` (מערך). פונקציות: `getActiveQs()`, `toggleStage(k)`, `renderSQ(q,num)`, `STAGES`, `SAFETY_EXTRAS`.
+- שאלות ייעודיות מודגשות צהוב + תווית "⚠️ ייעודי · [שלב]".
+- entry שמור: `stages`(מערך), `stageLabel`(טקסט), `questions`(snapshot), `answers`. showSafetyReport נשען על entry.questions (יש fallback ל-getSafetyQs לתאימות ישנה).
+
 ## מלכודות קוד שכבר נתקלנו בהן (להימנע!)
 - **אסור nested template literals** (backtick בתוך `${}` בתוך backtick) — שובר את כל ה-JS. להשתמש בשרשור מחרוזות בפונקציות render.
 - **אסור onclick עם JSON/עברית inline** — שובר HTML. להעביר ID מספרי ולעשות lookup (ראה showJournalReportById / showSafetyReportById).

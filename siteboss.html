@@ -108,6 +108,14 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 .work-type-label{font-size:14px;font-weight:800;}
 .work-type-count{display:block;font-size:11px;font-weight:700;color:var(--sub);margin-top:3px;}
 .work-type-btn.active .work-type-count{color:var(--red);}
+.stage-card{background:#f4f8fc;border:1px dashed #b9cce0;}
+.stage-card-title{font-size:15px;font-weight:800;color:var(--blue-d);margin-bottom:3px;}
+.stage-hint{font-size:12px;color:var(--sub);margin-bottom:12px;}
+.stage-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.stage-chip{display:flex;align-items:center;gap:6px;padding:9px 13px;border-radius:22px;border:2px solid var(--border);background:white;font-size:14px;font-weight:700;cursor:pointer;color:var(--text);}
+.stage-chip-i{font-size:18px;}
+.stage-chip.on{border-color:var(--accent);background:#fff4d9;color:#7a5800;}
+.stage-chip-x{background:var(--accent);color:#3d2c00;width:18px;height:18px;border-radius:50%;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;}
 .safety-question.special{border-color:var(--accent);background:#fff8e8;}
 .sq-special-tag{display:inline-block;background:var(--accent);color:#3d2c00;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;margin-bottom:8px;}
 .safety-question{background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
@@ -347,7 +355,6 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     </div>
   </div>
   <div class="screen-body">
-    <div class="card"><div class="card-title" data-t="chooseWorkType"></div><div class="work-type-grid" id="work-type-grid"></div></div>
     <div id="safety-questions-container"></div>
     <div class="card">
       <div class="card-title" data-t="signTitle"></div>
@@ -589,7 +596,7 @@ fixNotes:'הערות נוספות',fixNotesPlaceholder:'כל פרט נוסף ר�
 confirmFix:'✅ אשר — סמן כטופל',
 fixedLabel:'✅ טופל',fixedBy:'תוקן על ידי:',fixedAt:'בתאריך:',fixedNote:'הערות תיקון:',
 noDeadline:'ללא יעד',overdue:'⚠️ באיחור',targetDate:'יעד: ',
-safetyTitle:'בטיחות יומית',chooseWorkType:'בחר סוג עבודה',
+safetyTitle:'בטיחות יומית',chooseWorkType:'בחר סוג עבודה',addStageTitle:'➕ שאלות נוספות לשלב שאתה בו עכשיו',addStageHint:'בחר אחד או יותר — יתווספו שאלות בטיחות ייעודיות',
 wtGeneral:'כללי',wtStructure:'שלד',wtFinishing:'גמר',wtScaffolding:'פיגומים',wtExcavation:'חפירות',
 wt_general:'כללי',wt_structure:'שלד',wt_finishing:'גמר',wt_scaffolding:'פיגומים',wt_excavation:'חפירות',
 safetyFixTitle:'תיקון ליקוי בטיחות',
@@ -672,7 +679,7 @@ fixNotes:'ملاحظات إضافية',fixNotesPlaceholder:'أي تفاصيل إ
 confirmFix:'✅ أكّد — سجّل كمُعالَج',
 fixedLabel:'✅ تمت المعالجة',fixedBy:'أصلحه:',fixedAt:'بتاريخ:',fixedNote:'ملاحظات الإصلاح:',
 noDeadline:'بدون موعد',overdue:'⚠️ متأخر',targetDate:'الموعد: ',
-safetyTitle:'السلامة اليومية',chooseWorkType:'اختر نوع العمل',
+safetyTitle:'السلامة اليومية',chooseWorkType:'اختر نوع العمل',addStageTitle:'➕ أسئلة إضافية للمرحلة الحالية',addStageHint:'اختر واحدة أو أكثر — تُضاف أسئلة سلامة مخصّصة',
 wtGeneral:'عام',wtStructure:'هيكل',wtFinishing:'تشطيب',wtScaffolding:'سقالات',wtExcavation:'حفر',
 wt_general:'عام',wt_structure:'هيكل',wt_finishing:'تشطيب',wt_scaffolding:'سقالات',wt_excavation:'حفر',
 safetyFixTitle:'إصلاح عيب السلامة',
@@ -723,7 +730,7 @@ sq_fin3:'أسطح العمل خالية من العوائق والنفايات؟
 sq_scaf3:'يوجد وصول آمن للسقالة (سلّم/درج)؟',sq_scaf3a:'ممنوع التسلق على المبنى — ركّب وصولاً',
 sq_exc3:'تم تحديد البنى التحتية تحت الأرض (كهرباء/غاز/ماء)؟',sq_exc3a:'تحقق من المخططات قبل الحفر',
 specialTag:'مخصّص',totalQ:'أسئلة'}
-};const APP={lang:'he',settings:{},screenHistory:['s-home'],currentFilter:'all',selectedSev:'normal',currentWorkType:'general',safetyAnswers:{},safetyPhotos:{},jnlPhotos:[],defectPhotos:[],gps:null};
+};const APP={lang:'he',settings:{},screenHistory:['s-home'],currentFilter:'all',selectedSev:'normal',currentWorkType:'general',activeStages:[],safetyAnswers:{},safetyPhotos:{},jnlPhotos:[],defectPhotos:[],gps:null};
 function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function T(k){return(STRINGS[APP.lang]||STRINGS.he)[k]||k;}
@@ -736,7 +743,7 @@ function applyLang(){
 function setLang(lang){
   APP.lang=lang;APP.settings.lang=lang;saveJSON('sb_settings',APP.settings);applyLang();
   var a=document.querySelector('.screen.active');if(!a)return;var id=a.id;
-  if(id==='s-safety'){renderWorkTypes();renderSafetyQuestions();}
+  if(id==='s-safety'){renderSafetyQuestions();}
   if(id==='s-defects'){renderDefectFilters();renderDefects();}
   if(id==='s-journal-history')renderJournalHistory();
   if(id==='s-safety-history')renderSafetyHistory();
@@ -1178,37 +1185,54 @@ function getSafetyQs(wt){
   return arr;
 }
 function wtLabel(wt){for(var i=0;i<WORK_TYPES.length;i++)if(WORK_TYPES[i].k===wt)return T(WORK_TYPES[i].l);return '';}
+var STAGES=[{k:'structure',i:'🏛️',l:'wtStructure'},{k:'finishing',i:'🪟',l:'wtFinishing'},{k:'scaffolding',i:'🪜',l:'wtScaffolding'},{k:'excavation',i:'⛏️',l:'wtExcavation'}];
+function getActiveQs(){
+  var base=['sq1','sq2','sq3','sq4','sq5','sq6','sq7','sq8','sq9','sq10','sq11','sq12'];
+  var arr=base.map(function(k){return{qKey:k,aKey:k+'a',special:false};});
+  (APP.activeStages||[]).forEach(function(st){
+    (SAFETY_EXTRAS[st]||[]).forEach(function(k){arr.push({qKey:k,aKey:k+'a',special:true,stage:st});});
+  });
+  return arr;
+}
 function initSafety(){
   var today=new Date();
   document.getElementById('safety-date-sub').textContent=today.toLocaleDateString(APP.lang==='ar'?'ar-IL':'he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  APP.safetyAnswers={};APP.safetyPhotos={};APP.currentWorkType='general';
-  renderWorkTypes();renderSafetyQuestions();initSignature();
+  APP.safetyAnswers={};APP.safetyPhotos={};APP.activeStages=[];
+  renderSafetyQuestions();initSignature();
 }
-function renderWorkTypes(){
-  var g=document.getElementById('work-type-grid');if(!g)return;
-  var h='';for(var i=0;i<WORK_TYPES.length;i++){var wt=WORK_TYPES[i];var n=getSafetyQs(wt.k).length;h+='<div class="work-type-btn'+(APP.currentWorkType===wt.k?' active':'')+'" onclick="selWorkType(\''+wt.k+'\')"><span class="work-type-icon">'+wt.i+'</span><span class="work-type-label">'+T(wt.l)+'</span><span class="work-type-count">'+n+' '+T('totalQ')+'</span></div>';}
-  g.innerHTML=h;
+function toggleStage(k){
+  var idx=APP.activeStages.indexOf(k);
+  if(idx>=0)APP.activeStages.splice(idx,1);else APP.activeStages.push(k);
+  renderSafetyQuestions();
 }
-function selWorkType(k){APP.currentWorkType=k;APP.safetyAnswers={};renderWorkTypes();renderSafetyQuestions();}
+function renderSQ(q,num){
+  var ans=APP.safetyAnswers[q.qKey];
+  var cls=ans==='ok'?' passed':ans==='fail'?' failed':'';
+  if(q.special)cls+=' special';
+  var h='<div class="safety-question'+cls+'">';
+  if(q.special)h+='<div class="sq-special-tag">⚠️ '+T('specialTag')+' · '+wtLabel(q.stage)+'</div>';
+  h+='<div class="sq-text">'+num+'. '+T(q.qKey)+'</div>';
+  h+='<div class="sq-btns"><button class="sq-btn'+(ans==='ok'?' ok':'')+'" onclick="answerSQ(\''+q.qKey+'\',\'ok\')">✅ '+T('reportOk')+'</button>';
+  h+='<button class="sq-btn'+(ans==='fail'?' fail':'')+'" onclick="answerSQ(\''+q.qKey+'\',\'fail\')">❌ '+T('reportFail')+'</button></div>';
+  h+='<div class="sq-alert">⚠️ '+T(q.aKey)+'</div>';
+  if(ans==='fail')h+='<div style="margin-top:8px;"><input type="file" id="sqp_'+q.qKey+'" accept="image/*" style="display:none" onchange="handleSQPhoto(event,\''+q.qKey+'\')"><button class="btn btn-gray btn-sm" onclick="document.getElementById(\'sqp_'+q.qKey+'\').click()">📷 '+(APP.lang==='ar'?'إضافة صورة':'הוסף תמונה')+'</button></div>';
+  h+='</div>';
+  return h;
+}
 function renderSafetyQuestions(){
   var c=document.getElementById('safety-questions-container');if(!c)return;
-  var qs=getSafetyQs(APP.currentWorkType);
+  var qs=getActiveQs();
   var answered=Object.keys(APP.safetyAnswers).length;
-  var specialLbl=wtLabel(APP.currentWorkType);
   var h='<div class="card" style="background:var(--bg);border:none;text-align:center;padding:10px 14px;"><span style="font-size:14px;color:var(--text);font-weight:700;">'+T('questionsAnswered')+': <strong style="color:var(--blue);">'+answered+' / '+qs.length+'</strong></span></div>';
-  for(var i=0;i<qs.length;i++){
-    var q=qs[i];var ans=APP.safetyAnswers[q.qKey];
-    var cls=ans==='ok'?' passed':ans==='fail'?' failed':'';
-    if(q.special)cls+=' special';
-    h+='<div class="safety-question'+cls+'">';
-    if(q.special)h+='<div class="sq-special-tag">⚠️ '+T('specialTag')+' · '+specialLbl+'</div>';
-    h+='<div class="sq-text">'+(i+1)+'. '+T(q.qKey)+'</div>';
-    h+='<div class="sq-btns"><button class="sq-btn'+(ans==='ok'?' ok':'')+'" onclick="answerSQ(\''+q.qKey+'\',\'ok\')">✅ '+T('reportOk')+'</button>';
-    h+='<button class="sq-btn'+(ans==='fail'?' fail':'')+'" onclick="answerSQ(\''+q.qKey+'\',\'fail\')">❌ '+T('reportFail')+'</button></div>';
-    h+='<div class="sq-alert">⚠️ '+T(q.aKey)+'</div>';
-    if(ans==='fail')h+='<div style="margin-top:8px;"><input type="file" id="sqp'+i+'" accept="image/*" style="display:none" onchange="handleSQPhoto(event,\''+q.qKey+'\')"><button class="btn btn-gray btn-sm" onclick="document.getElementById(\'sqp'+i+'\').click()">📷 '+(APP.lang==='ar'?'إضافة صورة':'הוסף תמונה')+'</button></div>';
-    h+='</div>';
-  }
+  var num=0;
+  // 12 שאלות בסיס
+  for(var i=0;i<qs.length;i++){if(qs[i].special)continue;num++;h+=renderSQ(qs[i],num);}
+  // צ'יפים לבחירת שלב (אחרי 12 הבסיס)
+  h+='<div class="card stage-card"><div class="stage-card-title">'+T('addStageTitle')+'</div><div class="stage-hint">'+T('addStageHint')+'</div><div class="stage-chips">';
+  for(var s=0;s<STAGES.length;s++){var st=STAGES[s];var on=APP.activeStages.indexOf(st.k)>=0;h+='<div class="stage-chip'+(on?' on':'')+'" onclick="toggleStage(\''+st.k+'\')"><span class="stage-chip-i">'+st.i+'</span><span>'+T(st.l)+'</span>'+(on?'<span class="stage-chip-x">✓</span>':'')+'</div>';}
+  h+='</div></div>';
+  // שאלות ייעודיות של השלבים הפעילים
+  for(var j=0;j<qs.length;j++){if(!qs[j].special)continue;num++;h+=renderSQ(qs[j],num);}
   c.innerHTML=h;
 }
 function answerSQ(key,ans){APP.safetyAnswers[key]=ans;renderSafetyQuestions();}
@@ -1228,10 +1252,12 @@ function initSignature(){
 function sPos(e){var r=signCanvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
 function clearSignature(){if(signCtx)signCtx.clearRect(0,0,signCanvas.width,signCanvas.height);}
 function confirmSafety(){
-  var qs=getSafetyQs(APP.currentWorkType);var answered=Object.keys(APP.safetyAnswers).length;
+  var qs=getActiveQs();var answered=Object.keys(APP.safetyAnswers).length;
   if(answered<qs.length){toast((APP.lang==='ar'?'يرجى الإجابة على جميع الأسئلة':'יש לענות על כל השאלות')+' ('+answered+'/'+qs.length+')');return;}
   var signData=signCanvas?signCanvas.toDataURL():'';
-  var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),workType:APP.currentWorkType,answers:Object.assign({},APP.safetyAnswers),questions:qs,signature:signData,lang:APP.lang,gps:APP.gps};
+  var stages=(APP.activeStages||[]).slice();
+  var stageLabel=stages.length?stages.map(wtLabel).join(', '):wtLabel('general');
+  var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),stages:stages,stageLabel:stageLabel,answers:Object.assign({},APP.safetyAnswers),questions:qs,signature:signData,lang:APP.lang,gps:APP.gps};
   var safety=loadJSON('sb_safety',[]);safety.unshift(entry);saveJSON('sb_safety',safety);
   toast(T('saved'));showSafetyReport(entry);
 }
@@ -1243,7 +1269,7 @@ function renderSafetyHistory(){
   for(var i=0;i<safety.length;i++){
     var r=safety[i];var d=new Date(r.date);var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
     var fails=0;for(var k in r.answers){if(r.answers[k]==='fail')fails++;}
-    var wt=r.workType?(' · '+T('wt_'+r.workType)):'';
+    var wt=r.stageLabel?(' · '+r.stageLabel):(r.workType?(' · '+wtLabel(r.workType)):'');
     h+='<div class="history-item" onclick="showSafetyReportById('+r.id+')">'
       +'<div class="history-item-date">'+ds+wt+'</div>'
       +'<div class="history-item-sub">'+(fails?'❌ '+fails+' '+(APP.lang==='ar'?'عيوب':'ליקויים'):'✅ '+(APP.lang==='ar'?'سليم':'תקין'))+'</div>'
