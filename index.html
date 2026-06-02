@@ -105,7 +105,11 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 .work-type-btn{padding:14px;border-radius:12px;border:2px solid var(--border);background:white;text-align:center;cursor:pointer;}
 .work-type-btn.active{border-color:var(--red);background:#fdf0ef;}
 .work-type-icon{font-size:28px;display:block;margin-bottom:4px;}
-.work-type-label{font-size:13px;font-weight:700;}
+.work-type-label{font-size:14px;font-weight:800;}
+.work-type-count{display:block;font-size:11px;font-weight:700;color:var(--sub);margin-top:3px;}
+.work-type-btn.active .work-type-count{color:var(--red);}
+.safety-question.special{border-color:var(--accent);background:#fff8e8;}
+.sq-special-tag{display:inline-block;background:var(--accent);color:#3d2c00;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;margin-bottom:8px;}
 .safety-question{background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
 .safety-question.passed{border-color:var(--green);background:#f0faf4;}
 .safety-question.failed{border-color:var(--red);background:#fff5f5;}
@@ -571,7 +575,7 @@ delaysTitle:'עיכובים / חריגים',delaysPlaceholder:'האם היו ע�
 tasksTitle:'משימות למחר',tasksPlaceholder:'מה מתוכנן למחר?',photosTitle:'תמונות מהיום',
 saveJournal:'✅ שמור יומן והפק דוח PDF',sendWA:'📲 שלח לוואטסאפ',
 tradeCol:'מקצוע',qtyCol:'כמות',totalWorkers:'סה"כ פועלים',
-w1:'טייחים',w2:'חשמלאים',w3:'אינסטלטורים',w4:'פועלים כלליים',w5:'נגרים / קופסאי',w6:'אחר',addTrade:'➕ הוסף מקצוע אחר',tradeNamePh:'שם המקצוע (לדוגמה: ברזלן, רצף)',
+w1:'טייחים',w2:'חשמלאים',w3:'אינסטלטורים',w4:'פועלים כלליים',w5:'נגרים / קופסאי',w6:'אחר',addTrade:'➕ הוסף מקצוע אחר',tradeNamePh:'שם המקצוע (לדוגמה: ברזלן, רצף)',confirmDeleteTrade:'להסיר את המקצוע מהרשימה של היום?',
 wi0:'☀️',wi1:'⛅',wi2:'🌧️',wi3:'💨',wi4:'🔥',wl0:'שמש',wl1:'מעונן',wl2:'גשם',wl3:'רוח',wl4:'חום קיצוני',
 defectsTitle:'ליקויים ומשימות',filterAll:'הכל',filterOpen:'🔴 פתוח',filterProgress:'🟠 בטיפול',filterDone:'🟢 בוצע',
 addDefectTitle:'ליקוי / משימה חדשה',defPhoto:'תמונה (מומלץ)',defDesc:'תיאור הליקוי',defDescPlaceholder:'תאר מה צריך תיקון...',
@@ -630,7 +634,12 @@ sq_fin2:'אוורור מספק בחדרים סגורים?',sq_fin2a:'פתח חל
 sq_scaf1:'גובה פיגום לא עולה על המותר ללא בדיקה?',sq_scaf1a:'דרוש בדיקת מהנדס',
 sq_scaf2:'לוחות פיגום מאובטחים ולא שבורים?',sq_scaf2a:'החלף לוח מיידית',
 sq_exc1:'שיפוע דפנות החפירה תקין?',sq_exc1a:'סכנת קריסה — עצור!',
-sq_exc2:'יש תאורה מספקת בחפירה?',sq_exc2a:'הוסף תאורה לפני כניסה'},
+sq_exc2:'יש תאורה מספקת בחפירה?',sq_exc2a:'הוסף תאורה לפני כניסה',
+sq_struct3:'זיון הברזל מאובטח, אין בליטות/קצוות חדים?',sq_struct3a:'כסה קצוות ברזל — סכנת פציעה',
+sq_fin3:'משטחי העבודה פנויים ממכשולים ופסולת?',sq_fin3a:'פנה מעברים — סכנת מעידה',
+sq_scaf3:'יש גישה בטוחה לפיגום (סולם/מדרגות)?',sq_scaf3a:'אסור לטפס על המבנה — התקן גישה',
+sq_exc3:'אותרו תשתיות תת-קרקעיות (חשמל/גז/מים)?',sq_exc3a:'בדוק תכניות לפני חפירה',
+specialTag:'ייעודי',totalQ:'שאלות'},
 ar:{appTagline:'يومية ومهام الميدان — كل شيء في دقيقة',
 regWelcome:'أهلاً وسهلاً 👋',regSub:'أدخل بياناتك مرة واحدة — تُحفظ للأبد',
 regFullName:'الاسم الكامل',regFullNamePh:'محمد محمود',
@@ -649,7 +658,7 @@ delaysTitle:'التأخيرات / الانحرافات',delaysPlaceholder:'هل 
 tasksTitle:'مهام الغد',tasksPlaceholder:'ما المخطط ليوم الغد؟',photosTitle:'صور اليوم',
 saveJournal:'✅ احفظ اليومية وأنشئ تقرير PDF',sendWA:'📲 أرسل للواتساب',
 tradeCol:'المهنة',qtyCol:'الكمية',totalWorkers:'مجموع العمال',
-w1:'مبيّضون',w2:'كهربائيون',w3:'سباكون',w4:'عمال عامون',w5:'نجارون',w6:'أخرى',addTrade:'➕ إضافة مهنة أخرى',tradeNamePh:'اسم المهنة (مثال: حدّاد، مبلّط)',
+w1:'مبيّضون',w2:'كهربائيون',w3:'سباكون',w4:'عمال عامون',w5:'نجارون',w6:'أخرى',addTrade:'➕ إضافة مهنة أخرى',tradeNamePh:'اسم المهنة (مثال: حدّاد، مبلّط)',confirmDeleteTrade:'إزالة المهنة من قائمة اليوم؟',
 wi0:'☀️',wi1:'⛅',wi2:'🌧️',wi3:'💨',wi4:'🔥',wl0:'مشمس',wl1:'غائم جزئياً',wl2:'ممطر',wl3:'عاصف',wl4:'حر شديد',
 defectsTitle:'العيوب والمهام',filterAll:'الكل',filterOpen:'🔴 مفتوح',filterProgress:'🟠 قيد المعالجة',filterDone:'🟢 منجز',
 addDefectTitle:'عيب / مهمة جديدة',defPhoto:'صورة (مُوصى به)',defDesc:'وصف العيب',defDescPlaceholder:'صِف ما يحتاج إصلاحاً...',
@@ -708,7 +717,12 @@ sq_fin2:'هل التهوية كافية في الغرف المغلقة؟',sq_fin
 sq_scaf1:'هل ارتفاع السقالة لا يتجاوز الحد المسموح؟',sq_scaf1a:'يلزم فحص مهندس',
 sq_scaf2:'هل ألواح السقالة مثبّتة وغير مكسورة؟',sq_scaf2a:'استبدل اللوح فوراً',
 sq_exc1:'هل ميل جدران الحفرية سليم؟',sq_exc1a:'خطر الانهيار — أوقف!',
-sq_exc2:'هل الإضاءة كافية في الحفرية؟',sq_exc2a:'أضف إضاءة قبل الدخول'}
+sq_exc2:'هل الإضاءة كافية في الحفرية؟',sq_exc2a:'أضف إضاءة قبل الدخول',
+sq_struct3:'حديد التسليح مثبّت وبدون نتوءات حادة؟',sq_struct3a:'غطِّ أطراف الحديد — خطر إصابة',
+sq_fin3:'أسطح العمل خالية من العوائق والنفايات؟',sq_fin3a:'أخلِ الممرات — خطر التعثر',
+sq_scaf3:'يوجد وصول آمن للسقالة (سلّم/درج)؟',sq_scaf3a:'ممنوع التسلق على المبنى — ركّب وصولاً',
+sq_exc3:'تم تحديد البنى التحتية تحت الأرض (كهرباء/غاز/ماء)؟',sq_exc3a:'تحقق من المخططات قبل الحفر',
+specialTag:'مخصّص',totalQ:'أسئلة'}
 };const APP={lang:'he',settings:{},screenHistory:['s-home'],currentFilter:'all',selectedSev:'normal',currentWorkType:'general',safetyAnswers:{},safetyPhotos:{},jnlPhotos:[],defectPhotos:[],gps:null};
 function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
@@ -848,9 +862,14 @@ function initJournal(){
 }
 function renderWorkersTable(){
   var tb=document.getElementById('workers-tbody');if(!tb)return;
-  var h='';for(var i=0;i<WKEYS.length;i++){var k=WKEYS[i];h+='<tr><td>'+T(k)+'</td><td><input type="number" min="0" value="0" id="w-'+k+'" oninput="calcTotal()" style="text-align:center;"></td></tr>';}
+  var h='';for(var i=0;i<WKEYS.length;i++){var k=WKEYS[i];
+    h+='<tr><td>'+T(k)+'</td><td style="white-space:nowrap;">'
+      +'<input type="number" min="0" value="0" id="w-'+k+'" oninput="calcTotal()" style="text-align:center;width:60px;display:inline-block;padding:8px 4px;">'
+      +'<button onclick="removeFixedTrade(this)" title="מחק" style="background:none;border:none;color:var(--sub);font-size:20px;cursor:pointer;padding:0 6px;vertical-align:middle;">×</button>'
+      +'</td></tr>';}
   tb.innerHTML=h;
 }
+function removeFixedTrade(btn){if(!confirm(T('confirmDeleteTrade')))return;var tr=btn.closest('tr');if(tr){tr.remove();calcTotal();}}
 function addCustomTrade(){
   var tb=document.getElementById('workers-tbody');if(!tb)return;
   var tr=document.createElement('tr');tr.className='custom-trade';
@@ -1150,11 +1169,15 @@ function sendDefWADirect(d,phone){
   window.open('https://wa.me/'+(phone?phone.replace(/\D/g,''):'')+'?text='+encodeURIComponent(msg),'_blank');
 }
 var WORK_TYPES=[{k:'general',i:'🏗️',l:'wtGeneral'},{k:'structure',i:'🏛️',l:'wtStructure'},{k:'finishing',i:'🪟',l:'wtFinishing'},{k:'scaffolding',i:'🪜',l:'wtScaffolding'},{k:'excavation',i:'⛏️',l:'wtExcavation'}];
+var SAFETY_EXTRAS={structure:['sq_struct1','sq_struct2','sq_struct3'],finishing:['sq_fin1','sq_fin2','sq_fin3'],scaffolding:['sq_scaf1','sq_scaf2','sq_scaf3'],excavation:['sq_exc1','sq_exc2','sq_exc3']};
 function getSafetyQs(wt){
   var base=['sq1','sq2','sq3','sq4','sq5','sq6','sq7','sq8','sq9','sq10','sq11','sq12'];
-  var extras={structure:['sq_struct1','sq_struct2'],finishing:['sq_fin1','sq_fin2'],scaffolding:['sq_scaf1','sq_scaf2'],excavation:['sq_exc1','sq_exc2']};
-  return base.concat(extras[wt]||[]).map(function(k){return{qKey:k,aKey:k+'a'};});
+  var arr=base.map(function(k){return{qKey:k,aKey:k+'a',special:false};});
+  var ex=SAFETY_EXTRAS[wt]||[];
+  for(var i=0;i<ex.length;i++)arr.push({qKey:ex[i],aKey:ex[i]+'a',special:true});
+  return arr;
 }
+function wtLabel(wt){for(var i=0;i<WORK_TYPES.length;i++)if(WORK_TYPES[i].k===wt)return T(WORK_TYPES[i].l);return '';}
 function initSafety(){
   var today=new Date();
   document.getElementById('safety-date-sub').textContent=today.toLocaleDateString(APP.lang==='ar'?'ar-IL':'he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -1163,7 +1186,7 @@ function initSafety(){
 }
 function renderWorkTypes(){
   var g=document.getElementById('work-type-grid');if(!g)return;
-  var h='';for(var i=0;i<WORK_TYPES.length;i++){var wt=WORK_TYPES[i];h+='<div class="work-type-btn'+(APP.currentWorkType===wt.k?' active':'')+'" onclick="selWorkType(\''+wt.k+'\')"><span class="work-type-icon">'+wt.i+'</span><span class="work-type-label">'+T(wt.l)+'</span></div>';}
+  var h='';for(var i=0;i<WORK_TYPES.length;i++){var wt=WORK_TYPES[i];var n=getSafetyQs(wt.k).length;h+='<div class="work-type-btn'+(APP.currentWorkType===wt.k?' active':'')+'" onclick="selWorkType(\''+wt.k+'\')"><span class="work-type-icon">'+wt.i+'</span><span class="work-type-label">'+T(wt.l)+'</span><span class="work-type-count">'+n+' '+T('totalQ')+'</span></div>';}
   g.innerHTML=h;
 }
 function selWorkType(k){APP.currentWorkType=k;APP.safetyAnswers={};renderWorkTypes();renderSafetyQuestions();}
@@ -1171,11 +1194,15 @@ function renderSafetyQuestions(){
   var c=document.getElementById('safety-questions-container');if(!c)return;
   var qs=getSafetyQs(APP.currentWorkType);
   var answered=Object.keys(APP.safetyAnswers).length;
-  var h='<div class="card" style="background:var(--bg);border:none;text-align:center;padding:10px 14px;"><span style="font-size:13px;color:var(--sub);">'+T('questionsAnswered')+': <strong style="color:var(--blue);">'+answered+' / '+qs.length+'</strong></span></div>';
+  var specialLbl=wtLabel(APP.currentWorkType);
+  var h='<div class="card" style="background:var(--bg);border:none;text-align:center;padding:10px 14px;"><span style="font-size:14px;color:var(--text);font-weight:700;">'+T('questionsAnswered')+': <strong style="color:var(--blue);">'+answered+' / '+qs.length+'</strong></span></div>';
   for(var i=0;i<qs.length;i++){
     var q=qs[i];var ans=APP.safetyAnswers[q.qKey];
     var cls=ans==='ok'?' passed':ans==='fail'?' failed':'';
-    h+='<div class="safety-question'+cls+'"><div class="sq-text">'+(i+1)+'. '+T(q.qKey)+'</div>';
+    if(q.special)cls+=' special';
+    h+='<div class="safety-question'+cls+'">';
+    if(q.special)h+='<div class="sq-special-tag">⚠️ '+T('specialTag')+' · '+specialLbl+'</div>';
+    h+='<div class="sq-text">'+(i+1)+'. '+T(q.qKey)+'</div>';
     h+='<div class="sq-btns"><button class="sq-btn'+(ans==='ok'?' ok':'')+'" onclick="answerSQ(\''+q.qKey+'\',\'ok\')">✅ '+T('reportOk')+'</button>';
     h+='<button class="sq-btn'+(ans==='fail'?' fail':'')+'" onclick="answerSQ(\''+q.qKey+'\',\'fail\')">❌ '+T('reportFail')+'</button></div>';
     h+='<div class="sq-alert">⚠️ '+T(q.aKey)+'</div>';
