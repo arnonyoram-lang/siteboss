@@ -2465,8 +2465,16 @@ function injectLangToggles(){
   });
 }
 function init(){
-  APP.settings=loadJSON('sb_settings',{});
-  APP.lang=APP.settings.lang||'he';
+  try{ _init(); }
+  catch(e){
+    // שכבת הגנה — לעולם לא להשאיר מסך לבן
+    try{var hs=document.getElementById('s-home');if(hs){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});hs.classList.add('active');}}catch(_){}
+    try{toast('שגיאה זמנית — נסה לרענן');}catch(_){}
+  }
+}
+function _init(){
+  APP.settings=loadJSON('sb_settings',{})||{};
+  APP.lang=(APP.settings&&APP.settings.lang)||'he';
   APP.features=loadJSON('dk_features',{supervisorApproval:false,safetyStages:false,customTrades:false});
   APP.userPrefs=loadJSON('dk_user_prefs',{});
   injectLangToggles();
