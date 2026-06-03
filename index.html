@@ -147,7 +147,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 .sq-btn{flex:1;min-height:50px;border-radius:11px;border:2px solid var(--border);background:white;font-size:16px;font-weight:800;cursor:pointer;}
 .sq-btn.ok{background:var(--green);border-color:var(--green);color:white;}
 .sq-btn.fail{background:var(--red);border-color:var(--red);color:white;}
-#sign-canvas,#jnl-sign-canvas,#sup-sign-canvas{border:2px solid var(--border);border-radius:12px;width:100%;height:160px;background:white;cursor:crosshair;touch-action:none;}
+#sign-canvas,#jnl-sign-canvas,#sup-sign-canvas,#ob-sign-canvas,#perm-sign-canvas{border:2px solid var(--border);border-radius:12px;width:100%;height:110px;background:white;cursor:crosshair;touch-action:none;}
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#2c3e50;color:white;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;max-width:90%;text-align:center;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center;}
@@ -1658,12 +1658,10 @@ function toggleVoice(target,btnId){
   _voiceFinal=el0&&el0.value?(el0.value.replace(/\s+$/,'')+' '):'';  // המשך מטקסט קיים
   _recog=new SR();_recog.lang=APP.lang==='ar'?'ar-IL':'he-IL';_recog.continuous=true;_recog.interimResults=true;
   _recog.onresult=function(e){
-    var interim='';
-    for(var i=e.resultIndex;i<e.results.length;i++){
-      var tr=e.results[i][0].transcript;
-      if(e.results[i].isFinal)_voiceFinal+=tr+' ';else interim+=tr;
-    }
-    var el=document.getElementById(_voiceTarget);if(el)el.value=(_voiceFinal+interim).replace(/[ \t]+/g,' ').replace(/^\s+/,'');
+    // בנייה-מחדש מלאה מכל התוצאות בכל אירוע — מונע כפילות (אין צבירה)
+    var txt='';
+    for(var i=0;i<e.results.length;i++){ txt+=e.results[i][0].transcript+' '; }
+    var el=document.getElementById(_voiceTarget);if(el)el.value=(_voiceFinal+txt).replace(/[ \t]+/g,' ').replace(/^\s+/,'');
   };
   _recog.onerror=function(err){if(err.error==='not-allowed')toast(T('voiceDenied'));else if(err.error!=='aborted'&&err.error!=='no-speech')toast(T('voiceError'));};
   // ללא הפעלה-מחדש אוטומטית (גרמה לכפילות). בסיום — הכפתור חוזר למצב מוכן, הטקסט נשמר.
@@ -1675,7 +1673,7 @@ var currentWeather=-1;
 // ===== עזר חתימה גנרי (שימוש חוזר לכמה קנבסים) =====
 function attachSignPad(canvas){
   if(!canvas)return null;
-  var ctx=canvas.getContext('2d');canvas.width=canvas.offsetWidth||400;canvas.height=160;ctx.clearRect(0,0,canvas.width,canvas.height);
+  var ctx=canvas.getContext('2d');canvas.width=canvas.offsetWidth||400;canvas.height=110;ctx.clearRect(0,0,canvas.width,canvas.height);
   var drawing=false,dirty=false;
   function pos(e){var r=canvas.getBoundingClientRect();var pt=e.touches?e.touches[0]:e;return{x:pt.clientX-r.left,y:pt.clientY-r.top};}
   function down(e){if(e.preventDefault)e.preventDefault();drawing=true;dirty=true;var p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
@@ -2125,7 +2123,7 @@ function handleSQPhoto(e,key){var f=e.target.files[0];if(!f)return;var r=new Fil
 var signCanvas,signCtx,signing=false;
 function initSignature(){
   signCanvas=document.getElementById('sign-canvas');if(!signCanvas)return;
-  signCtx=signCanvas.getContext('2d');signCanvas.width=signCanvas.offsetWidth||400;signCanvas.height=160;
+  signCtx=signCanvas.getContext('2d');signCanvas.width=signCanvas.offsetWidth||400;signCanvas.height=110;
   signCtx.clearRect(0,0,signCanvas.width,signCanvas.height);
   signCanvas.onmousedown=function(e){signing=true;var p=sPos(e);signCtx.beginPath();signCtx.moveTo(p.x,p.y);};
   signCanvas.onmousemove=function(e){if(!signing)return;var p=sPos(e);signCtx.lineTo(p.x,p.y);signCtx.strokeStyle='#222';signCtx.lineWidth=2.5;signCtx.lineCap='round';signCtx.stroke();};
