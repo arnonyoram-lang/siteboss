@@ -300,6 +300,10 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <span class="home-btn-icon">🚨</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn6Title"></span><span class="home-btn-desc" data-t="btn6Desc"></span></span>
     </button>
+    <button id="home-mod-onboard" class="home-btn" style="display:none;background:linear-gradient(135deg,#16a085,#0e6655);" onclick="showScreen('s-onboard')">
+      <span class="home-btn-icon">🪪</span>
+      <span class="home-btn-texts"><span class="home-btn-title" data-t="btn7Title"></span><span class="home-btn-desc" data-t="btn7Desc"></span></span>
+    </button>
   </div>
   <div style="text-align:center;margin-top:18px;">
     <button onclick="showScreen('s-help')" style="background:none;border:none;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;" data-t="helpLink"></button>
@@ -451,6 +455,52 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     <div style="width:40px"></div>
   </div>
   <div class="screen-body"><div id="inc-history-list"></div></div>
+</div>
+
+<!-- FOREIGN WORKER ONBOARDING (#12) -->
+<div class="screen" id="s-onboard">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="obTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body">
+    <button class="btn btn-green" style="margin-bottom:14px;" onclick="showScreen('s-onboard-new')"><span data-t="obAddBtn"></span></button>
+    <div class="card"><div class="card-title" data-t="obListTitle"></div><div id="ob-list"></div></div>
+  </div>
+</div>
+
+<!-- ONBOARD — NEW WORKER -->
+<div class="screen" id="s-onboard-new">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-onboard')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="obNewTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body">
+    <div class="card"><div class="card-title" data-t="obName"></div><input id="ob-name" type="text" data-tp="obNamePh"></div>
+    <div class="card"><div class="card-title" data-t="obPermit"></div><input id="ob-permit" type="text" data-tp="obPermitPh"></div>
+    <div class="card">
+      <div class="card-title" data-t="obPermitPhoto"></div>
+      <div class="photos-grid" id="ob-photo-grid" style="grid-template-columns:1fr;"></div>
+      <input type="file" id="ob-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleObPhoto(event)">
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="obLang"></div>
+      <div class="stage-chips" id="ob-lang-chips"></div>
+    </div>
+    <div class="card" style="background:#fff8e8;border:1px solid var(--accent);">
+      <div class="card-title">🦺 <span data-t="obBriefTitle"></span></div>
+      <div id="ob-brief" style="font-size:15px;line-height:1.8;white-space:pre-wrap;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="obSignTitle"></div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:8px;" id="ob-sign-hint"></div>
+      <canvas id="ob-sign-canvas"></canvas>
+      <button class="btn btn-gray" style="margin-top:8px;min-height:38px;font-size:13px;" onclick="clearObSign()"><span data-t="clearSign"></span></button>
+    </div>
+    <button class="btn btn-green" onclick="saveOnboard()"><span data-t="obSave"></span></button>
+  </div>
 </div>
 
 <!-- JOURNAL -->
@@ -783,6 +833,13 @@ incInjured:'נפגעים (אם יש)',incInjuredPh:'שם הנפגע ותיאור
 incAction:'פעולה מיידית שננקטה',incActionPh:'מה עשית מיד אחרי?',incPhoto:'תמונות',
 incSave:'🚨 שמור ודווח למשרד',incSaved:'✅ האירוע תועד ונשלח',incNoDesc:'יש לתאר את האירוע',
 incHistTitle:'אירועים שדווחו',incHistEmpty:'לא דווחו אירועים — מצוין!',
+btn7Title:'קליטת עובד זר',btn7Desc:'אישור עבודה ← תדריך בטיחות בשפת האם ← חתימה',
+obTitle:'קליטת עובדים זרים',obAddBtn:'➕ קלוט עובד חדש',obListTitle:'עובדים שנקלטו',obEmpty:'עדיין לא נקלטו עובדים',
+obNewTitle:'קליטת עובד חדש',obName:'שם העובד',obNamePh:'שם מלא',obPermit:'מספר אישור עבודה / דרכון',obPermitPh:'מספר מסמך',
+obPermitPhoto:'צילום האישור / דרכון',obLang:'שפת האם של העובד',obBriefTitle:'תדריך בטיחות — הצג לעובד בשפתו',
+obSignTitle:'חתימת העובד — הבנתי את הוראות הבטיחות',obSignHint:'העובד חותם לאישור שהבין את התדריך',
+obSave:'✅ סיים קליטה ושמור',obSaved:'✅ העובד נקלט בהצלחה',obNeedName:'יש להזין שם עובד',obNeedSign:'העובד צריך לחתום',
+obSignedOn:'נקלט: ',obLangLabel:'שפה: ',
 presTitle:'נוכחות עובדים',presOnSite:'נמצאים באתר עכשיו',presAddTitle:'הוסף עובד שנכנס',presNamePh:'שם העובד',presTradePh:'מקצוע / קבלן (אופציונלי)',presAddBtn:'➕ סמן כנכנס',presListTitle:'רשימת נוכחות היום',presShare:'📲 שלח דוח נוכחות',presCheckout:'יציאה',presIn:'נכנס',presOut:'יצא',presEmpty:'עדיין לא נכנסו עובדים היום',presHistTitle:'היסטוריית נוכחות',presHistEmpty:'אין היסטוריית נוכחות',presWorkers:'עובדים',
 remTitle:'תזכורות ומשימות',remSmartTitle:'התראות אוטומטיות',remMyTitle:'התזכורות שלי',remPlaceholder:'תזכורת חדשה...',remAddBtn:'➕ הוסף תזכורת',remEmpty:'אין תזכורות',remNoAlerts:'✅ אין התראות — הכל מעודכן',remOverdue:'ליקוי באיחור: ',remSafetyToday:'לא בוצעה בדיקת בטיחות היום',remTasksTomorrow:'משימות מהיומן האחרון: ',remDone:'בוצע',remDate:'עד: ',
 faqTitle:'שאלות נפוצות',
@@ -891,6 +948,13 @@ incInjured:'المصابون (إن وجد)',incInjuredPh:'اسم المصاب و
 incAction:'الإجراء الفوري المتخذ',incActionPh:'ماذا فعلت مباشرة؟',incPhoto:'صور',
 incSave:'🚨 احفظ وبلّغ المكتب',incSaved:'✅ تم توثيق الحدث وإرساله',incNoDesc:'يرجى وصف الحدث',
 incHistTitle:'الأحداث المبلّغ عنها',incHistEmpty:'لم يتم تبليغ أحداث — ممتاز!',
+btn7Title:'استقبال عامل أجنبي',btn7Desc:'تصريح عمل ← تعليمات سلامة بلغته ← توقيع',
+obTitle:'استقبال العمال الأجانب',obAddBtn:'➕ استقبل عاملاً جديداً',obListTitle:'العمال المستقبَلون',obEmpty:'لم يتم استقبال عمال بعد',
+obNewTitle:'استقبال عامل جديد',obName:'اسم العامل',obNamePh:'الاسم الكامل',obPermit:'رقم تصريح العمل / جواز السفر',obPermitPh:'رقم المستند',
+obPermitPhoto:'صورة التصريح / الجواز',obLang:'اللغة الأم للعامل',obBriefTitle:'تعليمات السلامة — اعرضها على العامل بلغته',
+obSignTitle:'توقيع العامل — فهمت تعليمات السلامة',obSignHint:'يوقّع العامل لتأكيد فهمه التعليمات',
+obSave:'✅ أنهِ الاستقبال واحفظ',obSaved:'✅ تم استقبال العامل بنجاح',obNeedName:'يرجى إدخال اسم العامل',obNeedSign:'يجب أن يوقّع العامل',
+obSignedOn:'استُقبل: ',obLangLabel:'اللغة: ',
 presTitle:'حضور العمال',presOnSite:'موجودون في الموقع الآن',presAddTitle:'أضف عاملاً دخل',presNamePh:'اسم العامل',presTradePh:'مهنة / مقاول (اختياري)',presAddBtn:'➕ سجّل دخول',presListTitle:'قائمة الحضور اليوم',presShare:'📲 أرسل تقرير الحضور',presCheckout:'خروج',presIn:'دخل',presOut:'خرج',presEmpty:'لم يدخل عمال بعد اليوم',presHistTitle:'سجل الحضور',presHistEmpty:'لا يوجد سجل حضور',presWorkers:'عمال',
 remTitle:'تذكيرات ومهام',remSmartTitle:'تنبيهات تلقائية',remMyTitle:'تذكيراتي',remPlaceholder:'تذكير جديد...',remAddBtn:'➕ أضف تذكير',remEmpty:'لا توجد تذكيرات',remNoAlerts:'✅ لا تنبيهات — كل شيء محدّث',remOverdue:'عيب متأخر: ',remSafetyToday:'لم يتم فحص السلامة اليوم',remTasksTomorrow:'مهام من آخر يومية: ',remDone:'تم',remDate:'حتى: ',
 faqTitle:'أسئلة شائعة',
@@ -1053,6 +1117,8 @@ function onScreenEnter(id){
   if(id==='s-reminders')renderReminders();
   if(id==='s-incidents')initIncidents();
   if(id==='s-incidents-history')renderIncidentsHistory();
+  if(id==='s-onboard')renderOnboardList();
+  if(id==='s-onboard-new')initOnboard();
   if((id==='s-home'||id==='s-messages')&&window._dkFetchMessages){try{window._dkFetchMessages();}catch(e){}}
   updateBottomBack(id);
 }
@@ -1293,6 +1359,70 @@ function renderIncidentsHistory(){
       +(e.injured?'<div style="font-size:13px;color:var(--red);margin-top:4px;">🩹 '+esc(e.injured)+'</div>':'')
       +(e.photos&&e.photos.length?'<div class="photos-grid" style="margin-top:8px;">'+e.photos.map(function(p){return '<div class="photo-thumb"><img src="'+p+'"></div>';}).join('')+'</div>':'')
       +'<button class="btn btn-gray btn-sm" style="margin-top:8px;" onclick="shareIncidentWA(getIncidents().find(function(x){return x.id==='+e.id+';}))">📲 שלח שוב</button>'
+      +'</div>';
+  });
+  el.innerHTML=h;
+}
+
+// ===================== קליטת עובדים זרים (#12) =====================
+var OB_LANGS=[
+  {k:'ar',l:'عربية'},{k:'ru',l:'Русский'},{k:'am',l:'አማርኛ'},{k:'hi',l:'हिन्दी'},
+  {k:'zh',l:'中文'},{k:'th',l:'ไทย'},{k:'tr',l:'Türkçe'},{k:'he',l:'עברית'}
+];
+var SAFETY_BRIEF={
+  he:'הוראות בטיחות באתר:\n• חובה קסדה ונעלי בטיחות תמיד\n• רתמת בטיחות בעבודה בגובה מעל 2 מ׳\n• אין לגעת בחשמל / מכונות ללא אישור\n• דווח מיד על כל מפגע או פציעה\n• שמע להוראות מנהל העבודה',
+  ar:'تعليمات السلامة في الموقع:\n• الخوذة وأحذية السلامة إلزامية دائماً\n• حزام الأمان عند العمل على ارتفاع أكثر من مترين\n• ممنوع لمس الكهرباء / الآلات دون إذن\n• بلّغ فوراً عن أي خطر أو إصابة\n• اتبع تعليمات مدير العمل',
+  ru:'Правила безопасности на объекте:\n• Каска и защитная обувь обязательны всегда\n• Страховочный пояс при работе на высоте более 2 м\n• Запрещено трогать электричество/машины без разрешения\n• Немедленно сообщайте об опасности или травме\n• Выполняйте указания прораба',
+  am:'የግንባታ ቦታ የደህንነት መመሪያዎች:\n• ሁልጊዜ ኮፍያና የደህንነት ጫማ ያስፈልጋል\n• ከ2 ሜትር በላይ ሲሰሩ የደህንነት ቀበቶ\n• ያለ ፍቃድ ኤሌክትሪክ/ማሽን አይንኩ\n• ማንኛውንም አደጋ ወዲያውኑ ያሳውቁ\n• የስራ አስኪያጁን መመሪያ ይከተሉ',
+  hi:'साइट सुरक्षा निर्देश:\n• हेलमेट और सुरक्षा जूते हमेशा अनिवार्य\n• 2 मीटर से ऊपर काम पर सुरक्षा बेल्ट\n• बिना अनुमति बिजली/मशीन को न छुएं\n• किसी भी खतरे या चोट की तुरंत सूचना दें\n• साइट मैनेजर के निर्देशों का पालन करें',
+  zh:'工地安全须知：\n• 必须始终佩戴安全帽和安全鞋\n• 2米以上高空作业须系安全带\n• 未经许可不得触碰电气/机械\n• 任何危险或受伤须立即报告\n• 服从工地负责人的指示',
+  th:'คำแนะนำความปลอดภัยในไซต์:\n• สวมหมวกนิรภัยและรองเท้านิรภัยเสมอ\n• ใช้เข็มขัดนิรภัยเมื่อทำงานสูงเกิน 2 เมตร\n• ห้ามแตะไฟฟ้า/เครื่องจักรโดยไม่ได้รับอนุญาต\n• แจ้งอันตรายหรือการบาดเจ็บทันที\n• ปฏิบัติตามคำสั่งของผู้จัดการไซต์',
+  tr:'Şantiye güvenlik talimatları:\n• Baret ve güvenlik ayakkabısı her zaman zorunlu\n• 2 m üzeri yükseklikte emniyet kemeri\n• İzinsiz elektrik/makineye dokunmayın\n• Her tehlike veya yaralanmayı derhal bildirin\n• Şantiye şefinin talimatlarına uyun'
+};
+var _obLang='ar',_obPhoto=null,obSignPad=null;
+function initOnboard(){
+  _obLang='ar';_obPhoto=null;
+  document.getElementById('ob-name').value='';document.getElementById('ob-permit').value='';
+  document.getElementById('ob-sign-hint').textContent=T('obSignHint');
+  renderObLangs();renderObPhoto();renderObBrief();
+  obSignPad=attachSignPad(document.getElementById('ob-sign-canvas'));
+}
+function renderObLangs(){
+  var g=document.getElementById('ob-lang-chips');if(!g)return;var h='';
+  OB_LANGS.forEach(function(L){h+='<div class="stage-chip'+(_obLang===L.k?' on':'')+'" onclick="selObLang(\''+L.k+'\')"><span>'+L.l+'</span></div>';});
+  g.innerHTML=h;
+}
+function selObLang(k){_obLang=k;renderObLangs();renderObBrief();}
+function renderObBrief(){var el=document.getElementById('ob-brief');if(el)el.textContent=SAFETY_BRIEF[_obLang]||SAFETY_BRIEF.he;}
+function handleObPhoto(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){_obPhoto=ev.target.result;renderObPhoto();};r.readAsDataURL(f);e.target.value='';}
+function renderObPhoto(){
+  var g=document.getElementById('ob-photo-grid');if(!g)return;
+  if(_obPhoto)g.innerHTML='<div class="photo-thumb" style="aspect-ratio:16/10;"><img src="'+_obPhoto+'"><button class="photo-del" onclick="_obPhoto=null;renderObPhoto()">×</button></div>';
+  else g.innerHTML='<div class="photo-add" style="aspect-ratio:16/6;" onclick="document.getElementById(\'ob-photo-input\').click()"><span class="photo-add-icon">📷</span><span>+</span></div>';
+}
+function clearObSign(){if(obSignPad)obSignPad.clear();}
+function getOnboarded(){return loadJSON('dk_onboard',[]);}
+function saveOnboard(){
+  var name=document.getElementById('ob-name').value.trim();
+  if(!name){toast(T('obNeedName'));return;}
+  if(!obSignPad||obSignPad.isEmpty()){toast(T('obNeedSign'));return;}
+  var s=APP.settings||{};
+  var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),name:name,
+    permit:document.getElementById('ob-permit').value.trim(),permitPhoto:_obPhoto||null,
+    lang:_obLang,signature:obSignPad.dataURL(),project:s.projectName||'',by:s.managerName||''};
+  var list=getOnboarded();list.unshift(entry);saveJSON('dk_onboard',list);
+  cloudSave('onboard',entry);
+  toast(T('obSaved'),3000);showScreen('s-onboard');
+}
+function obLangLabel(k){for(var i=0;i<OB_LANGS.length;i++)if(OB_LANGS[i].k===k)return OB_LANGS[i].l;return k;}
+function renderOnboardList(){
+  var el=document.getElementById('ob-list');var list=getOnboarded();
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--sub);">'+T('obEmpty')+'</div>';return;}
+  var h='';list.forEach(function(e){
+    h+='<div style="display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--border);">'
+      +'<span style="font-size:22px;">🪪</span>'
+      +'<div style="flex:1;"><div style="font-weight:700;">'+esc(e.name)+'</div><div style="font-size:12px;color:var(--sub);">'+T('obLangLabel')+obLangLabel(e.lang)+(e.permit?' · '+esc(e.permit):'')+' · '+new Date(e.ts).toLocaleDateString('he-IL')+'</div></div>'
+      +(e.signature?'<img src="'+e.signature+'" style="height:34px;border:1px solid var(--border);border-radius:6px;background:#fff;">':'')
       +'</div>';
   });
   el.innerHTML=h;
@@ -2040,6 +2170,7 @@ var ALL_FEATURES=[
   {k:'modPresence',he:'נוכחות עובדים',ar:'حضور العمال',def:false},
   {k:'modReminders',he:'תזכורות ומשימות',ar:'تذكيرات ومهام',def:false},
   {k:'modIncidents',he:'דיווח אירועים ותאונות',ar:'تبليغ الحوادث',def:false},
+  {k:'modOnboard',he:'קליטת עובדים זרים',ar:'استقبال العمال الأجانب',def:false},
   {k:'messages',he:'הודעות מהמשרד',ar:'رسائل المكتب',def:true},
   {k:'supervisorApproval',he:'אישור פיקוח ביומן',ar:'مصادقة المشرف',def:false},
   {k:'safetyStages',he:'שאלות בטיחות לפי שלב',ar:'أسئلة سلامة حسب المرحلة',def:false},
@@ -2059,6 +2190,7 @@ function applyFeatures(){
   var hp=document.getElementById('home-mod-presence');if(hp)hp.style.display=isFeatureOn('modPresence')?'':'none';
   var hr=document.getElementById('home-mod-reminders');if(hr)hr.style.display=isFeatureOn('modReminders')?'':'none';
   var hi=document.getElementById('home-mod-incidents');if(hi)hi.style.display=isFeatureOn('modIncidents')?'':'none';
+  var ho=document.getElementById('home-mod-onboard');if(ho)ho.style.display=isFeatureOn('modOnboard')?'':'none';
   if(typeof updateReminderBadge==='function')updateReminderBadge();
   updateMsgBanner();
   var act=document.querySelector('.screen.active');
