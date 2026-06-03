@@ -936,7 +936,7 @@ defectsTitle:'ליקויים ומשימות',filterAll:'הכל',filterOpen:'🔴
 addDefectTitle:'ליקוי / משימה חדשה',defPhoto:'תמונה (מומלץ)',defDesc:'תיאור הליקוי',defDescPlaceholder:'תאר מה צריך תיקון...',
 defFloor:'קומה',defArea:'דירה / אזור',defContractor:'קבלן אחראי',defDeadline:'תאריך יעד לתיקון',
 defSeverity:'חומרה',sevUrgent:'🔴 דחוף',sevNormal:'🟠 רגיל',sevLow:'🟢 נמוך',
-saveAndSend:'שמור ← שלח לקבלן',btnDone:'✅ בוצע',btnProgress:'⏳ בטיפול',btnWA:'📲 וואטסאפ',
+saveAndSend:'שמור ← שלח לקבלן',btnDone:'✅ בוצע',btnProgress:'⏳ בטיפול',btnWA:'📲 וואטסאפ',msgNewBadge:'חדש',defReopen:'↩ פתח מחדש',
 fixBtn:'🔧 סמן כתוקן',fixTitle:'פרטי התיקון',
 fixBy:'מי ביצע את התיקון',fixByPlaceholder:'שם הקבלן / פועל שתיקן',
 fixWhen:'תאריך ושעת התיקון',fixPhoto:'תמונה של התיקון (מומלץ)',takePhoto:'צלם',
@@ -1059,7 +1059,7 @@ defectsTitle:'العيوب والمهام',filterAll:'الكل',filterOpen:'🔴
 addDefectTitle:'عيب / مهمة جديدة',defPhoto:'صورة (مُوصى به)',defDesc:'وصف العيب',defDescPlaceholder:'صِف ما يحتاج إصلاحاً...',
 defFloor:'طابق',defArea:'شقة / منطقة',defContractor:'المقاول المسؤول',defDeadline:'تاريخ الإصلاح المستهدف',
 defSeverity:'الأهمية',sevUrgent:'🔴 عاجل',sevNormal:'🟠 عادي',sevLow:'🟢 منخفض',
-saveAndSend:'احفظ ← أرسل للمقاول',btnDone:'✅ منجز',btnProgress:'⏳ قيد المعالجة',btnWA:'📲 واتساب',
+saveAndSend:'احفظ ← أرسل للمقاول',btnDone:'✅ منجز',btnProgress:'⏳ قيد المعالجة',btnWA:'📲 واتساب',msgNewBadge:'جديد',defReopen:'↩ إعادة فتح',
 fixBtn:'🔧 سجّل الإصلاح',fixTitle:'تفاصيل الإصلاح',
 fixBy:'من أجرى الإصلاح',fixByPlaceholder:'اسم المقاول / العامل الذي أصلح',
 fixWhen:'تاريخ ووقت الإصلاح',fixPhoto:'صورة الإصلاح (مُوصى به)',takePhoto:'التقط صورة',
@@ -1171,6 +1171,7 @@ function setLang(lang){
     's-contractors':renderContractorScores,
     's-permits':function(){renderPermTypes();renderPermChecks();},
     's-permits-history':renderPermitsHistory,
+    's-incidents':function(){renderIncTypes();},
     's-incidents-history':renderIncidentsHistory,
     's-onboard':renderOnboardList,
     's-onboard-new':renderObBrief,
@@ -1266,7 +1267,7 @@ function renderMessages(){
       var m=msgs[i];var isNew=(m.ts||0)>lr;
       var when=m.ts?new Date(m.ts).toLocaleString(APP.lang==='ar'?'ar-IL':'he-IL'):'';
       h+='<div style="background:#fff;border:1px solid var(--border);border-'+(APP.lang==='ar'?'right':'right')+':4px solid '+(isNew?'var(--blue)':'var(--border)')+';border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,.05);">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:11px;color:var(--blue);font-weight:700;">📢 '+T('msgFrom')+'</span>'+(isNew?'<span style="background:var(--blue);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;">חדש</span>':'')+'</div>';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:11px;color:var(--blue);font-weight:700;">📢 '+T('msgFrom')+'</span>'+(isNew?'<span style="background:var(--blue);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;">'+T('msgNewBadge')+'</span>':'')+'</div>';
       if(m.title)h+='<div style="font-weight:800;font-size:16px;margin-bottom:4px;">'+esc(m.title)+'</div>';
       if(m.body)h+='<div style="font-size:14px;line-height:1.6;white-space:pre-wrap;color:var(--text);">'+esc(m.body)+'</div>';
       if(m.link)h+='<a href="'+esc(m.link)+'" target="_blank" style="display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;font-size:14px;text-decoration:none;">'+T('msgOpenLink')+'</a>';
@@ -1558,7 +1559,7 @@ function renderContractorScores(){
       +'<span style="background:#eafaf1;color:var(--green);padding:5px 10px;border-radius:8px;font-weight:700;">'+T('conDone')+': '+done.length+'</span>'
       +(avg!==null?'<span style="background:var(--bg);padding:5px 10px;border-radius:8px;font-weight:700;">'+T('conAvg')+': '+avg.toFixed(1)+' '+T('conDays')+'</span>':'')
       +'</div>'
-      +(c.phone?'<button class="btn btn-gray btn-sm" style="margin-top:10px;" onclick="openWhatsApp(\''+c.phone+'\',\'\')">📲 וואטסאפ</button>':'')
+      +(c.phone?'<button class="btn btn-gray btn-sm" style="margin-top:10px;" onclick="openWhatsApp(\''+c.phone+'\',\'\')">'+T('btnWA')+'</button>':'')
       +'</div>';
   });
   el.innerHTML=h;
@@ -1566,10 +1567,10 @@ function renderContractorScores(){
 
 // ===================== היתרי עבודה (#18) =====================
 var PERM_TYPES=[
-  {k:'height',l:'permHeight',checks:['רתמת בטיחות תקינה','עיגון יציב','גידור פתחים','הדרכת עובד']},
-  {k:'hot',l:'permHot',checks:['מטף כיבוי זמין','אין חומרים דליקים בסביבה','אוורור מספק','משקיף אש']},
-  {k:'confined',l:'permConfined',checks:['בדיקת אוויר/גזים','אוורור פעיל','משקיף בחוץ','אמצעי חילוץ']},
-  {k:'elec',l:'permElec',checks:['ניתוק מתח ונעילה','שילוט אזהרה','כלים מבודדים','אישור חשמלאי מוסמך']}
+  {k:'height',l:'permHeight',checks:[['רתמת בטיחות תקינה','حزام أمان سليم'],['עיגון יציב','تثبيت ثابت'],['גידור פתחים','تسييج الفتحات'],['הדרכת עובד','تدريب العامل']]},
+  {k:'hot',l:'permHot',checks:[['מטף כיבוי זמין','طفاية حريق متاحة'],['אין חומרים דליקים בסביבה','لا مواد قابلة للاشتعال قريبة'],['אוורור מספק','تهوية كافية'],['משקיף אש','مراقب حريق']]},
+  {k:'confined',l:'permConfined',checks:[['בדיקת אוויר/גזים','فحص الهواء/الغازات'],['אוורור פעיל','تهوية فعّالة'],['משקיף בחוץ','مراقب في الخارج'],['אמצעי חילוץ','وسائل إنقاذ']]},
+  {k:'elec',l:'permElec',checks:[['ניתוק מתח ונעילה','فصل التيار وقفله'],['שילוט אזהרה','لافتات تحذير'],['כלים מבודדים','أدوات معزولة'],['אישור חשמלאי מוסמך','مصادقة كهربائي مرخّص']]}
 ];
 var _permType='height',permSignPad=null;
 function initPermit(){
@@ -1589,7 +1590,7 @@ function selPermType(k){_permType=k;renderPermTypes();renderPermChecks();}
 function permTypeObj(k){for(var i=0;i<PERM_TYPES.length;i++)if(PERM_TYPES[i].k===k)return PERM_TYPES[i];return PERM_TYPES[0];}
 function renderPermChecks(){
   var el=document.getElementById('perm-checks');if(!el)return;var t=permTypeObj(_permType);var h='';
-  t.checks.forEach(function(c,i){h+='<label class="feat-toggle"><span>'+c+'</span><input type="checkbox" class="perm-chk" data-c="'+esc(c)+'"></label>';});
+  t.checks.forEach(function(c,i){var label=APP.lang==='ar'?c[1]:c[0];h+='<label class="feat-toggle"><span>'+label+'</span><input type="checkbox" class="perm-chk" data-c="'+esc(c[0])+'"></label>';});
   el.innerHTML=h;
 }
 function clearPermSign(){if(permSignPad)permSignPad.clear();}
@@ -1985,7 +1986,7 @@ function renderDefects(){
       h+='<button class="status-btn'+pa+'" onclick="setDefStatus('+d.id+',\'progress\')">'+T('btnProgress')+'</button>';
       h+='<button class="btn-fix-main" onclick="openFixModal('+d.id+')">'+T('fixBtn')+'</button>';
     } else {
-      h+='<button class="status-btn" onclick="setDefStatus('+d.id+',\'open\')" style="opacity:.6;font-size:12px;">↩ פתח מחדש</button>';
+      h+='<button class="status-btn" onclick="setDefStatus('+d.id+',\'open\')" style="opacity:.6;font-size:12px;">'+T('defReopen')+'</button>';
     }
     h+='<button class="status-btn" onclick="sendDefWA('+d.id+')">'+T('btnWA')+'</button>';
     h+='<button class="status-btn" onclick="delDefect('+d.id+')" style="background:#fdecea;color:var(--red);">🗑️</button>';
