@@ -2302,6 +2302,8 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     }
     window._dkRegister = upsert;
     window._dkSync = upsert;
+    // סנכרון אוטומטי של המשתמש הרשום ברגע ש-Firebase מוכן (פותר מקרה שבו init רץ לפני שהמודול נטען)
+    try{ var _st=JSON.parse(localStorage.getItem('sb_settings')||'{}'); if(_st&&_st.managerName){ upsert({name:_st.managerName,phone:_st.managerPhone,company:_st.companyName,project:_st.projectName,lang:_st.lang||'he'}); } }catch(e){}
 
     // שמירת/מחיקת רשומה (יומן/ליקוי/בטיחות) ב-Firestore — משויך למנהל
     window._dkSaveDoc = function(coll, id, data){
