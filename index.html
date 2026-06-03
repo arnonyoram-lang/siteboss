@@ -1471,7 +1471,14 @@ function renderObLangs(){
   g.innerHTML=h;
 }
 function selObLang(k){_obLang=k;renderObLangs();renderObBrief();}
-function renderObBrief(){var el=document.getElementById('ob-brief');if(el)el.textContent=SAFETY_BRIEF[_obLang]||SAFETY_BRIEF.he;}
+function renderObBrief(){
+  var el=document.getElementById('ob-brief');if(!el)return;
+  var custom=loadJSON('dk_briefings',{});
+  var txt=(custom&&custom[_obLang]&&custom[_obLang].trim())?custom[_obLang]:(SAFETY_BRIEF[_obLang]||SAFETY_BRIEF.he);
+  el.textContent=txt;
+}
+// נקרא מהמודול כשמגיעים תדריכים מותאמים מהמשרד
+window._dkOnBriefings=function(obj){saveJSON('dk_briefings',obj||{});var a=document.querySelector('.screen.active');if(a&&a.id==='s-onboard-new')renderObBrief();};
 function handleObPhoto(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){_obPhoto=ev.target.result;renderObPhoto();};r.readAsDataURL(f);e.target.value='';}
 function renderObPhoto(){
   var g=document.getElementById('ob-photo-grid');if(!g)return;
@@ -2400,11 +2407,20 @@ function renderFeaturePrefs(){
   wrap.innerHTML=h;
 }
 
+function injectLangToggles(){
+  document.querySelectorAll('.topbar').forEach(function(tb){
+    if(tb.querySelector('.lang-toggle'))return; // כבר קיים
+    var d=document.createElement('div');d.className='lang-toggle';
+    d.innerHTML='<button class="lang-btn" data-lang="he" onclick="setLang(\'he\')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang(\'ar\')">عر</button>';
+    if(tb.lastElementChild)tb.insertBefore(d,tb.lastElementChild);else tb.appendChild(d);
+  });
+}
 function init(){
   APP.settings=loadJSON('sb_settings',{});
   APP.lang=APP.settings.lang||'he';
   APP.features=loadJSON('dk_features',{supervisorApproval:false,safetyStages:false,customTrades:false});
   APP.userPrefs=loadJSON('dk_user_prefs',{});
+  injectLangToggles();
   applyLang();
   applyFeatures();
   if(!isRegistered()){
@@ -2518,6 +2534,8 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
       (function fetchFeat(t){ getDoc(doc(db,'managers',id)).then(function(s){ if(s.exists()&&window._dkOnFeatures)window._dkOnFeatures((s.data()||{}).features||{}); }).catch(function(){ if(t<5)setTimeout(function(){fetchFeat(t+1);},1500); }); })(0);
     }
     applyMgrFeatures();
+    // תדריכי בטיחות מותאמים מהמשרד
+    try{ onSnapshot(doc(db,'config','briefings'), function(snap){ if(snap.exists()&&window._dkOnBriefings)window._dkOnBriefings(snap.data()||{}); }, function(){}); }catch(e){}
 
     // האזנה להודעות מהמשרד
     var qy = query(collection(db,'messages'), orderBy('createdAt','desc'));

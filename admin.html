@@ -117,6 +117,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
     <button class="nav-btn" id="nav-road" onclick="showView('road')">🗺️ מפת דרכים</button>
     <button class="nav-btn" id="nav-content" onclick="showView('content')">✏️ תוכן וניסוחים</button>
     <button class="nav-btn" id="nav-feedback" onclick="showView('feedback')">📬 פניות <span id="fb-badge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:12px;margin-right:4px;"></span></button>
+    <button class="nav-btn" id="nav-briefings" onclick="showView('briefings')">🗣️ תדריכים</button>
     <span class="status-chip chip-off" id="conn-chip">לא מחובר ל-Firebase</span>
   </div>
 </div>
@@ -249,6 +250,25 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
   <div id="feedback-list"><div class="empty">טוען...</div></div>
 </div>
 
+<!-- BRIEFINGS VIEW -->
+<div class="wrap" id="view-briefings" style="display:none;">
+  <div class="road-hero">
+    <h2>🗣️ תדריכי בטיחות לעובדים זרים</h2>
+    <p>כתוב תדריך בטיחות מקיף בכל שפה. התדריך יוצג לעובד בקליטה לפי השפה שתבחר — ויחליף את ברירת המחדל.</p>
+  </div>
+  <div class="card">
+    <label>בחר שפה לעריכה</label>
+    <div class="rfb-chips" id="brief-lang-chips" style="margin-bottom:14px;"></div>
+    <label>תוכן התדריך (<span id="brief-lang-name"></span>)</label>
+    <textarea id="brief-text" style="min-height:280px;line-height:1.8;" placeholder="כתוב כאן את תדריך הבטיחות המלא בשפה הנבחרת..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;">
+      <button class="btn btn-send" style="flex:2;" onclick="saveBriefing()">💾 שמור תדריך</button>
+      <button class="btn" style="flex:1;background:var(--bg);" onclick="clearBriefing()">🗑️ נקה</button>
+    </div>
+    <div style="font-size:12px;color:var(--sub);margin-top:8px;">💡 ריק = העובד יקבל את תדריך ברירת המחדל המובנה באפליקציה.</div>
+  </div>
+</div>
+
 <!-- REPORTS MODAL -->
 <div id="reports-overlay" onclick="if(event.target===this)closeReports()">
   <div class="reports-sheet">
@@ -275,7 +295,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, getDocs, addDoc, query, orderBy, where,
-  onSnapshot, serverTimestamp, doc, setDoc
+  onSnapshot, serverTimestamp, doc, setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -568,7 +588,7 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 
 // ---------- ניווט בין תצוגות ----------
 window.showView = function(v){
-  ['dash','messages','road','content','feedback'].forEach(function(x){
+  ['dash','messages','road','content','feedback','briefings'].forEach(function(x){
     document.getElementById('view-'+x).style.display = v===x ? 'block' : 'none';
     document.getElementById('nav-'+x).classList.toggle('active', v===x);
   });
@@ -576,6 +596,33 @@ window.showView = function(v){
   if(v==='content') loadContent();
   if(v==='feedback') loadFeedback();
   if(v==='messages') updateSelCount();
+  if(v==='briefings') loadBriefings();
+};
+// ---------- תדריכי בטיחות ----------
+var BRIEF_LANGS=[{k:'ar',l:'ערבית'},{k:'ru',l:'רוסית'},{k:'am',l:'אמהרית'},{k:'hi',l:'הינדי'},{k:'zh',l:'סינית'},{k:'th',l:'תאית'},{k:'tr',l:'טורקית'},{k:'he',l:'עברית'}];
+var _briefData={}, _briefLang='ar';
+async function loadBriefings(){
+  if(!db){return;}
+  try{ var s=await getDoc(doc(db,'config','briefings')); _briefData=s.exists()?(s.data()||{}):{}; }catch(e){_briefData={};}
+  renderBriefChips();showBriefText();
+}
+function renderBriefChips(){
+  var el=document.getElementById('brief-lang-chips');var h='';
+  BRIEF_LANGS.forEach(function(L){var has=_briefData[L.k]&&_briefData[L.k].trim();h+='<div class="rfb-chip'+(_briefLang===L.k?' prof':'')+(has?' on':'')+'" onclick="selBriefLang(\''+L.k+'\')">'+(has?'✓ ':'')+L.l+'</div>';});
+  el.innerHTML=h;
+}
+function langName(k){for(var i=0;i<BRIEF_LANGS.length;i++)if(BRIEF_LANGS[i].k===k)return BRIEF_LANGS[i].l;return k;}
+function showBriefText(){
+  document.getElementById('brief-lang-name').textContent=langName(_briefLang);
+  document.getElementById('brief-text').value=_briefData[_briefLang]||'';
+}
+window.selBriefLang=function(k){ _briefData[_briefLang]=document.getElementById('brief-text').value; _briefLang=k; renderBriefChips(); showBriefText(); };
+window.clearBriefing=function(){ document.getElementById('brief-text').value=''; };
+window.saveBriefing=async function(){
+  if(!db){_toast('התחבר ל-Firebase');return;}
+  _briefData[_briefLang]=document.getElementById('brief-text').value;
+  try{ await setDoc(doc(db,'config','briefings'),_briefData,{merge:true}); renderBriefChips(); _toast('💾 התדריך נשמר ('+langName(_briefLang)+')'); }
+  catch(e){ _toast('שגיאה — בדוק כללי אבטחה'); }
 };
 // ---------- פניות מהשטח ----------
 var _FB=[], _fbFilter='all';
