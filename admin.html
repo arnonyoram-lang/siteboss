@@ -258,7 +258,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, getDocs, addDoc, query, orderBy, where,
-  onSnapshot, serverTimestamp
+  onSnapshot, serverTimestamp, doc, setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -502,7 +502,7 @@ async function loadFeedback(){
   el.innerHTML='<div class="empty">טוען...</div>';
   try{
     var snap=await getDocs(collection(db,'feedback'));
-    _FB=[];snap.forEach(function(d){_FB.push(d.data());});
+    _FB=[];snap.forEach(function(d){_FB.push(Object.assign({_id:d.id},d.data()));});
     _FB.sort(function(a,b){return (b.ts||0)-(a.ts||0);});
     renderFeedback();
   }catch(e){el.innerHTML='<div class="empty">שגיאה בטעינת הפניות</div>';}
@@ -517,13 +517,24 @@ function renderFeedback(){
   arr.forEach(function(f){
     var tm=typeMap[f.type]||['פנייה','bg-blue'];
     var when=f.date?new Date(f.date).toLocaleString('he-IL'):'';
-    h+='<div class="rep-card"><div class="rc-top"><span class="rc-date">'+esc(f.ownerName||'מנהל')+(f.project?' · '+esc(f.project):'')+'</span><span class="rc-badge '+tm[1]+'">'+tm[0]+'</span></div>'
+    var done=f.status==='done';
+    h+='<div class="rep-card" style="'+(done?'opacity:.6;':'')+'"><div class="rc-top"><span class="rc-date">'+esc(f.ownerName||'מנהל')+(f.project?' · '+esc(f.project):'')+'</span><span class="rc-badge '+tm[1]+'">'+tm[0]+'</span></div>'
       +(f.ref?'<div class="rc-meta">↩️ בהקשר: '+esc(f.ref)+'</div>':'')
       +'<div class="rc-text">'+esc(f.text||'')+'</div>'
-      +'<div class="rc-meta">📞 '+esc(f.owner||'')+' · '+when+'</div></div>';
+      +'<div class="rc-meta" style="display:flex;justify-content:space-between;align-items:center;">'
+      +'<span>📞 '+esc(f.owner||'')+' · '+when+'</span>'
+      +(done?'<span class="rc-badge bg-green">✅ טופל</span>':'<button onclick="markFbDone(\''+f._id+'\')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:700;cursor:pointer;">✅ סמן כטופל</button>')
+      +'</div></div>';
   });
   el.innerHTML=h;
 }
+window.markFbDone=async function(id){
+  if(!db)return;
+  var f=_FB.find(function(x){return x._id===id;});if(f)f.status='done';
+  renderFeedback();
+  try{ await setDoc(doc(db,'feedback',id),{status:'done'},{merge:true}); _toast('✅ סומן כטופל'); }
+  catch(e){ _toast('שגיאה — בדוק כללי אבטחה'); }
+};
 function updateFbBadge(){
   var n=_FB.filter(function(f){return f.status!=='done';}).length;
   var b=document.getElementById('fb-badge');
