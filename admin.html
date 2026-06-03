@@ -401,16 +401,18 @@ var ADV_FEATURES=[
   {k:'modReminders',l:'תזכורות',def:false,name:'תזכורות ומשימות',desc:'תזכורות אישיות + התראות אוטומטיות על ליקויים באיחור ובטיחות יומית.'},
   {k:'modIncidents',l:'אירועים',def:false,name:'דיווח אירועים ותאונות',desc:'תיעוד מיידי של תאונה / כמעט-תאונה / מפגע עם תמונות ושליחה אוטומטית למשרד.'},
   {k:'modOnboard',l:'קליטת זרים',def:false,name:'קליטת עובדים זרים',desc:'אישור עבודה + תדריך בטיחות בשפת האם של העובד + חתימה דיגיטלית לפני כניסה.'},
+  {k:'modContractors',l:'קבלני משנה',def:false,name:'ניהול קבלני משנה',desc:'כרטיס ביצועים לכל קבלן — ליקויים פתוחים, מהירות תיקון ודירוג אמינות.'},
+  {k:'modPermits',l:'היתרי עבודה',def:false,name:'היתרי עבודה',desc:'היתרים לעבודה בגובה/חמה/מרחב מוקף/חשמל עם צ\'קליסט תנאים וחתימה.'},
   {k:'messages',l:'הודעות',def:true,name:'הודעות מהמשרד',desc:'קבלת הודעות מהמשרד.'},
   {k:'supervisorApproval',l:'אישור פיקוח',def:false,name:'אישור פיקוח ביומן',desc:'החתמת מפקח מטעם המזמין על דוח היומן.'},
   {k:'safetyStages',l:'בטיחות לפי שלב',def:false,name:'שאלות בטיחות לפי שלב',desc:'שאלות ייעודיות לשלב: שלד/גמר/פיגומים/חפירות.'},
   {k:'customTrades',l:'הוספת מקצוע',def:false,name:'הוספת מקצוע ביומן',desc:'הוספת מקצועות לטבלת כוח האדם.'}
 ];
 var PROFILES=[
-  {id:'full',l:'⭐ מלא',set:{modJournal:1,modDefects:1,modSafety:1,modPresence:1,modReminders:1,modIncidents:1,modOnboard:1,messages:1,supervisorApproval:1,safetyStages:1,customTrades:1}},
-  {id:'basic',l:'בסיסי',set:{modJournal:1,modDefects:1,modSafety:1,modPresence:0,modReminders:0,modIncidents:0,modOnboard:0,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}},
-  {id:'journal',l:'יומן בלבד',set:{modJournal:1,modDefects:0,modSafety:0,modPresence:0,modReminders:0,modIncidents:0,modOnboard:0,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}},
-  {id:'safety',l:'בטיחות בלבד',set:{modJournal:0,modDefects:0,modSafety:1,modPresence:0,modReminders:0,modIncidents:1,modOnboard:1,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}}
+  {id:'full',l:'⭐ מלא',set:{modJournal:1,modDefects:1,modSafety:1,modPresence:1,modReminders:1,modIncidents:1,modOnboard:1,modContractors:1,modPermits:1,messages:1,supervisorApproval:1,safetyStages:1,customTrades:1}},
+  {id:'basic',l:'בסיסי',set:{modJournal:1,modDefects:1,modSafety:1,modPresence:0,modReminders:0,modIncidents:0,modOnboard:0,modContractors:0,modPermits:0,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}},
+  {id:'journal',l:'יומן בלבד',set:{modJournal:1,modDefects:0,modSafety:0,modPresence:0,modReminders:0,modIncidents:0,modOnboard:0,modContractors:0,modPermits:0,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}},
+  {id:'safety',l:'בטיחות בלבד',set:{modJournal:0,modDefects:0,modSafety:1,modPresence:0,modReminders:0,modIncidents:1,modOnboard:1,modContractors:0,modPermits:1,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}}
 ];
 function featDef(k){for(var i=0;i<ADV_FEATURES.length;i++)if(ADV_FEATURES[i].k===k)return ADV_FEATURES[i].def;return false;}
 function featEff(feat,k){return (feat&&feat[k]!==undefined)?!!feat[k]:featDef(k);}
@@ -737,17 +739,20 @@ var BUILT=[
   ['נוכחות עובדים','מי באתר עכשיו, שעות כניסה/יציאה, דוח נוכחות יומי לוואטסאפ'],
   ['תזכורות חכמות','התראות אוטומטיות (ליקוי באיחור, בטיחות יומית, משימות למחר) + תזכורות אישיות'],
   ['דיווח אירועים ותאונות','תיעוד מיידי של תאונה / כמעט-תאונה / מפגע עם תמונות, ושליחה אוטומטית למשרד'],
-  ['קליטת עובדים זרים','אישור עבודה + תדריך בטיחות ב-8 שפות (ערבית/רוסית/אמהרית/הינדי/סינית/תאית/טורקית) + חתימת העובד']
+  ['קליטת עובדים זרים','אישור עבודה + תדריך בטיחות ב-8 שפות (ערבית/רוסית/אמהרית/הינדי/סינית/תאית/טורקית) + חתימת העובד'],
+  ['ניהול קבלני משנה','כרטיס ביצועים לכל קבלן — ליקויים פתוחים, מהירות תיקון ודירוג אמינות בכוכבים'],
+  ['טפסי היתר עבודה','היתרים לעבודה בגובה/חמה/מרחב מוקף/חשמל — צ\'קליסט תנאים + חתימה דיגיטלית']
 ];
 var PLANNED=[
-  ['ניהול קבלני משנה','דירוג ביצועים — כמה ליקויים נפתחו, מהירות תיקון, מי אמין ומי מעכב'],
   ['מעקב חומרים והזמנות','מה חסר באתר, מה הוזמן ומתי מגיע — מונע עיכובים בעבודה'],
   ['התקדמות לפי קומות','תמונת מצב ויזואלית של הפרויקט — מה הושלם בכל קומה/אזור'],
-  ['תיעוד אירועים ותאונות','דיווח מיידי על תאונה או כמעט-תאונה (near-miss) — חובה חוקית'],
-  ['טפסי היתר עבודה','עבודה בגובה, עבודה חמה, כניסה למרחב מוקף — חתומים דיגיטלית'],
   ['דוח שבועי אוטומטי','סיכום שבועי/חודשי של כל מנהל נשלח אוטומטית למשרד'],
   ['מזג אוויר והתראות','מזג אוויר אוטומטי + התראת בטיחות בחום קיצוני / גשם'],
-  ['ייצוא וגיבוי','ייצוא כל הנתונים לאקסל וגיבוי מלא']
+  ['ייצוא וגיבוי','ייצוא כל הנתונים לאקסל וגיבוי מלא'],
+  ['חתימת קבלן על משימה','הקבלן מאשר בלחיצה (וואטסאפ) שקיבל את המשימה — תיעוד מי קיבל ומתי'],
+  ['מעקב ציוד וכלים','מי לקח איזה כלי/ציוד ומתי הוחזר — מונע אובדן ציוד'],
+  ['התראות Push אמיתיות','התראה לטלפון גם כשהאפליקציה סגורה — להודעות דחופות מהמשרד'],
+  ['לוח בדיקות תקופתיות','תזכורות למועדי בדיקה חוקיים: פיגומים, מנופים, ציוד הרמה']
 ];
 function renderRoadmap(){
   var b=document.getElementById('road-built');var p=document.getElementById('road-planned');

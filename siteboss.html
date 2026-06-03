@@ -304,6 +304,14 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <span class="home-btn-icon">🪪</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn7Title"></span><span class="home-btn-desc" data-t="btn7Desc"></span></span>
     </button>
+    <button id="home-mod-contractors" class="home-btn" style="display:none;background:linear-gradient(135deg,#7f8c8d,#5d6d7e);" onclick="showScreen('s-contractors')">
+      <span class="home-btn-icon">🏢</span>
+      <span class="home-btn-texts"><span class="home-btn-title" data-t="btn8Title"></span><span class="home-btn-desc" data-t="btn8Desc"></span></span>
+    </button>
+    <button id="home-mod-permits" class="home-btn" style="display:none;background:linear-gradient(135deg,#d35400,#a04000);" onclick="showScreen('s-permits')">
+      <span class="home-btn-icon">📋</span>
+      <span class="home-btn-texts"><span class="home-btn-title" data-t="btn9Title"></span><span class="home-btn-desc" data-t="btn9Desc"></span></span>
+    </button>
   </div>
   <div style="text-align:center;margin-top:18px;">
     <button onclick="showScreen('s-help')" style="background:none;border:none;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;" data-t="helpLink"></button>
@@ -501,6 +509,57 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     </div>
     <button class="btn btn-green" onclick="saveOnboard()"><span data-t="obSave"></span></button>
   </div>
+</div>
+
+<!-- SUBCONTRACTORS (#13) -->
+<div class="screen" id="s-contractors">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="conTitle"></div></div>
+    <button class="icon-btn" onclick="showScreen('s-settings')">⚙️</button>
+  </div>
+  <div class="screen-body">
+    <div class="card" style="background:var(--bg);border:none;font-size:13px;color:var(--sub);" data-t="conHint"></div>
+    <div id="con-list"></div>
+  </div>
+</div>
+
+<!-- WORK PERMITS (#18) -->
+<div class="screen" id="s-permits">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="permTitle"></div></div>
+    <button class="icon-btn" onclick="showScreen('s-permits-history')">📂</button>
+  </div>
+  <div class="screen-body">
+    <div class="card">
+      <div class="card-title" data-t="permType"></div>
+      <div class="work-type-grid" id="perm-type-grid"></div>
+    </div>
+    <div class="card"><div class="card-title" data-t="permWorker"></div><input id="perm-worker" type="text" data-tp="permWorkerPh"></div>
+    <div class="card"><div class="card-title" data-t="permLocation"></div><input id="perm-location" type="text" data-tp="permLocationPh"></div>
+    <div class="card"><div class="card-title" data-t="permValid"></div><input id="perm-valid" type="datetime-local"></div>
+    <div class="card">
+      <div class="card-title" data-t="permChecksTitle"></div>
+      <div id="perm-checks"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="permSignTitle"></div>
+      <canvas id="perm-sign-canvas"></canvas>
+      <button class="btn btn-gray" style="margin-top:8px;min-height:38px;font-size:13px;" onclick="clearPermSign()"><span data-t="clearSign"></span></button>
+    </div>
+    <button class="btn btn-orange" onclick="savePermit()"><span data-t="permSave"></span></button>
+  </div>
+</div>
+
+<!-- PERMITS HISTORY -->
+<div class="screen" id="s-permits-history">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="permHistTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body"><div id="perm-history-list"></div></div>
 </div>
 
 <!-- JOURNAL -->
@@ -840,6 +899,14 @@ obPermitPhoto:'צילום האישור / דרכון',obLang:'שפת האם של 
 obSignTitle:'חתימת העובד — הבנתי את הוראות הבטיחות',obSignHint:'העובד חותם לאישור שהבין את התדריך',
 obSave:'✅ סיים קליטה ושמור',obSaved:'✅ העובד נקלט בהצלחה',obNeedName:'יש להזין שם עובד',obNeedSign:'העובד צריך לחתום',
 obSignedOn:'נקלט: ',obLangLabel:'שפה: ',
+btn8Title:'קבלני משנה',btn8Desc:'כרטיס ביצועים — ליקויים, מהירות תיקון, אמינות',
+btn9Title:'היתרי עבודה',btn9Desc:'עבודה בגובה / חמה / מרחב מוקף — חתום דיגיטלית',
+conTitle:'קבלני משנה',conHint:'דירוג נגזר אוטומטית מהליקויים שהוקצו לכל קבלן. הוסף/ערוך קבלנים ב⚙️ הגדרות.',
+conOpen:'פתוחים',conDone:'טופלו',conAvg:'זמן תיקון ממוצע',conDays:'ימים',conNoData:'אין ליקויים',conEmpty:'לא הוגדרו קבלני משנה. הוסף ב⚙️ הגדרות.',conRating:'אמינות',
+permTitle:'היתר עבודה',permType:'סוג ההיתר',permHeight:'🪜 עבודה בגובה',permHot:'🔥 עבודה חמה',permConfined:'🕳️ מרחב מוקף',permElec:'⚡ חשמל',
+permWorker:'מבצע העבודה',permWorkerPh:'שם העובד / קבלן',permLocation:'מיקום',permLocationPh:'קומה / אזור',permValid:'תוקף עד',permChecksTitle:'תנאים מקדימים (סמן את שבוצע)',
+permSignTitle:'חתימת המאשר',permSave:'✅ אשר והנפק היתר',permSaved:'✅ ההיתר הונפק',permNoChecks:'יש לאשר את כל התנאים',permNoSign:'יש לחתום',permNoWorker:'יש להזין מבצע',
+permHistTitle:'היתרים שהונפקו',permHistEmpty:'לא הונפקו היתרים',permValidUntil:'בתוקף עד: ',permExpired:'⛔ פג תוקף',permActive:'✅ בתוקף',
 presTitle:'נוכחות עובדים',presOnSite:'נמצאים באתר עכשיו',presAddTitle:'הוסף עובד שנכנס',presNamePh:'שם העובד',presTradePh:'מקצוע / קבלן (אופציונלי)',presAddBtn:'➕ סמן כנכנס',presListTitle:'רשימת נוכחות היום',presShare:'📲 שלח דוח נוכחות',presCheckout:'יציאה',presIn:'נכנס',presOut:'יצא',presEmpty:'עדיין לא נכנסו עובדים היום',presHistTitle:'היסטוריית נוכחות',presHistEmpty:'אין היסטוריית נוכחות',presWorkers:'עובדים',
 remTitle:'תזכורות ומשימות',remSmartTitle:'התראות אוטומטיות',remMyTitle:'התזכורות שלי',remPlaceholder:'תזכורת חדשה...',remAddBtn:'➕ הוסף תזכורת',remEmpty:'אין תזכורות',remNoAlerts:'✅ אין התראות — הכל מעודכן',remOverdue:'ליקוי באיחור: ',remSafetyToday:'לא בוצעה בדיקת בטיחות היום',remTasksTomorrow:'משימות מהיומן האחרון: ',remDone:'בוצע',remDate:'עד: ',
 faqTitle:'שאלות נפוצות',
@@ -955,6 +1022,14 @@ obPermitPhoto:'صورة التصريح / الجواز',obLang:'اللغة الأ
 obSignTitle:'توقيع العامل — فهمت تعليمات السلامة',obSignHint:'يوقّع العامل لتأكيد فهمه التعليمات',
 obSave:'✅ أنهِ الاستقبال واحفظ',obSaved:'✅ تم استقبال العامل بنجاح',obNeedName:'يرجى إدخال اسم العامل',obNeedSign:'يجب أن يوقّع العامل',
 obSignedOn:'استُقبل: ',obLangLabel:'اللغة: ',
+btn8Title:'مقاولو الباطن',btn8Desc:'بطاقة أداء — العيوب، سرعة الإصلاح، الموثوقية',
+btn9Title:'تصاريح العمل',btn9Desc:'عمل على ارتفاع / ساخن / مكان مغلق — موقّع رقمياً',
+conTitle:'مقاولو الباطن',conHint:'التقييم محسوب تلقائياً من العيوب المخصّصة لكل مقاول. أضف/عدّل في ⚙️ الإعدادات.',
+conOpen:'مفتوحة',conDone:'عولجت',conAvg:'متوسط زمن الإصلاح',conDays:'أيام',conNoData:'لا عيوب',conEmpty:'لم يتم تعريف مقاولين. أضف في ⚙️ الإعدادات.',conRating:'الموثوقية',
+permTitle:'تصريح عمل',permType:'نوع التصريح',permHeight:'🪜 عمل على ارتفاع',permHot:'🔥 عمل ساخن',permConfined:'🕳️ مكان مغلق',permElec:'⚡ كهرباء',
+permWorker:'منفّذ العمل',permWorkerPh:'اسم العامل / المقاول',permLocation:'الموقع',permLocationPh:'طابق / منطقة',permValid:'صالح حتى',permChecksTitle:'الشروط المسبقة (علّم ما تم)',
+permSignTitle:'توقيع المُصرِّح',permSave:'✅ صادق وأصدر التصريح',permSaved:'✅ تم إصدار التصريح',permNoChecks:'يجب تأكيد جميع الشروط',permNoSign:'يجب التوقيع',permNoWorker:'أدخل المنفّذ',
+permHistTitle:'التصاريح الصادرة',permHistEmpty:'لم تصدر تصاريح',permValidUntil:'صالح حتى: ',permExpired:'⛔ منتهي',permActive:'✅ ساري',
 presTitle:'حضور العمال',presOnSite:'موجودون في الموقع الآن',presAddTitle:'أضف عاملاً دخل',presNamePh:'اسم العامل',presTradePh:'مهنة / مقاول (اختياري)',presAddBtn:'➕ سجّل دخول',presListTitle:'قائمة الحضور اليوم',presShare:'📲 أرسل تقرير الحضور',presCheckout:'خروج',presIn:'دخل',presOut:'خرج',presEmpty:'لم يدخل عمال بعد اليوم',presHistTitle:'سجل الحضور',presHistEmpty:'لا يوجد سجل حضور',presWorkers:'عمال',
 remTitle:'تذكيرات ومهام',remSmartTitle:'تنبيهات تلقائية',remMyTitle:'تذكيراتي',remPlaceholder:'تذكير جديد...',remAddBtn:'➕ أضف تذكير',remEmpty:'لا توجد تذكيرات',remNoAlerts:'✅ لا تنبيهات — كل شيء محدّث',remOverdue:'عيب متأخر: ',remSafetyToday:'لم يتم فحص السلامة اليوم',remTasksTomorrow:'مهام من آخر يومية: ',remDone:'تم',remDate:'حتى: ',
 faqTitle:'أسئلة شائعة',
@@ -1119,6 +1194,9 @@ function onScreenEnter(id){
   if(id==='s-incidents-history')renderIncidentsHistory();
   if(id==='s-onboard')renderOnboardList();
   if(id==='s-onboard-new')initOnboard();
+  if(id==='s-contractors')renderContractorScores();
+  if(id==='s-permits')initPermit();
+  if(id==='s-permits-history')renderPermitsHistory();
   if((id==='s-home'||id==='s-messages')&&window._dkFetchMessages){try{window._dkFetchMessages();}catch(e){}}
   updateBottomBack(id);
 }
@@ -1423,6 +1501,101 @@ function renderOnboardList(){
       +'<span style="font-size:22px;">🪪</span>'
       +'<div style="flex:1;"><div style="font-weight:700;">'+esc(e.name)+'</div><div style="font-size:12px;color:var(--sub);">'+T('obLangLabel')+obLangLabel(e.lang)+(e.permit?' · '+esc(e.permit):'')+' · '+new Date(e.ts).toLocaleDateString('he-IL')+'</div></div>'
       +(e.signature?'<img src="'+e.signature+'" style="height:34px;border:1px solid var(--border);border-radius:6px;background:#fff;">':'')
+      +'</div>';
+  });
+  el.innerHTML=h;
+}
+
+// ===================== קבלני משנה (#13) =====================
+function renderContractorScores(){
+  var el=document.getElementById('con-list');if(!el)return;
+  var defs=loadJSON('sb_defects',[]);
+  var contractors=(APP.settings&&APP.settings.contractors)||[];
+  // אסוף שמות קבלנים: מההגדרות + מתוך הליקויים
+  var names={};contractors.forEach(function(c){names[c.name]={name:c.name,trade:c.trade||'',phone:c.phone||''};});
+  defs.forEach(function(d){if(d.contractor&&!names[d.contractor])names[d.contractor]={name:d.contractor,trade:'',phone:d.contractorPhone||''};});
+  var arr=Object.keys(names).map(function(k){return names[k];});
+  if(!arr.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--sub);">'+T('conEmpty')+'</div>';return;}
+  var h='';
+  arr.forEach(function(c){
+    var mine=defs.filter(function(d){return d.contractor===c.name;});
+    var open=mine.filter(function(d){return d.status!=='done';}).length;
+    var done=mine.filter(function(d){return d.status==='done';});
+    // זמן תיקון ממוצע (ימים) — מתאריך פתיחה ל-fix.when
+    var sum=0,cnt=0;done.forEach(function(d){if(d.fix&&d.fix.when&&d.date){var diff=(new Date(d.fix.when)-new Date(d.date))/86400000;if(diff>=0){sum+=diff;cnt++;}}});
+    var avg=cnt?(sum/cnt):null;
+    // דירוג: פחות פתוחים + תיקון מהיר = יותר כוכבים
+    var stars=5;if(open>=5)stars-=2;else if(open>=2)stars-=1;if(avg!==null&&avg>5)stars-=2;else if(avg!==null&&avg>2)stars-=1;if(stars<1)stars=1;
+    var starStr='';for(var i=0;i<5;i++)starStr+=i<stars?'⭐':'☆';
+    h+='<div class="card">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div><span style="font-weight:800;font-size:16px;">'+esc(c.name)+'</span>'+(c.trade?' <span style="font-size:12px;color:var(--orange);background:#fef3e7;padding:2px 8px;border-radius:10px;">'+esc(c.trade)+'</span>':'')+'</div>'+(mine.length?'<span style="font-size:14px;">'+starStr+'</span>':'')+'</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px;">'
+      +'<span style="background:#fdecea;color:var(--red);padding:5px 10px;border-radius:8px;font-weight:700;">'+T('conOpen')+': '+open+'</span>'
+      +'<span style="background:#eafaf1;color:var(--green);padding:5px 10px;border-radius:8px;font-weight:700;">'+T('conDone')+': '+done.length+'</span>'
+      +(avg!==null?'<span style="background:var(--bg);padding:5px 10px;border-radius:8px;font-weight:700;">'+T('conAvg')+': '+avg.toFixed(1)+' '+T('conDays')+'</span>':'')
+      +'</div>'
+      +(c.phone?'<button class="btn btn-gray btn-sm" style="margin-top:10px;" onclick="openWhatsApp(\''+c.phone+'\',\'\')">📲 וואטסאפ</button>':'')
+      +'</div>';
+  });
+  el.innerHTML=h;
+}
+
+// ===================== היתרי עבודה (#18) =====================
+var PERM_TYPES=[
+  {k:'height',l:'permHeight',checks:['רתמת בטיחות תקינה','עיגון יציב','גידור פתחים','הדרכת עובד']},
+  {k:'hot',l:'permHot',checks:['מטף כיבוי זמין','אין חומרים דליקים בסביבה','אוורור מספק','משקיף אש']},
+  {k:'confined',l:'permConfined',checks:['בדיקת אוויר/גזים','אוורור פעיל','משקיף בחוץ','אמצעי חילוץ']},
+  {k:'elec',l:'permElec',checks:['ניתוק מתח ונעילה','שילוט אזהרה','כלים מבודדים','אישור חשמלאי מוסמך']}
+];
+var _permType='height',permSignPad=null;
+function initPermit(){
+  _permType='height';
+  document.getElementById('perm-worker').value='';document.getElementById('perm-location').value='';
+  var now=new Date();now.setHours(now.getHours()+8);now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+  document.getElementById('perm-valid').value=now.toISOString().slice(0,16);
+  renderPermTypes();renderPermChecks();
+  permSignPad=attachSignPad(document.getElementById('perm-sign-canvas'));
+}
+function renderPermTypes(){
+  var g=document.getElementById('perm-type-grid');if(!g)return;var h='';
+  PERM_TYPES.forEach(function(t){h+='<div class="work-type-btn'+(_permType===t.k?' active':'')+'" onclick="selPermType(\''+t.k+'\')"><span class="work-type-label">'+T(t.l)+'</span></div>';});
+  g.innerHTML=h;
+}
+function selPermType(k){_permType=k;renderPermTypes();renderPermChecks();}
+function permTypeObj(k){for(var i=0;i<PERM_TYPES.length;i++)if(PERM_TYPES[i].k===k)return PERM_TYPES[i];return PERM_TYPES[0];}
+function renderPermChecks(){
+  var el=document.getElementById('perm-checks');if(!el)return;var t=permTypeObj(_permType);var h='';
+  t.checks.forEach(function(c,i){h+='<label class="feat-toggle"><span>'+c+'</span><input type="checkbox" class="perm-chk" data-c="'+esc(c)+'"></label>';});
+  el.innerHTML=h;
+}
+function clearPermSign(){if(permSignPad)permSignPad.clear();}
+function getPermits(){return loadJSON('dk_permits',[]);}
+function savePermit(){
+  var worker=document.getElementById('perm-worker').value.trim();
+  if(!worker){toast(T('permNoWorker'));return;}
+  var chks=document.querySelectorAll('.perm-chk');var allChecked=true;var checkList=[];
+  chks.forEach(function(c){checkList.push(c.dataset.c);if(!c.checked)allChecked=false;});
+  if(!allChecked){toast(T('permNoChecks'));return;}
+  if(!permSignPad||permSignPad.isEmpty()){toast(T('permNoSign'));return;}
+  var s=APP.settings||{};
+  var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),type:_permType,worker:worker,
+    location:document.getElementById('perm-location').value.trim(),validUntil:document.getElementById('perm-valid').value,
+    checks:checkList,signature:permSignPad.dataURL(),by:s.managerName||'',project:s.projectName||''};
+  var list=getPermits();list.unshift(entry);saveJSON('dk_permits',list);
+  cloudSave('permits',entry);
+  toast(T('permSaved'),3000);showScreen('s-permits-history');
+}
+function permLabel(k){return T(permTypeObj(k).l);}
+function renderPermitsHistory(){
+  var el=document.getElementById('perm-history-list');var list=getPermits();
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub);">'+T('permHistEmpty')+'</div>';return;}
+  var now=Date.now();var h='';
+  list.forEach(function(e){
+    var active=e.validUntil&&new Date(e.validUntil).getTime()>now;
+    h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:800;">'+permLabel(e.type)+'</span><span class="'+(active?'':'')+'" style="font-size:12px;font-weight:700;color:'+(active?'var(--green)':'var(--red)')+';">'+(active?T('permActive'):T('permExpired'))+'</span></div>'
+      +'<div style="font-size:14px;">👷 '+esc(e.worker)+(e.location?' · 📍 '+esc(e.location):'')+'</div>'
+      +(e.validUntil?'<div style="font-size:12px;color:var(--sub);margin-top:4px;">'+T('permValidUntil')+new Date(e.validUntil).toLocaleString('he-IL')+'</div>':'')
+      +(e.signature?'<img src="'+e.signature+'" style="height:36px;margin-top:8px;border:1px solid var(--border);border-radius:6px;background:#fff;">':'')
       +'</div>';
   });
   el.innerHTML=h;
@@ -2171,6 +2344,8 @@ var ALL_FEATURES=[
   {k:'modReminders',he:'תזכורות ומשימות',ar:'تذكيرات ومهام',def:false},
   {k:'modIncidents',he:'דיווח אירועים ותאונות',ar:'تبليغ الحوادث',def:false},
   {k:'modOnboard',he:'קליטת עובדים זרים',ar:'استقبال العمال الأجانب',def:false},
+  {k:'modContractors',he:'קבלני משנה',ar:'مقاولو الباطن',def:false},
+  {k:'modPermits',he:'היתרי עבודה',ar:'تصاريح العمل',def:false},
   {k:'messages',he:'הודעות מהמשרד',ar:'رسائل المكتب',def:true},
   {k:'supervisorApproval',he:'אישור פיקוח ביומן',ar:'مصادقة المشرف',def:false},
   {k:'safetyStages',he:'שאלות בטיחות לפי שלב',ar:'أسئلة سلامة حسب المرحلة',def:false},
@@ -2191,6 +2366,8 @@ function applyFeatures(){
   var hr=document.getElementById('home-mod-reminders');if(hr)hr.style.display=isFeatureOn('modReminders')?'':'none';
   var hi=document.getElementById('home-mod-incidents');if(hi)hi.style.display=isFeatureOn('modIncidents')?'':'none';
   var ho=document.getElementById('home-mod-onboard');if(ho)ho.style.display=isFeatureOn('modOnboard')?'':'none';
+  var hc=document.getElementById('home-mod-contractors');if(hc)hc.style.display=isFeatureOn('modContractors')?'':'none';
+  var hpm=document.getElementById('home-mod-permits');if(hpm)hpm.style.display=isFeatureOn('modPermits')?'':'none';
   if(typeof updateReminderBadge==='function')updateReminderBadge();
   updateMsgBanner();
   var act=document.querySelector('.screen.active');
