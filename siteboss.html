@@ -1126,11 +1126,24 @@ sq_scaf3:'يوجد وصول آمن للسقالة (سلّم/درج)؟',sq_scaf3a
 sq_exc3:'تم تحديد البنى التحتية تحت الأرض (كهرباء/غاز/ماء)؟',sq_exc3a:'تحقق من المخططات قبل الحفر',
 specialTag:'مخصّص',totalQ:'أسئلة'}
 };const APP={lang:'he',settings:{},screenHistory:['s-home'],currentFilter:'all',selectedSev:'normal',currentWorkType:'general',activeStages:[],safetyAnswers:{},safetyPhotos:{},jnlPhotos:[],defectPhotos:[],gps:null};
-function saveJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){
-  // אחסון מלא (לרוב תמונות) — להתריע במקום לאבד נתונים בשקט
-  try{toast(APP.lang==='ar'?'⚠️ الذاكرة ممتلئة — احذف صورًا/تقارير قديمة':'⚠️ הזיכרון מלא — מחק תמונות/דוחות ישנים',5000);}catch(_){}
-  return false;
-}}
+function _freeSpace(){
+  // פינוי מקום: הסרת תמונות base64 כבדות מרשומות (נשמרות/יישמרו בענן) כדי לא לאבד נתונים חדשים
+  var colls=['sb_journals','sb_defects','sb_safety','dk_incidents'];var freed=false;
+  colls.forEach(function(kk){try{
+    var list=JSON.parse(localStorage.getItem(kk)||'[]');var ch=false;
+    for(var i=0;i<list.length;i++){var r=list[i];if(r&&r.photos&&r.photos.length){r.photos=[];r._photosOffloaded=true;ch=true;freed=true;}}
+    if(ch)localStorage.setItem(kk,JSON.stringify(list));
+  }catch(e){}});
+  return freed;
+}
+function saveJSON(k,v){
+  try{localStorage.setItem(k,JSON.stringify(v));return true;}
+  catch(e){
+    if(_freeSpace()){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e2){}}
+    try{toast(APP.lang==='ar'?'⚠️ الذاكرة ممتلئة — احذف تقارير قديمة':'⚠️ הזיכרון מלא — מחק דוחות ישנים',5000);}catch(_){}
+    return false;
+  }
+}
 function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 // מראה רשומה ל-Firebase (ללא תמונות כבדות — אלו יעברו ל-Storage בהמשך). חתימות נשמרות.
 function cloudSave(coll,entry){
