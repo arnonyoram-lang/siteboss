@@ -397,16 +397,18 @@ var ADV_FEATURES=[
   {k:'modJournal',l:'יומן',def:true,name:'יומן עבודה',desc:'מודול יומן העבודה היומי.'},
   {k:'modDefects',l:'ליקויים',def:true,name:'ליקויים ומשימות',desc:'מודול תיעוד הליקויים והמשימות.'},
   {k:'modSafety',l:'בטיחות',def:true,name:'בטיחות יומית',desc:'מודול בדיקת הבטיחות היומית.'},
+  {k:'modPresence',l:'נוכחות',def:false,name:'נוכחות עובדים',desc:'תיעוד מי נמצא באתר, שעות כניסה/יציאה, ודוח נוכחות יומי.'},
+  {k:'modReminders',l:'תזכורות',def:false,name:'תזכורות ומשימות',desc:'תזכורות אישיות + התראות אוטומטיות על ליקויים באיחור ובטיחות יומית.'},
   {k:'messages',l:'הודעות',def:true,name:'הודעות מהמשרד',desc:'קבלת הודעות מהמשרד.'},
   {k:'supervisorApproval',l:'אישור פיקוח',def:false,name:'אישור פיקוח ביומן',desc:'החתמת מפקח מטעם המזמין על דוח היומן.'},
   {k:'safetyStages',l:'בטיחות לפי שלב',def:false,name:'שאלות בטיחות לפי שלב',desc:'שאלות ייעודיות לשלב: שלד/גמר/פיגומים/חפירות.'},
   {k:'customTrades',l:'הוספת מקצוע',def:false,name:'הוספת מקצוע ביומן',desc:'הוספת מקצועות לטבלת כוח האדם.'}
 ];
 var PROFILES=[
-  {id:'full',l:'⭐ מלא',set:{modJournal:1,modDefects:1,modSafety:1,messages:1,supervisorApproval:1,safetyStages:1,customTrades:1}},
-  {id:'basic',l:'בסיסי',set:{modJournal:1,modDefects:1,modSafety:1,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}},
-  {id:'journal',l:'יומן בלבד',set:{modJournal:1,modDefects:0,modSafety:0,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}},
-  {id:'safety',l:'בטיחות בלבד',set:{modJournal:0,modDefects:0,modSafety:1,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}}
+  {id:'full',l:'⭐ מלא',set:{modJournal:1,modDefects:1,modSafety:1,modPresence:1,modReminders:1,messages:1,supervisorApproval:1,safetyStages:1,customTrades:1}},
+  {id:'basic',l:'בסיסי',set:{modJournal:1,modDefects:1,modSafety:1,modPresence:0,modReminders:0,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}},
+  {id:'journal',l:'יומן בלבד',set:{modJournal:1,modDefects:0,modSafety:0,modPresence:0,modReminders:0,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}},
+  {id:'safety',l:'בטיחות בלבד',set:{modJournal:0,modDefects:0,modSafety:1,modPresence:0,modReminders:0,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}}
 ];
 function featDef(k){for(var i=0;i<ADV_FEATURES.length;i++)if(ADV_FEATURES[i].k===k)return ADV_FEATURES[i].def;return false;}
 function featEff(feat,k){return (feat&&feat[k]!==undefined)?!!feat[k]:featDef(k);}

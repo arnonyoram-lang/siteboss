@@ -288,6 +288,14 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <span class="home-btn-icon">🦺</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn3Title"></span><span class="home-btn-desc" data-t="btn3Desc"></span></span>
     </button>
+    <button id="home-mod-presence" class="home-btn" style="display:none;background:linear-gradient(135deg,#2980b9,#1c5fb0);" onclick="showScreen('s-presence')">
+      <span class="home-btn-icon">👷</span>
+      <span class="home-btn-texts"><span class="home-btn-title" data-t="btn4Title"></span><span class="home-btn-desc" data-t="btn4Desc"></span></span>
+    </button>
+    <button id="home-mod-reminders" class="home-btn" style="display:none;background:linear-gradient(135deg,#8e44ad,#6c3483);" onclick="showScreen('s-reminders')">
+      <span class="home-btn-icon">⏰</span>
+      <span class="home-btn-texts"><span class="home-btn-title" data-t="btn5Title"></span><span class="home-btn-desc" data-t="btn5Desc"></span><span id="rem-home-badge" style="display:none;background:rgba(255,255,255,.3);border-radius:10px;padding:1px 8px;font-size:12px;font-weight:800;margin-top:4px;display:inline-block;"></span></span>
+    </button>
   </div>
   <div style="text-align:center;margin-top:18px;">
     <button onclick="showScreen('s-help')" style="background:none;border:none;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;" data-t="helpLink"></button>
@@ -333,6 +341,66 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
         <textarea id="fb-text" data-tp="feedbackPlaceholder" rows="4"></textarea>
       </div>
       <button class="btn btn-green" onclick="submitFeedback()"><span data-t="feedbackSend"></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- PRESENCE (#11) -->
+<div class="screen" id="s-presence">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="presTitle"></div><div class="topbar-sub" id="pres-date-sub"></div></div>
+    <button class="icon-btn" onclick="showScreen('s-presence-history')">📂</button>
+  </div>
+  <div class="screen-body">
+    <div class="card" style="text-align:center;background:var(--blue-bg,#e8f0fe);border:none;">
+      <div style="font-size:13px;color:var(--sub);font-weight:700;" data-t="presOnSite"></div>
+      <div style="font-size:42px;font-weight:900;color:var(--blue);line-height:1.1;" id="pres-count">0</div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="presAddTitle"></div>
+      <div class="form-group"><input id="pres-name" type="text" data-tp="presNamePh"></div>
+      <div class="form-group"><input id="pres-trade" type="text" data-tp="presTradePh"></div>
+      <button class="btn btn-blue" onclick="addPresence()"><span data-t="presAddBtn"></span></button>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="presListTitle"></div>
+      <div id="pres-list"></div>
+    </div>
+    <button class="btn btn-green" onclick="sharePresenceWA()"><span data-t="presShare"></span></button>
+  </div>
+</div>
+
+<!-- PRESENCE HISTORY -->
+<div class="screen" id="s-presence-history">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="presHistTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body"><div id="pres-history-list"></div></div>
+</div>
+
+<!-- REMINDERS (#14) -->
+<div class="screen" id="s-reminders">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="remTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body">
+    <div class="card">
+      <div class="card-title">🔔 <span data-t="remSmartTitle"></span></div>
+      <div id="rem-smart"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📝 <span data-t="remMyTitle"></span></div>
+      <div class="form-group" style="display:flex;gap:8px;">
+        <input id="rem-text" type="text" data-tp="remPlaceholder" style="flex:1;">
+        <input id="rem-date" type="date" style="width:140px;">
+      </div>
+      <button class="btn btn-blue" onclick="addReminder()"><span data-t="remAddBtn"></span></button>
+      <div id="rem-list" style="margin-top:12px;"></div>
     </div>
   </div>
 </div>
@@ -657,7 +725,10 @@ regLang:'שפה מועדפת',regSubmit:'כניסה לאפליקציה ←',
 regNote:'הנתונים שמורים בטלפון שלך בלבד',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
 msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',shareReportWA:'📲 שלח למשרד בוואטסאפ',msgReply:'↩️ השב',
 advFeaturesTitle:'פיצ\'רים מתקדמים (הופעלו עבורך)',
-helpLink:'❓ עזרה ופנייה למשרד',helpTitle:'עזרה ופנייה',
+btn4Title:'נוכחות עובדים',btn4Desc:'מי באתר היום ← שעות ← דוח נוכחות',
+btn5Title:'תזכורות ומשימות',btn5Desc:'דדליינים ← בטיחות יומית ← משימות למחר',
+presTitle:'נוכחות עובדים',presOnSite:'נמצאים באתר עכשיו',presAddTitle:'הוסף עובד שנכנס',presNamePh:'שם העובד',presTradePh:'מקצוע / קבלן (אופציונלי)',presAddBtn:'➕ סמן כנכנס',presListTitle:'רשימת נוכחות היום',presShare:'📲 שלח דוח נוכחות',presCheckout:'יציאה',presIn:'נכנס',presOut:'יצא',presEmpty:'עדיין לא נכנסו עובדים היום',presHistTitle:'היסטוריית נוכחות',presHistEmpty:'אין היסטוריית נוכחות',presWorkers:'עובדים',
+remTitle:'תזכורות ומשימות',remSmartTitle:'התראות אוטומטיות',remMyTitle:'התזכורות שלי',remPlaceholder:'תזכורת חדשה...',remAddBtn:'➕ הוסף תזכורת',remEmpty:'אין תזכורות',remNoAlerts:'✅ אין התראות — הכל מעודכן',remOverdue:'ליקוי באיחור: ',remSafetyToday:'לא בוצעה בדיקת בטיחות היום',remTasksTomorrow:'משימות מהיומן האחרון: ',remDone:'בוצע',remDate:'עד: ',
 faqTitle:'שאלות נפוצות',
 feedbackTitle:'שליחת פנייה למשרד',feedbackType:'סוג הפנייה',fbBug:'תקלה',fbIdea:'הצעה',fbQuestion:'שאלה',
 feedbackText:'פרט את הפנייה',feedbackPlaceholder:'כתוב כאן את הבעיה / ההצעה / השאלה...',feedbackSend:'📨 שלח פנייה',
@@ -754,7 +825,10 @@ regLang:'اللغة المفضلة',regSubmit:'الدخول إلى التطبي�
 regNote:'البيانات محفوظة في هاتفك فقط',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
 msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',shareReportWA:'📲 أرسل للمكتب عبر واتساب',msgReply:'↩️ رد',
 advFeaturesTitle:'ميزات متقدمة (مُفعّلة لك)',
-helpLink:'❓ مساعدة وتواصل مع المكتب',helpTitle:'مساعدة وتواصل',
+btn4Title:'حضور العمال',btn4Desc:'من في الموقع اليوم ← الساعات ← تقرير حضور',
+btn5Title:'تذكيرات ومهام',btn5Desc:'مواعيد ← سلامة يومية ← مهام الغد',
+presTitle:'حضور العمال',presOnSite:'موجودون في الموقع الآن',presAddTitle:'أضف عاملاً دخل',presNamePh:'اسم العامل',presTradePh:'مهنة / مقاول (اختياري)',presAddBtn:'➕ سجّل دخول',presListTitle:'قائمة الحضور اليوم',presShare:'📲 أرسل تقرير الحضور',presCheckout:'خروج',presIn:'دخل',presOut:'خرج',presEmpty:'لم يدخل عمال بعد اليوم',presHistTitle:'سجل الحضور',presHistEmpty:'لا يوجد سجل حضور',presWorkers:'عمال',
+remTitle:'تذكيرات ومهام',remSmartTitle:'تنبيهات تلقائية',remMyTitle:'تذكيراتي',remPlaceholder:'تذكير جديد...',remAddBtn:'➕ أضف تذكير',remEmpty:'لا توجد تذكيرات',remNoAlerts:'✅ لا تنبيهات — كل شيء محدّث',remOverdue:'عيب متأخر: ',remSafetyToday:'لم يتم فحص السلامة اليوم',remTasksTomorrow:'مهام من آخر يومية: ',remDone:'تم',remDate:'حتى: ',
 faqTitle:'أسئلة شائعة',
 feedbackTitle:'إرسال رسالة للمكتب',feedbackType:'نوع الرسالة',fbBug:'عطل',fbIdea:'اقتراح',fbQuestion:'سؤال',
 feedbackText:'تفاصيل الرسالة',feedbackPlaceholder:'اكتب هنا المشكلة / الاقتراح / السؤال...',feedbackSend:'📨 إرسال',
@@ -910,6 +984,9 @@ function onScreenEnter(id){
   if(id==='s-settings')loadSettingsForm();
   if(id==='s-messages')renderMessages();
   if(id==='s-help')initHelp();
+  if(id==='s-presence')initPresence();
+  if(id==='s-presence-history')renderPresenceHistory();
+  if(id==='s-reminders')renderReminders();
   if((id==='s-home'||id==='s-messages')&&window._dkFetchMessages){try{window._dkFetchMessages();}catch(e){}}
   updateBottomBack(id);
 }
@@ -983,6 +1060,113 @@ function renderMessages(){
 }
 // נקודת כניסה ל-Firebase: נקרא מהמודול כשמגיעות הודעות חדשות
 window._dkOnMessages=function(msgs){saveJSON('dk_messages',msgs);updateMsgBanner();var act=document.querySelector('.screen.active');if(act&&act.id==='s-messages')renderMessages();};
+
+// ===================== נוכחות עובדים (#11) =====================
+function presKey(){return 'pres_'+isoDate();}
+function isoDate(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function getPresenceToday(){return loadJSON(presKey(),[]);}
+function initPresence(){
+  document.getElementById('pres-date-sub').textContent=new Date().toLocaleDateString(APP.lang==='ar'?'ar-IL':'he-IL',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('pres-name').value='';document.getElementById('pres-trade').value='';
+  renderPresence();
+}
+function addPresence(){
+  var name=document.getElementById('pres-name').value.trim();
+  if(!name){toast(APP.lang==='ar'?'أدخل اسم العامل':'יש להזין שם עובד');return;}
+  var list=getPresenceToday();
+  list.unshift({id:Date.now(),name:name,trade:document.getElementById('pres-trade').value.trim(),inTs:Date.now(),outTs:null});
+  saveJSON(presKey(),list);
+  document.getElementById('pres-name').value='';document.getElementById('pres-trade').value='';
+  cloudSavePresence();renderPresence();
+}
+function presOut(id){
+  var list=getPresenceToday();for(var i=0;i<list.length;i++)if(list[i].id===id){list[i].outTs=list[i].outTs?null:Date.now();break;}
+  saveJSON(presKey(),list);cloudSavePresence();renderPresence();
+}
+function delPresence(id){var list=getPresenceToday().filter(function(p){return p.id!==id;});saveJSON(presKey(),list);cloudSavePresence();renderPresence();}
+function fmtTime(ts){return ts?new Date(ts).toLocaleTimeString(APP.lang==='ar'?'ar-IL':'he-IL',{hour:'2-digit',minute:'2-digit'}):'';}
+function renderPresence(){
+  var list=getPresenceToday();var present=list.filter(function(p){return !p.outTs;}).length;
+  document.getElementById('pres-count').textContent=present;
+  var el=document.getElementById('pres-list');
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--sub);">'+T('presEmpty')+'</div>';return;}
+  var h='';
+  for(var i=0;i<list.length;i++){var p=list[i];var out=!!p.outTs;
+    h+='<div style="display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--border);'+(out?'opacity:.55;':'')+'">'
+      +'<span style="width:10px;height:10px;border-radius:50%;background:'+(out?'var(--sub)':'var(--green)')+';flex-shrink:0;"></span>'
+      +'<div style="flex:1;min-width:0;"><div style="font-weight:700;">'+esc(p.name)+'</div><div style="font-size:12px;color:var(--sub);">'+(p.trade?esc(p.trade)+' · ':'')+T('presIn')+' '+fmtTime(p.inTs)+(out?' · '+T('presOut')+' '+fmtTime(p.outTs):'')+'</div></div>'
+      +'<button class="btn-sm" onclick="presOut('+p.id+')" style="border:1.5px solid var(--border);border-radius:8px;background:white;padding:6px 12px;font-weight:700;cursor:pointer;color:'+(out?'var(--green)':'var(--orange)')+';">'+(out?'↩':T('presCheckout'))+'</button>'
+      +'<button onclick="delPresence('+p.id+')" style="background:none;border:none;color:#ccc;font-size:16px;cursor:pointer;">✕</button>'
+      +'</div>';
+  }
+  el.innerHTML=h;
+}
+function cloudSavePresence(){
+  if(!window._dkSaveDoc)return;var s=APP.settings||{};var owner=(s.managerPhone||'').replace(/\D/g,'');
+  var list=getPresenceToday();
+  try{window._dkSaveDoc('presence',(owner||'x')+'_'+isoDate(),{owner:owner,ownerName:s.managerName||'',project:s.projectName||'',date:isoDate(),workers:list,present:list.filter(function(p){return !p.outTs;}).length,total:list.length,cloudAt:new Date().toISOString()});}catch(e){}
+}
+function sharePresenceWA(){
+  var list=getPresenceToday();var s=APP.settings||{};
+  var msg='👷 *'+T('presTitle')+'*\n━━━━━━━━━━━\n🏗️ *'+(s.projectName||'')+'*\n📅 '+new Date().toLocaleDateString('he-IL')+'\n\n';
+  msg+='*'+T('presOnSite')+': '+list.filter(function(p){return !p.outTs;}).length+'*\n';
+  list.forEach(function(p){msg+='• '+p.name+(p.trade?' ('+p.trade+')':'')+' — '+fmtTime(p.inTs)+(p.outTs?' עד '+fmtTime(p.outTs):'')+'\n';});
+  msg+='\n_'+(APP.lang==='ar'?'أُرسل عبر دקה':'נשלח מאפליקציית דקה')+'_';
+  openWhatsApp((s.officePhone||''),msg);
+}
+function renderPresenceHistory(){
+  var el=document.getElementById('pres-history-list');var days=[];
+  for(var i=0;i<30;i++){var d=new Date();d.setDate(d.getDate()-i);var k='pres_'+isoDate(d);var list=loadJSON(k,null);if(list&&list.length)days.push({date:d,list:list});}
+  if(!days.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub);">'+T('presHistEmpty')+'</div>';return;}
+  var h='';days.forEach(function(dd){var present=dd.list.length;
+    h+='<div class="card"><div style="display:flex;justify-content:space-between;"><span style="font-weight:800;">'+dd.date.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'})+'</span><span style="color:var(--blue);font-weight:800;">'+present+' '+T('presWorkers')+'</span></div>'
+      +'<div style="font-size:13px;color:var(--sub);margin-top:6px;">'+dd.list.map(function(p){return esc(p.name);}).join(', ')+'</div></div>';
+  });
+  el.innerHTML=h;
+}
+
+// ===================== תזכורות חכמות (#14) =====================
+function getReminders(){return loadJSON('dk_reminders',[]);}
+function getSmartAlerts(){
+  var alerts=[];
+  var defs=loadJSON('sb_defects',[]);var today=isoDate();
+  defs.forEach(function(d){if(d.status!=='done'&&d.deadline&&d.deadline<today)alerts.push({icon:'⚠️',text:T('remOverdue')+(d.desc||'').slice(0,40)});});
+  var safety=loadJSON('sb_safety',[]);var hasToday=safety.some(function(r){return (r.date||'').slice(0,10)===today;});
+  if(isFeatureOn('modSafety')&&!hasToday)alerts.push({icon:'🦺',text:T('remSafetyToday')});
+  var journals=loadJSON('sb_journals',[]);
+  if(journals[0]&&journals[0].tasks)alerts.push({icon:'📋',text:T('remTasksTomorrow')+journals[0].tasks.slice(0,50)});
+  return alerts;
+}
+function renderReminders(){
+  var smart=getSmartAlerts();var se=document.getElementById('rem-smart');
+  if(!smart.length){se.innerHTML='<div style="color:var(--green);font-weight:700;padding:6px 2px;">'+T('remNoAlerts')+'</div>';}
+  else{se.innerHTML=smart.map(function(a){return '<div style="display:flex;gap:8px;padding:9px 4px;border-bottom:1px solid var(--border);font-size:14px;"><span>'+a.icon+'</span><span>'+esc(a.text)+'</span></div>';}).join('');}
+  var rem=getReminders();var el=document.getElementById('rem-list');
+  if(!rem.length){el.innerHTML='<div style="text-align:center;padding:14px;color:var(--sub);">'+T('remEmpty')+'</div>';}
+  else{
+    var h='';rem.forEach(function(r){
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);'+(r.done?'opacity:.5;':'')+'">'
+        +'<input type="checkbox" '+(r.done?'checked':'')+' onchange="toggleReminder('+r.id+')" style="width:22px;height:22px;">'
+        +'<div style="flex:1;'+(r.done?'text-decoration:line-through;':'')+'"><div style="font-weight:600;">'+esc(r.text)+'</div>'+(r.date?'<div style="font-size:12px;color:var(--sub);">'+T('remDate')+r.date+'</div>':'')+'</div>'
+        +'<button onclick="delReminder('+r.id+')" style="background:none;border:none;color:#ccc;font-size:16px;cursor:pointer;">✕</button></div>';
+    });
+    el.innerHTML=h;
+  }
+}
+function addReminder(){
+  var text=document.getElementById('rem-text').value.trim();if(!text)return;
+  var rem=getReminders();rem.unshift({id:Date.now(),text:text,date:document.getElementById('rem-date').value||'',done:false});
+  saveJSON('dk_reminders',rem);document.getElementById('rem-text').value='';document.getElementById('rem-date').value='';
+  renderReminders();updateReminderBadge();
+}
+function toggleReminder(id){var rem=getReminders();for(var i=0;i<rem.length;i++)if(rem[i].id===id){rem[i].done=!rem[i].done;break;}saveJSON('dk_reminders',rem);renderReminders();updateReminderBadge();}
+function delReminder(id){saveJSON('dk_reminders',getReminders().filter(function(r){return r.id!==id;}));renderReminders();updateReminderBadge();}
+function updateReminderBadge(){
+  var b=document.getElementById('rem-home-badge');if(!b)return;
+  if(!isFeatureOn('modReminders')){b.style.display='none';return;}
+  var n=getReminders().filter(function(r){return !r.done;}).length+getSmartAlerts().length;
+  if(n>0){b.style.display='inline-block';b.textContent='🔔 '+n;}else b.style.display='none';
+}
 
 // ===================== עזרה ופנייה =====================
 var _fbType='bug', _fbRef='';
@@ -1723,6 +1907,8 @@ var ALL_FEATURES=[
   {k:'modJournal',he:'יומן עבודה',ar:'يومية العمل',def:true},
   {k:'modDefects',he:'ליקויים ומשימות',ar:'العيوب والمهام',def:true},
   {k:'modSafety',he:'בטיחות יומית',ar:'السلامة اليومية',def:true},
+  {k:'modPresence',he:'נוכחות עובדים',ar:'حضور العمال',def:false},
+  {k:'modReminders',he:'תזכורות ומשימות',ar:'تذكيرات ومهام',def:false},
   {k:'messages',he:'הודעות מהמשרד',ar:'رسائل المكتب',def:true},
   {k:'supervisorApproval',he:'אישור פיקוח ביומן',ar:'مصادقة المشرف',def:false},
   {k:'safetyStages',he:'שאלות בטיחות לפי שלב',ar:'أسئلة سلامة حسب المرحلة',def:false},
@@ -1739,6 +1925,9 @@ function applyFeatures(){
   var hj=document.getElementById('home-mod-journal');if(hj)hj.style.display=isFeatureOn('modJournal')?'':'none';
   var hd=document.getElementById('home-mod-defects');if(hd)hd.style.display=isFeatureOn('modDefects')?'':'none';
   var hs=document.getElementById('home-mod-safety');if(hs)hs.style.display=isFeatureOn('modSafety')?'':'none';
+  var hp=document.getElementById('home-mod-presence');if(hp)hp.style.display=isFeatureOn('modPresence')?'':'none';
+  var hr=document.getElementById('home-mod-reminders');if(hr)hr.style.display=isFeatureOn('modReminders')?'':'none';
+  if(typeof updateReminderBadge==='function')updateReminderBadge();
   updateMsgBanner();
   var act=document.querySelector('.screen.active');
   if(act&&act.id==='s-safety')renderSafetyQuestions();
