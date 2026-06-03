@@ -1154,6 +1154,19 @@ function cloudDelete(coll,entry){
   var owner=((APP.settings&&APP.settings.managerPhone)||'').replace(/\D/g,'');
   try{window._dkDeleteDoc(coll,(owner||'x')+'_'+entry.id);}catch(e){}
 }
+// מיגרציה חד-פעמית: העלאת תמונות ישנות (base64 מקומי) ל-Storage — שכלום מהעבר לא יאבד
+window._dkMigratePhotos=function(){
+  if(!window._dkUploadPhotos)return;                 // Storage לא מוכן
+  if(loadJSON('dk_photo_migrated',false))return;     // כבר בוצע
+  var sets=[['journals','sb_journals'],['defects','sb_defects'],['incidents','dk_incidents']];
+  var count=0;
+  sets.forEach(function(p){
+    var list=loadJSON(p[1],[]);
+    list.forEach(function(e){ if(e&&e.photos&&e.photos.length&&!e.photoUrls){count++;try{cloudSave(p[0],e);}catch(x){}} });
+  });
+  saveJSON('dk_photo_migrated',true);
+  if(count)toast((APP.lang==='ar'?'يتم رفع ':'מעלה ')+count+(APP.lang==='ar'?' صور سابقة للسحابة':' תמונות ישנות לענן'),3500);
+};
 function T(k){return(STRINGS[APP.lang]||STRINGS.he)[k]||k;}
 function applyLang(){
   document.documentElement.lang=APP.lang;
@@ -2583,6 +2596,8 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
         }
         return urls;
       };
+      // מיגרציה חד-פעמית של תמונות ישנות לענן (אחרי שהאימות+Storage מוכנים)
+      if(window._dkMigratePhotos) setTimeout(window._dkMigratePhotos, 3500);
     }catch(e){}
 
     // משיכת הפיצ'רים שהבעלים הדליק למנהל + האזנה חיה לשינויים
