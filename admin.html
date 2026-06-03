@@ -153,6 +153,15 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
   </div>
 
   <div id="main-grid" style="display:none;">
+    <div class="card" style="border-top:4px solid var(--green);">
+      <h2>📨 הזמנת מנהלי עבודה</h2>
+      <p style="font-size:13px;color:var(--sub);margin-bottom:10px;">העתק את הנוסח ושלח למנהל בוואטסאפ — או לחץ "שלח בוואטסאפ" ובחר אנשי קשר.</p>
+      <textarea id="invite-text" style="min-height:170px;line-height:1.7;"></textarea>
+      <div style="display:flex;gap:10px;margin-top:10px;">
+        <button class="btn btn-send" style="flex:1;margin-top:0;" onclick="copyInvite()">📋 העתק נוסח</button>
+        <button class="btn" style="flex:1;margin-top:0;background:#25d366;color:#fff;" onclick="shareInviteWA()">📲 שלח בוואטסאפ</button>
+      </div>
+    </div>
     <div class="card">
       <h2>👷 מנהלי עבודה</h2>
       <input class="search" id="user-search" placeholder="🔍 חיפוש לפי שם / חברה / פרויקט..." oninput="renderUsers()">
@@ -346,6 +355,7 @@ async function boot(cfg){
     document.getElementById('setup-banner').style.display='none';
     document.getElementById('stats').style.display='flex';
     document.getElementById('main-grid').style.display='block';
+    fillInvite();
     var chip=document.getElementById('conn-chip');
     chip.textContent='מחובר ✓ ('+(cfg.projectId||'')+')';
     chip.className='status-chip chip-on';
@@ -597,6 +607,27 @@ window.showView = function(v){
   if(v==='feedback') loadFeedback();
   if(v==='messages') updateSelCount();
   if(v==='briefings') loadBriefings();
+  if(v==='dash') fillInvite();
+};
+var APP_LINK='https://arnonyoram-lang.github.io/siteboss/';
+function inviteDefault(){
+  return 'שלום 👋\n'
+    +'מצרף אותך לאפליקציית *"דקה"* — יומן עבודה, ליקויים ובטיחות, הכל מהטלפון בעברית/ערבית.\n\n'
+    +'✅ דבר דקה אחת ← יומן חוקי מסודר\n'
+    +'📸 צלם ליקוי ← שלח לקבלן\n'
+    +'🦺 בדיקת בטיחות יומית חתומה\n\n'
+    +'👈 *לכניסה לחץ כאן:*\n'+APP_LINK+'\n\n'
+    +'בפעם הראשונה מלא שם + טלפון. מומלץ אחרי הפתיחה: תפריט הדפדפן ← *"הוספה למסך הבית"* — וזה ייראה ויעבוד כמו אפליקציה. 📱';
+}
+function fillInvite(){var t=document.getElementById('invite-text');if(t&&!t.value)t.value=inviteDefault();}
+window.copyInvite=function(){
+  var t=document.getElementById('invite-text');t.select();
+  try{ navigator.clipboard.writeText(t.value).then(function(){_toast('📋 הנוסח הועתק');},function(){document.execCommand('copy');_toast('📋 הועתק');}); }
+  catch(e){ try{document.execCommand('copy');_toast('📋 הועתק');}catch(_){_toast('בחר והעתק ידנית');} }
+};
+window.shareInviteWA=function(){
+  var txt=document.getElementById('invite-text').value;
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 };
 // ---------- תדריכי בטיחות ----------
 var BRIEF_LANGS=[{k:'ar',l:'ערבית'},{k:'ru',l:'רוסית'},{k:'am',l:'אמהרית'},{k:'hi',l:'הינדי'},{k:'zh',l:'סינית'},{k:'th',l:'תאית'},{k:'tr',l:'טורקית'},{k:'he',l:'עברית'}];
