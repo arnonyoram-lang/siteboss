@@ -296,6 +296,10 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <span class="home-btn-icon">⏰</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn5Title"></span><span class="home-btn-desc" data-t="btn5Desc"></span><span id="rem-home-badge" style="display:none;background:rgba(255,255,255,.3);border-radius:10px;padding:1px 8px;font-size:12px;font-weight:800;margin-top:4px;display:inline-block;"></span></span>
     </button>
+    <button id="home-mod-incidents" class="home-btn" style="display:none;background:linear-gradient(135deg,#34495e,#222f3d);" onclick="showScreen('s-incidents')">
+      <span class="home-btn-icon">🚨</span>
+      <span class="home-btn-texts"><span class="home-btn-title" data-t="btn6Title"></span><span class="home-btn-desc" data-t="btn6Desc"></span></span>
+    </button>
   </div>
   <div style="text-align:center;margin-top:18px;">
     <button onclick="showScreen('s-help')" style="background:none;border:none;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;" data-t="helpLink"></button>
@@ -403,6 +407,50 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <div id="rem-list" style="margin-top:12px;"></div>
     </div>
   </div>
+</div>
+
+<!-- INCIDENTS (#17) -->
+<div class="screen" id="s-incidents">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="incTitle"></div></div>
+    <button class="icon-btn" onclick="showScreen('s-incidents-history')">📂</button>
+  </div>
+  <div class="screen-body">
+    <div class="card" style="background:#fdecea;border:1px solid #f5b7b1;">
+      <div style="font-size:13px;color:var(--red);font-weight:700;" data-t="incHint"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="incType"></div>
+      <div class="work-type-grid" id="inc-type-grid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="incDescTitle"></div>
+      <div style="text-align:center;padding:6px 0;">
+        <button class="voice-btn" id="inc-voice-btn" onclick="toggleVoice('inc-desc','inc-voice-btn')" style="width:64px;height:64px;font-size:26px;">🎙️</button>
+      </div>
+      <textarea id="inc-desc" data-tp="incDescPh" rows="3"></textarea>
+    </div>
+    <div class="card"><div class="card-title" data-t="incLocation"></div><input id="inc-location" type="text" data-tp="incLocationPh"></div>
+    <div class="card"><div class="card-title" data-t="incInjured"></div><input id="inc-injured" type="text" data-tp="incInjuredPh"></div>
+    <div class="card"><div class="card-title" data-t="incAction"></div><textarea id="inc-action" data-tp="incActionPh" rows="2"></textarea></div>
+    <div class="card">
+      <div class="card-title" data-t="incPhoto"></div>
+      <div class="photos-grid" id="inc-photos-grid"></div>
+      <input type="file" id="inc-photo-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleIncPhotos(event)">
+    </div>
+    <button class="btn btn-red" onclick="saveIncident()"><span data-t="incSave"></span></button>
+  </div>
+</div>
+
+<!-- INCIDENTS HISTORY -->
+<div class="screen" id="s-incidents-history">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="incHistTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body"><div id="inc-history-list"></div></div>
 </div>
 
 <!-- JOURNAL -->
@@ -727,6 +775,14 @@ msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשו�
 advFeaturesTitle:'פיצ\'רים מתקדמים (הופעלו עבורך)',
 btn4Title:'נוכחות עובדים',btn4Desc:'מי באתר היום ← שעות ← דוח נוכחות',
 btn5Title:'תזכורות ומשימות',btn5Desc:'דדליינים ← בטיחות יומית ← משימות למחר',
+btn6Title:'דיווח אירוע / תאונה',btn6Desc:'תיעוד מיידי של תאונה / כמעט-תאונה / מפגע',
+incTitle:'דיווח אירוע',incHint:'⚠️ דיווח מיידי על תאונה או כמעט-תאונה — חובה חוקית ומסמך מגן.',
+incType:'סוג האירוע',incTypeAccident:'🚑 תאונה',incTypeNear:'⚠️ כמעט-תאונה',incTypeHazard:'⛔ מפגע',
+incDescTitle:'תיאור האירוע',incDescPh:'מה קרה? איך? מתי?',incLocation:'מיקום',incLocationPh:'קומה / אזור',
+incInjured:'נפגעים (אם יש)',incInjuredPh:'שם הנפגע ותיאור הפגיעה — או השאר ריק',
+incAction:'פעולה מיידית שננקטה',incActionPh:'מה עשית מיד אחרי?',incPhoto:'תמונות',
+incSave:'🚨 שמור ודווח למשרד',incSaved:'✅ האירוע תועד ונשלח',incNoDesc:'יש לתאר את האירוע',
+incHistTitle:'אירועים שדווחו',incHistEmpty:'לא דווחו אירועים — מצוין!',
 presTitle:'נוכחות עובדים',presOnSite:'נמצאים באתר עכשיו',presAddTitle:'הוסף עובד שנכנס',presNamePh:'שם העובד',presTradePh:'מקצוע / קבלן (אופציונלי)',presAddBtn:'➕ סמן כנכנס',presListTitle:'רשימת נוכחות היום',presShare:'📲 שלח דוח נוכחות',presCheckout:'יציאה',presIn:'נכנס',presOut:'יצא',presEmpty:'עדיין לא נכנסו עובדים היום',presHistTitle:'היסטוריית נוכחות',presHistEmpty:'אין היסטוריית נוכחות',presWorkers:'עובדים',
 remTitle:'תזכורות ומשימות',remSmartTitle:'התראות אוטומטיות',remMyTitle:'התזכורות שלי',remPlaceholder:'תזכורת חדשה...',remAddBtn:'➕ הוסף תזכורת',remEmpty:'אין תזכורות',remNoAlerts:'✅ אין התראות — הכל מעודכן',remOverdue:'ליקוי באיחור: ',remSafetyToday:'לא בוצעה בדיקת בטיחות היום',remTasksTomorrow:'משימות מהיומן האחרון: ',remDone:'בוצע',remDate:'עד: ',
 faqTitle:'שאלות נפוצות',
@@ -827,6 +883,14 @@ msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديد
 advFeaturesTitle:'ميزات متقدمة (مُفعّلة لك)',
 btn4Title:'حضور العمال',btn4Desc:'من في الموقع اليوم ← الساعات ← تقرير حضور',
 btn5Title:'تذكيرات ومهام',btn5Desc:'مواعيد ← سلامة يومية ← مهام الغد',
+btn6Title:'تبليغ حادث',btn6Desc:'توثيق فوري لحادث / شبه حادث / خطر',
+incTitle:'تبليغ حادث',incHint:'⚠️ تبليغ فوري عن حادث أو شبه حادث — إلزام قانوني ومستند يحميك.',
+incType:'نوع الحدث',incTypeAccident:'🚑 حادث',incTypeNear:'⚠️ شبه حادث',incTypeHazard:'⛔ خطر',
+incDescTitle:'وصف الحدث',incDescPh:'ماذا حدث؟ كيف؟ متى؟',incLocation:'الموقع',incLocationPh:'طابق / منطقة',
+incInjured:'المصابون (إن وجد)',incInjuredPh:'اسم المصاب ووصف الإصابة — أو اترك فارغاً',
+incAction:'الإجراء الفوري المتخذ',incActionPh:'ماذا فعلت مباشرة؟',incPhoto:'صور',
+incSave:'🚨 احفظ وبلّغ المكتب',incSaved:'✅ تم توثيق الحدث وإرساله',incNoDesc:'يرجى وصف الحدث',
+incHistTitle:'الأحداث المبلّغ عنها',incHistEmpty:'لم يتم تبليغ أحداث — ممتاز!',
 presTitle:'حضور العمال',presOnSite:'موجودون في الموقع الآن',presAddTitle:'أضف عاملاً دخل',presNamePh:'اسم العامل',presTradePh:'مهنة / مقاول (اختياري)',presAddBtn:'➕ سجّل دخول',presListTitle:'قائمة الحضور اليوم',presShare:'📲 أرسل تقرير الحضور',presCheckout:'خروج',presIn:'دخل',presOut:'خرج',presEmpty:'لم يدخل عمال بعد اليوم',presHistTitle:'سجل الحضور',presHistEmpty:'لا يوجد سجل حضور',presWorkers:'عمال',
 remTitle:'تذكيرات ومهام',remSmartTitle:'تنبيهات تلقائية',remMyTitle:'تذكيراتي',remPlaceholder:'تذكير جديد...',remAddBtn:'➕ أضف تذكير',remEmpty:'لا توجد تذكيرات',remNoAlerts:'✅ لا تنبيهات — كل شيء محدّث',remOverdue:'عيب متأخر: ',remSafetyToday:'لم يتم فحص السلامة اليوم',remTasksTomorrow:'مهام من آخر يومية: ',remDone:'تم',remDate:'حتى: ',
 faqTitle:'أسئلة شائعة',
@@ -987,6 +1051,8 @@ function onScreenEnter(id){
   if(id==='s-presence')initPresence();
   if(id==='s-presence-history')renderPresenceHistory();
   if(id==='s-reminders')renderReminders();
+  if(id==='s-incidents')initIncidents();
+  if(id==='s-incidents-history')renderIncidentsHistory();
   if((id==='s-home'||id==='s-messages')&&window._dkFetchMessages){try{window._dkFetchMessages();}catch(e){}}
   updateBottomBack(id);
 }
@@ -1166,6 +1232,70 @@ function updateReminderBadge(){
   if(!isFeatureOn('modReminders')){b.style.display='none';return;}
   var n=getReminders().filter(function(r){return !r.done;}).length+getSmartAlerts().length;
   if(n>0){b.style.display='inline-block';b.textContent='🔔 '+n;}else b.style.display='none';
+}
+
+// ===================== דיווח אירועים ותאונות (#17) =====================
+var INC_TYPES=[{k:'accident',l:'incTypeAccident'},{k:'nearmiss',l:'incTypeNear'},{k:'hazard',l:'incTypeHazard'}];
+var _incType='accident',_incPhotos=[];
+function initIncidents(){
+  _incType='accident';_incPhotos=[];
+  document.getElementById('inc-desc').value='';document.getElementById('inc-location').value='';
+  document.getElementById('inc-injured').value='';document.getElementById('inc-action').value='';
+  renderIncTypes();renderIncPhotos();
+}
+function renderIncTypes(){
+  var g=document.getElementById('inc-type-grid');if(!g)return;var h='';
+  INC_TYPES.forEach(function(t){h+='<div class="work-type-btn'+(_incType===t.k?' active':'')+'" onclick="selIncType(\''+t.k+'\')"><span class="work-type-label">'+T(t.l)+'</span></div>';});
+  g.innerHTML=h;
+}
+function selIncType(k){_incType=k;renderIncTypes();}
+function handleIncPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){_incPhotos.push(ev.target.result);renderIncPhotos();};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
+function renderIncPhotos(){
+  var g=document.getElementById('inc-photos-grid');if(!g)return;var h='';
+  for(var i=0;i<_incPhotos.length;i++)h+='<div class="photo-thumb"><img src="'+_incPhotos[i]+'"><button class="photo-del" onclick="_incPhotos.splice('+i+',1);renderIncPhotos()">×</button></div>';
+  h+='<div class="photo-add" onclick="document.getElementById(\'inc-photo-input\').click()"><span class="photo-add-icon">📷</span><span>+</span></div>';
+  g.innerHTML=h;
+}
+function getIncidents(){return loadJSON('dk_incidents',[]);}
+function saveIncident(){
+  var desc=document.getElementById('inc-desc').value.trim();
+  if(!desc){toast(T('incNoDesc'));return;}
+  var s=APP.settings||{};
+  var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),type:_incType,
+    desc:desc,location:document.getElementById('inc-location').value.trim(),
+    injured:document.getElementById('inc-injured').value.trim(),
+    action:document.getElementById('inc-action').value.trim(),
+    photos:_incPhotos.slice(),reporter:s.managerName||'',project:s.projectName||''};
+  var list=getIncidents();list.unshift(entry);saveJSON('dk_incidents',list);
+  cloudSave('incidents',entry);
+  toast(T('incSaved'),3000);
+  shareIncidentWA(entry);
+  showScreen('s-incidents-history');
+}
+function incTypeLabel(k){var m={accident:T('incTypeAccident'),nearmiss:T('incTypeNear'),hazard:T('incTypeHazard')};return m[k]||k;}
+function shareIncidentWA(e){
+  var s=APP.settings||{};
+  var msg='🚨 *'+T('incTitle')+'*\n━━━━━━━━━━━\n'+incTypeLabel(e.type)+'\n🏗️ *'+(s.projectName||'')+'*\n📅 '+new Date(e.ts).toLocaleString('he-IL')+'\n👷 '+(e.reporter||'')+'\n\n*'+T('incDescTitle')+':*\n'+e.desc+'\n';
+  if(e.location)msg+='📍 '+e.location+'\n';
+  if(e.injured)msg+='🩹 '+e.injured+'\n';
+  if(e.action)msg+='*'+T('incAction')+':* '+e.action+'\n';
+  msg+='\n_'+(APP.lang==='ar'?'أُرسل عبر دקה':'נשלח מאפליקציית דקה')+'_';
+  openWhatsApp((s.officePhone||''),msg);
+}
+function renderIncidentsHistory(){
+  var el=document.getElementById('inc-history-list');var list=getIncidents();
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--green);font-weight:700;">'+T('incHistEmpty')+'</div>';return;}
+  var h='';list.forEach(function(e){
+    var color=e.type==='accident'?'var(--red)':e.type==='nearmiss'?'var(--orange)':'var(--sub)';
+    h+='<div class="card" style="border-right:4px solid '+color+';"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:800;">'+incTypeLabel(e.type)+'</span><span style="font-size:12px;color:var(--sub);">'+new Date(e.ts).toLocaleString('he-IL')+'</span></div>'
+      +'<div style="font-size:14px;line-height:1.5;">'+esc(e.desc)+'</div>'
+      +(e.location?'<div style="font-size:13px;color:var(--sub);margin-top:4px;">📍 '+esc(e.location)+'</div>':'')
+      +(e.injured?'<div style="font-size:13px;color:var(--red);margin-top:4px;">🩹 '+esc(e.injured)+'</div>':'')
+      +(e.photos&&e.photos.length?'<div class="photos-grid" style="margin-top:8px;">'+e.photos.map(function(p){return '<div class="photo-thumb"><img src="'+p+'"></div>';}).join('')+'</div>':'')
+      +'<button class="btn btn-gray btn-sm" style="margin-top:8px;" onclick="shareIncidentWA(getIncidents().find(function(x){return x.id==='+e.id+';}))">📲 שלח שוב</button>'
+      +'</div>';
+  });
+  el.innerHTML=h;
 }
 
 // ===================== עזרה ופנייה =====================
@@ -1909,6 +2039,7 @@ var ALL_FEATURES=[
   {k:'modSafety',he:'בטיחות יומית',ar:'السلامة اليومية',def:true},
   {k:'modPresence',he:'נוכחות עובדים',ar:'حضور العمال',def:false},
   {k:'modReminders',he:'תזכורות ומשימות',ar:'تذكيرات ومهام',def:false},
+  {k:'modIncidents',he:'דיווח אירועים ותאונות',ar:'تبليغ الحوادث',def:false},
   {k:'messages',he:'הודעות מהמשרד',ar:'رسائل المكتب',def:true},
   {k:'supervisorApproval',he:'אישור פיקוח ביומן',ar:'مصادقة المشرف',def:false},
   {k:'safetyStages',he:'שאלות בטיחות לפי שלב',ar:'أسئلة سلامة حسب المرحلة',def:false},
@@ -1927,6 +2058,7 @@ function applyFeatures(){
   var hs=document.getElementById('home-mod-safety');if(hs)hs.style.display=isFeatureOn('modSafety')?'':'none';
   var hp=document.getElementById('home-mod-presence');if(hp)hp.style.display=isFeatureOn('modPresence')?'':'none';
   var hr=document.getElementById('home-mod-reminders');if(hr)hr.style.display=isFeatureOn('modReminders')?'':'none';
+  var hi=document.getElementById('home-mod-incidents');if(hi)hi.style.display=isFeatureOn('modIncidents')?'':'none';
   if(typeof updateReminderBadge==='function')updateReminderBadge();
   updateMsgBanner();
   var act=document.querySelector('.screen.active');
