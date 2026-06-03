@@ -276,15 +276,15 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <div class="stat-card" onclick="showScreen('s-defects')"><div class="stat-num" id="stat-defects">0</div><div class="stat-label" data-t="statOpen"></div></div>
       <div class="stat-card" onclick="showScreen('s-safety-history')"><div class="stat-num" id="stat-safety">0</div><div class="stat-label" data-t="statSafety"></div></div>
     </div>
-    <button class="home-btn" style="background:linear-gradient(135deg,#1f9d57,#157a42);" onclick="showScreen('s-journal')">
+    <button id="home-mod-journal" class="home-btn" style="background:linear-gradient(135deg,#1f9d57,#157a42);" onclick="showScreen('s-journal')">
       <span class="home-btn-icon">📋</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn1Title"></span><span class="home-btn-desc" data-t="btn1Desc"></span></span>
     </button>
-    <button class="home-btn" style="background:linear-gradient(135deg,#e67e22,#c0641a);" onclick="showScreen('s-defects')">
+    <button id="home-mod-defects" class="home-btn" style="background:linear-gradient(135deg,#e67e22,#c0641a);" onclick="showScreen('s-defects')">
       <span class="home-btn-icon">📸</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn2Title"></span><span class="home-btn-desc" data-t="btn2Desc"></span></span>
     </button>
-    <button class="home-btn" style="background:linear-gradient(135deg,#e03131,#b32020);" onclick="showScreen('s-safety')">
+    <button id="home-mod-safety" class="home-btn" style="background:linear-gradient(135deg,#e03131,#b32020);" onclick="showScreen('s-safety')">
       <span class="home-btn-icon">🦺</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn3Title"></span><span class="home-btn-desc" data-t="btn3Desc"></span></span>
     </button>
@@ -943,6 +943,7 @@ function getLastRead(){return loadJSON('dk_msg_lastread',0);}
 function unreadCount(){var lr=getLastRead();return getMessages().filter(function(m){return (m.ts||0)>lr;}).length;}
 function updateMsgBanner(){
   var b=document.getElementById('msg-banner');if(!b)return;
+  if(typeof isFeatureOn==='function'&&!isFeatureOn('messages')){b.style.display='none';return;}
   var n=unreadCount();
   if(n>0){
     b.style.display='flex';
@@ -1717,22 +1718,33 @@ function isRegistered(){
 
 // ===================== פיצ'רים מתקדמים (גילוי מדורג) =====================
 // שכבה 1: זמינות נקבעת ע"י הבעלים (APP.features מה-Firebase). שכבה 2: המנהל בוחר להציג/להסתיר (APP.userPrefs).
-var ADV_FEATURES=[
-  {k:'supervisorApproval',he:'אישור פיקוח ביומן',ar:'مصادقة المشرف في اليومية'},
-  {k:'safetyStages',he:'שאלות בטיחות לפי שלב',ar:'أسئلة سلامة حسب المرحلة'},
-  {k:'customTrades',he:'הוספת מקצוע ביומן',ar:'إضافة مهنة في اليومية'}
+// כל הפיצ'רים במערכת — def=ברירת מחדל זמינות (core דלוק, מתקדם כבוי)
+var ALL_FEATURES=[
+  {k:'modJournal',he:'יומן עבודה',ar:'يومية العمل',def:true},
+  {k:'modDefects',he:'ליקויים ומשימות',ar:'العيوب والمهام',def:true},
+  {k:'modSafety',he:'בטיחות יומית',ar:'السلامة اليومية',def:true},
+  {k:'messages',he:'הודעות מהמשרד',ar:'رسائل المكتب',def:true},
+  {k:'supervisorApproval',he:'אישור פיקוח ביומן',ar:'مصادقة المشرف',def:false},
+  {k:'safetyStages',he:'שאלות בטיחות לפי שלב',ar:'أسئلة سلامة حسب المرحلة',def:false},
+  {k:'customTrades',he:'הוספת מקצוע ביומן',ar:'إضافة مهنة',def:false}
 ];
+function featDefault(k){for(var i=0;i<ALL_FEATURES.length;i++)if(ALL_FEATURES[i].k===k)return ALL_FEATURES[i].def;return false;}
+function featAvailable(k){var f=APP.features||{};return (f[k]!==undefined)?!!f[k]:featDefault(k);} // זמינות (בעלים/ברירת מחדל)
 function isFeatureOn(k){
-  if(!(APP.features&&APP.features[k]))return false;       // הבעלים לא הדליק
-  return (APP.userPrefs||{})[k]!==false;                   // המנהל לא הסתיר (דלוק כברירת מחדל)
+  if(!featAvailable(k))return false;
+  return (APP.userPrefs||{})[k]!==false;   // המנהל לא הסתיר
 }
 function applyFeatures(){
   var b=document.getElementById('btn-add-trade');if(b)b.style.display=isFeatureOn('customTrades')?'':'none';
+  var hj=document.getElementById('home-mod-journal');if(hj)hj.style.display=isFeatureOn('modJournal')?'':'none';
+  var hd=document.getElementById('home-mod-defects');if(hd)hd.style.display=isFeatureOn('modDefects')?'':'none';
+  var hs=document.getElementById('home-mod-safety');if(hs)hs.style.display=isFeatureOn('modSafety')?'':'none';
+  updateMsgBanner();
   var act=document.querySelector('.screen.active');
   if(act&&act.id==='s-safety')renderSafetyQuestions();
 }
 window._dkOnFeatures=function(f){
-  APP.features=Object.assign({supervisorApproval:false,safetyStages:false,customTrades:false},f||{});
+  APP.features=f||{};
   saveJSON('dk_features',APP.features);applyFeatures();
   var act=document.querySelector('.screen.active');if(act&&act.id==='s-settings')renderFeaturePrefs();
 };
@@ -1742,8 +1754,9 @@ function toggleUserPref(k,on){
 }
 function renderFeaturePrefs(){
   var wrap=document.getElementById('feature-prefs');if(!wrap)return;
-  var avail=ADV_FEATURES.filter(function(f){return APP.features&&APP.features[f.k];});
-  if(!avail.length){wrap.style.display='none';wrap.innerHTML='';return;}
+  // כל הפיצ'רים שזמינים למנהל (כולל מודולים) — שיוכל להסתיר מה שלא בשימוש
+  var avail=ALL_FEATURES.filter(function(f){return featAvailable(f.k);});
+  if(avail.length<=0){wrap.style.display='none';wrap.innerHTML='';return;}
   wrap.style.display='block';
   var h='<div class="card-title" style="margin-top:6px;">⭐ '+T('advFeaturesTitle')+'</div>';
   avail.forEach(function(f){

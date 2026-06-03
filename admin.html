@@ -93,6 +93,8 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
 .rep-feat-bar .rfb-chips{display:flex;gap:8px;flex-wrap:wrap;}
 .rfb-chip{padding:7px 13px;border:2px solid var(--border);border-radius:20px;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:var(--sub);}
 .rfb-chip.on{border-color:var(--green);background:#eafaf1;color:var(--green);}
+.rfb-chip.prof{border-color:var(--blue);background:#e8f0fe;color:var(--blue-d);}
+.rfb-chip.prof:hover{background:var(--blue);color:#fff;}
 .rep-tabs{display:flex;gap:6px;padding:12px 16px 0;}
 .rep-tab{flex:1;padding:10px;text-align:center;border-radius:10px 10px 0 0;background:var(--bg);font-weight:700;font-size:14px;cursor:pointer;color:var(--sub);border:1px solid transparent;border-bottom:none;}
 .rep-tab.active{background:#fff;color:var(--blue);border-color:var(--border);}
@@ -392,20 +394,42 @@ var _repData={journals:[],defects:[],safety:[]}, _repTab='journals';
 function pad(n){var s=''+(n||0);while(s.length<3)s='0'+s;return s;}
 var _repMgrId=null;
 var ADV_FEATURES=[
-  {k:'supervisorApproval',l:'אישור פיקוח',name:'אישור פיקוח ביומן',desc:'עכשיו אפשר להחתים מפקח מטעם המזמין על דוח היומן — חתימה נפרדת עם חותמת זמן, לחיזוק הקבילות המשפטית.'},
-  {k:'safetyStages',l:'בטיחות לפי שלב',name:'שאלות בטיחות לפי שלב',desc:'בסוף 12 שאלות הבטיחות תוכל להוסיף שאלות ייעודיות לשלב שאתה בו: שלד / גמר / פיגומים / חפירות.'},
-  {k:'customTrades',l:'הוספת מקצוע',name:'הוספת מקצוע ביומן',desc:'עכשיו אפשר להוסיף מקצועות נוספים משלך לטבלת כוח האדם ביומן, מעבר ל-5 הקבועים.'}
+  {k:'modJournal',l:'יומן',def:true,name:'יומן עבודה',desc:'מודול יומן העבודה היומי.'},
+  {k:'modDefects',l:'ליקויים',def:true,name:'ליקויים ומשימות',desc:'מודול תיעוד הליקויים והמשימות.'},
+  {k:'modSafety',l:'בטיחות',def:true,name:'בטיחות יומית',desc:'מודול בדיקת הבטיחות היומית.'},
+  {k:'messages',l:'הודעות',def:true,name:'הודעות מהמשרד',desc:'קבלת הודעות מהמשרד.'},
+  {k:'supervisorApproval',l:'אישור פיקוח',def:false,name:'אישור פיקוח ביומן',desc:'החתמת מפקח מטעם המזמין על דוח היומן.'},
+  {k:'safetyStages',l:'בטיחות לפי שלב',def:false,name:'שאלות בטיחות לפי שלב',desc:'שאלות ייעודיות לשלב: שלד/גמר/פיגומים/חפירות.'},
+  {k:'customTrades',l:'הוספת מקצוע',def:false,name:'הוספת מקצוע ביומן',desc:'הוספת מקצועות לטבלת כוח האדם.'}
 ];
+var PROFILES=[
+  {id:'full',l:'⭐ מלא',set:{modJournal:1,modDefects:1,modSafety:1,messages:1,supervisorApproval:1,safetyStages:1,customTrades:1}},
+  {id:'basic',l:'בסיסי',set:{modJournal:1,modDefects:1,modSafety:1,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}},
+  {id:'journal',l:'יומן בלבד',set:{modJournal:1,modDefects:0,modSafety:0,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}},
+  {id:'safety',l:'בטיחות בלבד',set:{modJournal:0,modDefects:0,modSafety:1,messages:1,supervisorApproval:0,safetyStages:0,customTrades:0}}
+];
+function featDef(k){for(var i=0;i<ADV_FEATURES.length;i++)if(ADV_FEATURES[i].k===k)return ADV_FEATURES[i].def;return false;}
+function featEff(feat,k){return (feat&&feat[k]!==undefined)?!!feat[k]:featDef(k);}
 function renderMgrFeatures(u){
   var bar=document.getElementById('rep-features');if(!bar)return;
   var feat=u.features||{};
-  var h='<div class="rfb-title">⭐ פיצ\'רים מתקדמים — הדלק/כבה למנהל זה</div><div class="rfb-chips">';
+  var h='<div class="rfb-title">⭐ פרופיל מהיר — קליק אחד מגדיר הכל</div><div class="rfb-chips" style="margin-bottom:10px;">';
+  PROFILES.forEach(function(p){h+='<div class="rfb-chip prof" onclick="applyMgrProfile(\''+u.id+'\',\''+p.id+'\')">'+p.l+'</div>';});
+  h+='</div><div class="rfb-title">כיוון ידני (הדלק/כבה כל פיצ\'ר)</div><div class="rfb-chips">';
   ADV_FEATURES.forEach(function(f){
-    var on=!!feat[f.k];
+    var on=featEff(feat,f.k);
     h+='<div class="rfb-chip'+(on?' on':'')+'" onclick="toggleMgrFeature(\''+u.id+'\',\''+f.k+'\','+(!on)+')">'+(on?'✓ ':'')+f.l+'</div>';
   });
   bar.innerHTML=h+'</div>';
 }
+window.applyMgrProfile=async function(id,pid){
+  var u=USERS.find(function(x){return x.id===id;});if(!u)return;
+  var p=PROFILES.find(function(x){return x.id===pid;});if(!p)return;
+  u.features={};Object.keys(p.set).forEach(function(k){u.features[k]=!!p.set[k];});
+  renderMgrFeatures(u);
+  try{ await setDoc(doc(db,'managers',id),{features:u.features},{merge:true}); _toast('✅ הוחל פרופיל: '+p.l); }
+  catch(e){ _toast('שגיאה — בדוק כללי אבטחה'); }
+};
 window.toggleMgrFeature=async function(id,key,on){
   var u=USERS.find(function(x){return x.id===id;});if(!u)return;
   if(!u.features)u.features={};u.features[key]=on;
@@ -413,7 +437,6 @@ window.toggleMgrFeature=async function(id,key,on){
   try{
     await setDoc(doc(db,'managers',id),{features:u.features},{merge:true});
     if(on){
-      // הודעה אוטומטית למנהל על הפיצ'ר שנפתח
       var f=ADV_FEATURES.find(function(x){return x.k===key;})||{name:key,desc:''};
       try{ await addDoc(collection(db,'messages'),{
         title:'✨ נפתחה לך יכולת חדשה',
