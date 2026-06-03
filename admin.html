@@ -76,6 +76,14 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
 .feat .ft{flex:1;}
 .feat .ft-name{font-weight:800;font-size:16px;margin-bottom:3px;}
 .feat .ft-desc{font-size:13.5px;color:var(--sub);line-height:1.55;}
+.cgroup-title{font-size:16px;font-weight:900;color:var(--blue-d);margin:20px 0 10px;padding-right:8px;border-right:4px solid var(--accent);}
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#fff;border:1px solid #e8edf2;border-radius:12px;padding:12px 14px;margin-bottom:9px;box-shadow:0 1px 5px rgba(27,39,51,.04);}
+.crow.changed{border-color:var(--accent);background:#fffdf6;}
+.cfield label{display:block;font-size:11px;font-weight:700;color:var(--sub);margin-bottom:4px;}
+.cfield textarea{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-family:inherit;min-height:42px;resize:vertical;line-height:1.5;}
+.cfield textarea:focus{outline:none;border-color:var(--blue);}
+.cfield.ar textarea{direction:rtl;}
+@media(max-width:640px){.crow{grid-template-columns:1fr;}}
 #reports-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px;}
 #reports-overlay.open{display:flex;}
 .reports-sheet{background:#fff;border-radius:18px;width:100%;max-width:680px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.3);}
@@ -99,6 +107,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
   <div style="display:flex;gap:10px;align-items:center;">
     <button class="nav-btn active" id="nav-dash" onclick="showView('dash')">📊 ניהול</button>
     <button class="nav-btn" id="nav-road" onclick="showView('road')">🗺️ מפת דרכים</button>
+    <button class="nav-btn" id="nav-content" onclick="showView('content')">✏️ תוכן וניסוחים</button>
     <span class="status-chip chip-off" id="conn-chip">לא מחובר ל-Firebase</span>
   </div>
 </div>
@@ -187,6 +196,20 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
     <div class="road-title"><span class="road-dot plan">★</span> בתכנון · הצעות לפיתוח</div>
     <div id="road-planned"></div>
   </div>
+</div>
+
+<!-- CONTENT / WORDING VIEW -->
+<div class="wrap" id="view-content" style="display:none;">
+  <div class="road-hero">
+    <h2>✏️ תוכן וניסוחים</h2>
+    <p>כל הטקסטים שמנהל העבודה רואה באפליקציה — מרוכז במקום אחד. ערוך כל ניסוח, ובסוף לחץ "העתק שינויים" כדי לשלוח לעדכון.</p>
+  </div>
+  <div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    <input class="search" id="content-search" placeholder="🔍 חפש ניסוח (לדוגמה: בטיחות, יומן, שלח...)" style="flex:1;min-width:220px;margin:0;" oninput="renderContent()">
+    <button class="btn btn-send" style="margin:0;width:auto;padding:11px 18px;" onclick="copyChanges()">📋 העתק שינויים</button>
+  </div>
+  <div id="content-status" style="font-size:13px;color:var(--sub);margin:4px 2px 12px;"></div>
+  <div id="content-list"></div>
 </div>
 
 <!-- REPORTS MODAL -->
@@ -440,12 +463,93 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 
 // ---------- ניווט בין תצוגות ----------
 window.showView = function(v){
-  document.getElementById('view-dash').style.display = v==='dash' ? 'block' : 'none';
-  document.getElementById('view-road').style.display = v==='road' ? 'block' : 'none';
-  document.getElementById('nav-dash').classList.toggle('active', v==='dash');
-  document.getElementById('nav-road').classList.toggle('active', v==='road');
+  ['dash','road','content'].forEach(function(x){
+    document.getElementById('view-'+x).style.display = v===x ? 'block' : 'none';
+    document.getElementById('nav-'+x).classList.toggle('active', v===x);
+  });
   if(v==='road') renderRoadmap();
+  if(v==='content') loadContent();
 };
+
+// ---------- תוכן וניסוחים ----------
+var _STR={he:{},ar:{}}, _changed={}, _strLoaded=false;
+// קיבוץ מפתחות למסכים (לתצוגה מסודרת). מפתחות שלא ברשימה יופיעו תחת "כללי".
+var CGROUPS=[
+  ['🏠 מסך הבית', ['appTagline','setupProject','statJournal','statOpen','statSafety','btn1Title','btn1Desc','btn2Title','btn2Desc','btn3Title','btn3Desc','offlineNote','installBannerText','installHow','installBtn','installTitle','installAndroid','installIos','gotIt']],
+  ['📝 הרשמה', ['regWelcome','regSub','regFullName','regFullNamePh','regPhone','regCompany','regCompanyPh','regProject','regProjectPh','regLang','regSubmit','regNote']],
+  ['📋 יומן עבודה', ['journalTitle','voiceSectionTitle','voiceHint','voiceOrType','journalPlaceholder','workersTitle','weatherTitle','delaysTitle','delaysPlaceholder','tasksTitle','tasksPlaceholder','photosTitle','saveJournal','sendWA','tradeCol','qtyCol','totalWorkers','w1','w2','w3','w4','w5','addTrade','tradeNamePh','journalSignTitle','signRequired','journalSerial','lockedNote','supervisorApprove','supervisorTitle','supervisorName','supervisorNamePh','supervisorSignLabel','approveBtn','approvedByLabel','pendingApproval','approvedBadge']],
+  ['📸 ליקויים', ['defectsTitle','filterAll','filterOpen','filterProgress','filterDone','addDefectTitle','defPhoto','defDesc','defDescPlaceholder','defLocation','defFloor','defArea','defContractor','defDeadline','defSeverity','sevUrgent','sevNormal','sevLow','saveAndSend','btnDone','btnProgress','btnWA','noDeadline','overdue','targetDate','fixBtn','fixTitle','fixBy','fixByPlaceholder','fixWhen','fixPhoto','takePhoto','fixNotes','fixNotesPlaceholder','confirmFix','fixedLabel','fixedBy','fixedAt','fixedNote']],
+  ['🦺 בטיחות', ['safetyTitle','chooseWorkType','addStageTitle','addStageHint','wtGeneral','wtStructure','wtFinishing','wtScaffolding','wtExcavation','signTitle','signHint','clearSign','confirmSafety','pastReports','questionsAnswered','specialTag','reportOk','reportFail','safetyFixTitle']],
+  ['❓ שאלות בטיחות', ['sq1','sq2','sq3','sq4','sq5','sq6','sq7','sq8','sq9','sq10','sq11','sq12','sq_struct1','sq_struct2','sq_struct3','sq_fin1','sq_fin2','sq_fin3','sq_scaf1','sq_scaf2','sq_scaf3','sq_exc1','sq_exc2','sq_exc3']],
+  ['📢 הודעות מהמשרד', ['msgInboxTitle','msgBannerTitle','msgBannerSub','emptyMsg','msgFrom','msgOpenLink','shareReportWA']],
+  ['⚙️ הגדרות', ['settingsTitle','siteInfo','projectName','projectPlaceholder','managerName','managerPlaceholder','managerPhone','officeSection','officeName','officePhone','contractorsSection','addContractor','saveSettings','addContractorTitle','cName','cTrade','cPhone']],
+  ['🧭 ניווט וכללי', ['cancel','save','back','archive','print','printBtn','backLabel','backToHome','saved','deleted','deleteConfirm','emptyJournal','emptySafety','emptyDefects','emptyDefectsFilter']]
+];
+async function loadContent(){
+  if(_strLoaded){ renderContent(); return; }
+  document.getElementById('content-status').textContent='טוען ניסוחים מהאפליקציה...';
+  try{
+    var res=await fetch('index.html',{cache:'no-store'});
+    var txt=await res.text();
+    var i=txt.indexOf('const STRINGS=');
+    var j=txt.indexOf(';const APP=', i);
+    if(i<0||j<0) throw new Error('לא נמצא');
+    var lit=txt.slice(i+'const STRINGS='.length, j);
+    _STR=(new Function('return '+lit))();
+    _strLoaded=true;
+    renderContent();
+  }catch(e){ document.getElementById('content-status').textContent='שגיאה בטעינת הניסוחים: '+e.message; }
+}
+window.renderContent=function(){
+  var q=(document.getElementById('content-search').value||'').toLowerCase();
+  var he=_STR.he||{}, ar=_STR.ar||{};
+  var used={}, html='', shown=0;
+  CGROUPS.forEach(function(g){
+    var rows='';
+    g[1].forEach(function(k){
+      used[k]=1;
+      if(he[k]===undefined) return;
+      if(q && (k+' '+(he[k]||'')+' '+(ar[k]||'')).toLowerCase().indexOf(q)<0) return;
+      rows+=crow(k,he[k],ar[k]); shown++;
+    });
+    if(rows) html+='<div class="cgroup-title">'+g[0]+'</div>'+rows;
+  });
+  // מפתחות שלא שובצו לקבוצה
+  var extra='';
+  Object.keys(he).forEach(function(k){ if(used[k])return; if(q&&(k+' '+he[k]+' '+(ar[k]||'')).toLowerCase().indexOf(q)<0)return; extra+=crow(k,he[k],ar[k]); shown++; });
+  if(extra) html+='<div class="cgroup-title">📦 נוספים</div>'+extra;
+  document.getElementById('content-list').innerHTML=html||'<div class="empty">לא נמצאו תוצאות</div>';
+  document.getElementById('content-status').textContent='סה"כ '+Object.keys(he).length+' ניסוחים · מוצגים '+shown+(Object.keys(_changed).length?' · '+Object.keys(_changed).length+' שונו':'');
+};
+function crow(k,heV,arV){
+  var ch=_changed[k]?' changed':'';
+  return '<div class="crow'+ch+'" id="crow-'+k+'">'
+    +'<div class="cfield"><label>עברית · '+k+'</label><textarea oninput="editStr(\''+k+'\',\'he\',this.value)">'+escAttr(heV||'')+'</textarea></div>'
+    +'<div class="cfield ar"><label>ערבית</label><textarea oninput="editStr(\''+k+'\',\'ar\',this.value)">'+escAttr(arV||'')+'</textarea></div>'
+    +'</div>';
+}
+function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+window.editStr=function(k,lang,val){
+  if(!_changed[k])_changed[k]={};
+  _changed[k][lang]=val;
+  var row=document.getElementById('crow-'+k); if(row)row.classList.add('changed');
+  document.getElementById('content-status').textContent='שונו '+Object.keys(_changed).length+' ניסוחים — לחץ "העתק שינויים" כשתסיים';
+};
+window.copyChanges=function(){
+  var keys=Object.keys(_changed);
+  if(!keys.length){ _toast('לא שינית כלום עדיין'); return; }
+  var out='שינויי ניסוח לאפליקציית דקה:\n\n';
+  keys.forEach(function(k){
+    var c=_changed[k];
+    out+='• '+k+'\n';
+    if(c.he!==undefined)out+='   עברית: '+c.he+'\n';
+    if(c.ar!==undefined)out+='   ערבית: '+c.ar+'\n';
+  });
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(out).then(function(){_toast('✅ הועתק! הדבק לי בצ\'אט '+keys.length+' שינויים');},function(){fallbackCopy(out);});
+  } else fallbackCopy(out);
+};
+function fallbackCopy(out){var t=document.createElement('textarea');t.value=out;document.body.appendChild(t);t.select();try{document.execCommand('copy');_toast('✅ הועתק');}catch(e){_toast('העתק ידנית מהחלון');prompt('העתק:',out);}document.body.removeChild(t);}
 // ---------- מפת דרכים ----------
 var BUILT=[
   ['יומן עבודה יומי','קול→טקסט, כוח אדם, מזג אוויר, תמונות, מספר רץ חוקי, חתימת מנהל ואישור פיקוח דיגיטלי'],
