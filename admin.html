@@ -60,6 +60,22 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:13px 24px;border-radius:30px;font-weight:700;opacity:0;transition:.3s;pointer-events:none;z-index:99;}
 #toast.show{opacity:1;}
 .config-box{width:100%;min-height:150px;font-family:monospace;direction:ltr;font-size:13px;padding:12px;border:2px solid var(--border);border-radius:10px;margin-top:10px;}
+.nav-btn{background:rgba(255,255,255,.18);color:#fff;border:none;padding:9px 16px;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
+.nav-btn.active{background:#fff;color:var(--blue-d);}
+.road-hero{background:linear-gradient(135deg,var(--blue-d),var(--blue));color:#fff;border-radius:16px;padding:24px;margin-bottom:22px;}
+.road-hero h2{font-size:24px;font-weight:900;margin-bottom:6px;}
+.road-hero p{font-size:14px;opacity:.9;}
+.road-section{margin-bottom:26px;}
+.road-title{font-size:18px;font-weight:900;display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.road-dot{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex-shrink:0;}
+.road-dot.done{background:var(--green);}.road-dot.plan{background:var(--accent);}
+.feat{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid #e8edf2;border-radius:14px;padding:15px 17px;margin-bottom:11px;box-shadow:0 2px 8px rgba(27,39,51,.05);}
+.feat.planned{border-style:dashed;background:#fffdf6;}
+.feat .num{min-width:34px;height:34px;border-radius:9px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;flex-shrink:0;}
+.feat.planned .num{background:var(--accent);color:#3d2c00;}
+.feat .ft{flex:1;}
+.feat .ft-name{font-weight:800;font-size:16px;margin-bottom:3px;}
+.feat .ft-desc{font-size:13.5px;color:var(--sub);line-height:1.55;}
 #reports-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px;}
 #reports-overlay.open{display:flex;}
 .reports-sheet{background:#fff;border-radius:18px;width:100%;max-width:680px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.3);}
@@ -80,10 +96,14 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
 <body>
 <div class="topbar">
   <h1>🦺 דקה <span>· לוח ניהול</span></h1>
-  <span class="status-chip chip-off" id="conn-chip">לא מחובר ל-Firebase</span>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <button class="nav-btn active" id="nav-dash" onclick="showView('dash')">📊 ניהול</button>
+    <button class="nav-btn" id="nav-road" onclick="showView('road')">🗺️ מפת דרכים</button>
+    <span class="status-chip chip-off" id="conn-chip">לא מחובר ל-Firebase</span>
+  </div>
 </div>
 
-<div class="wrap">
+<div class="wrap" id="view-dash">
 
   <!-- SETUP BANNER (shown until Firebase config is pasted) -->
   <div class="setup-banner" id="setup-banner">
@@ -149,6 +169,24 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
     </div>
   </div>
 
+</div>
+
+<!-- ROADMAP VIEW -->
+<div class="wrap" id="view-road" style="display:none;">
+  <div class="road-hero">
+    <h2>🗺️ מפת הדרכים של "דקה"</h2>
+    <p>כל מה שכבר עובד — ומה שבדרך. הכלי שמלווה את מנהל העבודה כל היום.</p>
+  </div>
+
+  <div class="road-section">
+    <div class="road-title"><span class="road-dot done">✓</span> נבנה ופעיל</div>
+    <div id="road-built"></div>
+  </div>
+
+  <div class="road-section">
+    <div class="road-title"><span class="road-dot plan">★</span> בתכנון · הצעות לפיתוח</div>
+    <div id="road-planned"></div>
+  </div>
 </div>
 
 <!-- REPORTS MODAL -->
@@ -399,6 +437,48 @@ function listenMessages(){
 }
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ---------- ניווט בין תצוגות ----------
+window.showView = function(v){
+  document.getElementById('view-dash').style.display = v==='dash' ? 'block' : 'none';
+  document.getElementById('view-road').style.display = v==='road' ? 'block' : 'none';
+  document.getElementById('nav-dash').classList.toggle('active', v==='dash');
+  document.getElementById('nav-road').classList.toggle('active', v==='road');
+  if(v==='road') renderRoadmap();
+};
+// ---------- מפת דרכים ----------
+var BUILT=[
+  ['יומן עבודה יומי','קול→טקסט, כוח אדם, מזג אוויר, תמונות, מספר רץ חוקי, חתימת מנהל ואישור פיקוח דיגיטלי'],
+  ['ליקויים ומשימות','צילום, רמת חומרה (דחוף/רגיל/נמוך), הקצאה לקבלן בוואטסאפ, מעקב סטטוס ותיעוד תיקון'],
+  ['בטיחות יומית','12 שאלות בסיס + שאלות לפי שלב העבודה, חתימה דיגיטלית, מיקום GPS, תיעוד תיקון ליקויים'],
+  ['דו-לשוני עברית / ערבית','כל האפליקציה מתחלפת בלחיצה — מתאים לעובדים ומנהלים דוברי ערבית'],
+  ['דוחות מקצועיים','PDF מעוצב להדפסה/שמירה + שליחה ישירה לוואטסאפ למשרד'],
+  ['הודעות מהמשרד','שליחה לכל המנהלים או לנבחרים — באנר התראה + תיבת הודעות באפליקציה'],
+  ['לוח ניהול','רשימת כל המנהלים, חיפוש, וצפייה בכל הדוחות של כל מנהל'],
+  ['סנכרון ענן (Firebase)','כל הנתונים נשמרים בענן — שורדים החלפת מכשיר ומעבר דומיין'],
+  ['תמונות בענן (Storage)','תמונות נשמרות בענן ונצפות בלוח הניהול'],
+  ['התקנה כאפליקציה','הוספה למסך הבית — נראה ועובד כמו אפליקציה רגילה, גם ללא אינטרנט']
+];
+var PLANNED=[
+  ['נוכחות עובדים','מי נמצא באתר עכשיו, שעות עבודה, ודוח נוכחות חודשי אוטומטי לקבלן'],
+  ['קליטת עובדים זרים','סריקת אישור עבודה + סרטון בטיחות בשפת האם + חתימה לפני כניסה לאתר (חובה חוקית)'],
+  ['ניהול קבלני משנה','דירוג ביצועים — כמה ליקויים נפתחו, מהירות תיקון, מי אמין ומי מעכב'],
+  ['תזכורות חכמות','התראה על ליקוי שעבר תאריך יעד, בטיחות שלא מולאה היום, ומשימות למחר'],
+  ['מעקב חומרים והזמנות','מה חסר באתר, מה הוזמן ומתי מגיע — מונע עיכובים בעבודה'],
+  ['התקדמות לפי קומות','תמונת מצב ויזואלית של הפרויקט — מה הושלם בכל קומה/אזור'],
+  ['תיעוד אירועים ותאונות','דיווח מיידי על תאונה או כמעט-תאונה (near-miss) — חובה חוקית'],
+  ['טפסי היתר עבודה','עבודה בגובה, עבודה חמה, כניסה למרחב מוקף — חתומים דיגיטלית'],
+  ['דוח שבועי אוטומטי','סיכום שבועי/חודשי של כל מנהל נשלח אוטומטית למשרד'],
+  ['מזג אוויר והתראות','מזג אוויר אוטומטי + התראת בטיחות בחום קיצוני / גשם'],
+  ['ייצוא וגיבוי','ייצוא כל הנתונים לאקסל וגיבוי מלא']
+];
+function renderRoadmap(){
+  var b=document.getElementById('road-built');var p=document.getElementById('road-planned');
+  if(b&&!b.dataset.done){
+    var h='';BUILT.forEach(function(f,i){h+='<div class="feat"><div class="num">'+(i+1)+'</div><div class="ft"><div class="ft-name">'+f[0]+'</div><div class="ft-desc">'+f[1]+'</div></div></div>';});b.innerHTML=h;b.dataset.done='1';
+    var h2='';PLANNED.forEach(function(f,i){h2+='<div class="feat planned"><div class="num">'+(BUILT.length+i+1)+'</div><div class="ft"><div class="ft-name">'+f[0]+'</div><div class="ft-desc">'+f[1]+'</div></div></div>';});p.innerHTML=h2;
+  }
+}
 
 // ---------- config מוטמע (siteboss-b2dd2) ----------
 const DEFAULT_CONFIG = {

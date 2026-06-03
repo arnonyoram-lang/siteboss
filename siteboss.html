@@ -841,6 +841,7 @@ function onScreenEnter(id){
   if(id==='s-safety-history')renderSafetyHistory();
   if(id==='s-settings')loadSettingsForm();
   if(id==='s-messages')renderMessages();
+  if((id==='s-home'||id==='s-messages')&&window._dkFetchMessages){try{window._dkFetchMessages();}catch(e){}}
   updateBottomBack(id);
 }
 function updateBottomBack(id){
@@ -1662,9 +1663,10 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     const fsMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const app = appMod.initializeApp(FIREBASE_CONFIG);
     const db = fsMod.getFirestore(app);
-    // הזדהות אנונימית — מאפשר כללי אבטחה שדורשים auth (לא חוסם אם מושבת בקונסול)
-    try{const authMod=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");const auth=authMod.getAuth(app);authMod.signInAnonymously(auth).catch(function(){});}catch(e){}
-    const { doc, setDoc, deleteDoc, collection, query, orderBy, onSnapshot } = fsMod;
+    // הזדהות אנונימית — חובה לפני קריאה/כתיבה (כללי האבטחה דורשים auth).
+    // ממתינים לסיום ההזדהות לפני הקמת מאזין ההודעות, אחרת המאזין נכשל בשקט.
+    try{const authMod=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");const auth=authMod.getAuth(app);await new Promise(function(res){authMod.signInAnonymously(auth).then(function(){res();}).catch(function(){res();});authMod.onAuthStateChanged(auth,function(u){if(u)res();});setTimeout(res,4000);});}catch(e){}
+    const { doc, setDoc, deleteDoc, collection, query, orderBy, onSnapshot, getDocs } = fsMod;
 
     // רישום / עדכון מנהל (id = טלפון מנוקה)
     function upsert(data){
@@ -1696,9 +1698,11 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     }catch(e){}
 
     // האזנה להודעות מהמשרד
-    var myPhone = ((window.APP&&APP.settings&&APP.settings.managerPhone)||'').replace(/\D/g,'');
     var qy = query(collection(db,'messages'), orderBy('createdAt','desc'));
-    onSnapshot(qy, function(snap){
+    function myPhoneDigits(){try{return(JSON.parse(localStorage.getItem('sb_settings')||'{}').managerPhone||'').replace(/\D/g,'');}catch(e){return '';}}
+    function processSnap(snap){
+      var myPhone = myPhoneDigits();
+      if(!myPhone) return; // עדיין אין טלפון — נחכה לקריאה הבאה
       var msgs=[];
       snap.forEach(function(d){
         var m=d.data();
@@ -1709,6 +1713,19 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
         msgs.push({ ts:ts, title:m.title||'', body:m.body||'', link:m.link||'' });
       });
       if(window._dkOnMessages) window._dkOnMessages(msgs);
+    }
+    // שליפה עמידה — מנסה שוב עד שמצליחה (אימות/רשת עשויים להתעכב)
+    var _fetchedOk=false;
+    window._dkFetchMessages = function(tries){
+      tries=tries||0;
+      return getDocs(qy).then(function(snap){ _fetchedOk=true; processSnap(snap); })
+        .catch(function(){ if(tries<8) setTimeout(function(){window._dkFetchMessages(tries+1);}, 1500); });
+    };
+    window._dkFetchMessages(0);
+    // מאזין חי לעדכונים בזמן אמת בזמן שהאפליקציה פתוחה
+    onSnapshot(qy, function(snap){ if(!snap.metadata.fromCache) processSnap(snap); }, function(){
+      // אם המאזין נכשל (הרשאה לפני אימות) — נסמוך על השליפה החוזרת
+      if(!_fetchedOk) setTimeout(function(){window._dkFetchMessages(0);}, 1500);
     });
   }).catch(function(e){ console.error('Firebase load failed', e); });
 }
