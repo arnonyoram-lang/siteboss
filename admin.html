@@ -77,6 +77,11 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
 .feat .ft-name{font-weight:800;font-size:16px;margin-bottom:3px;}
 .feat .ft-desc{font-size:13.5px;color:var(--sub);line-height:1.55;}
 .cgroup-title{font-size:16px;font-weight:900;color:var(--blue-d);margin:20px 0 10px;padding-right:8px;border-right:4px solid var(--accent);}
+.cgroup{margin-bottom:10px;}
+.cgroup-head{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #e8edf2;border-right:4px solid var(--accent);border-radius:12px;padding:14px 16px;cursor:pointer;font-weight:800;font-size:16px;color:var(--blue-d);box-shadow:0 1px 5px rgba(27,39,51,.05);}
+.cgroup-head:hover{background:#f5f9ff;}
+.cgroup-meta{font-size:13px;color:var(--sub);font-weight:700;}
+.cgroup-body{padding-top:10px;}
 .crow{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#fff;border:1px solid #e8edf2;border-radius:12px;padding:12px 14px;margin-bottom:9px;box-shadow:0 1px 5px rgba(27,39,51,.04);}
 .crow.changed{border-color:var(--accent);background:#fffdf6;}
 .cfield label{display:block;font-size:11px;font-weight:700;color:var(--sub);margin-bottom:4px;}
@@ -739,8 +744,9 @@ async function loadContent(){
   if(_strLoaded){ renderContent(); return; }
   document.getElementById('content-status').textContent='טוען ניסוחים מהאפליקציה...';
   try{
-    var res=await fetch('index.html',{cache:'no-store'});
-    var txt=await res.text();
+    var txt='';
+    var urls=['./','index.html','siteboss.html'];
+    for(var u=0;u<urls.length;u++){ try{ var res=await fetch(urls[u],{cache:'no-store'}); txt=await res.text(); if(txt.indexOf('const STRINGS=')>=0)break; }catch(e){} }
     var i=txt.indexOf('const STRINGS=');
     var j=txt.indexOf(';const APP=', i);
     if(i<0||j<0) throw new Error('לא נמצא');
@@ -750,26 +756,54 @@ async function loadContent(){
     renderContent();
   }catch(e){ document.getElementById('content-status').textContent='שגיאה בטעינת הניסוחים: '+e.message; }
 }
+// שיוך אוטומטי לפי קידומת — מודולים חדשים נכנסים לקבוצה הנכונה בלי תחזוקה ידנית
+var PREFIX_GROUPS=[
+  ['👷 נוכחות עובדים', /^pres/],
+  ['⏰ תזכורות ומשימות', /^rem/],
+  ['🚨 דיווח אירועים', /^inc/],
+  ['🪪 קליטת עובדים זרים', /^ob/],
+  ['🏢 קבלני משנה', /^con/],
+  ['📋 היתרי עבודה', /^perm/],
+  ['💬 עזרה ופניות', /^(fb|faq|feedback|help|adv|msgReply)/],
+  ['🏠 כפתורי בית ושפה', /^(btn|regReturning|regRestore|installer)/]
+];
 window.renderContent=function(){
   var q=(document.getElementById('content-search').value||'').toLowerCase();
   var he=_STR.he||{}, ar=_STR.ar||{};
-  var used={}, html='', shown=0;
+  var used={}, shown=0;
+  function match(k){return !q || (k+' '+(he[k]||'')+' '+(ar[k]||'')).toLowerCase().indexOf(q)>=0;}
+  var groups=[]; // {title, rows[]}
   CGROUPS.forEach(function(g){
-    var rows='';
-    g[1].forEach(function(k){
-      used[k]=1;
-      if(he[k]===undefined) return;
-      if(q && (k+' '+(he[k]||'')+' '+(ar[k]||'')).toLowerCase().indexOf(q)<0) return;
-      rows+=crow(k,he[k],ar[k]); shown++;
-    });
-    if(rows) html+='<div class="cgroup-title">'+g[0]+'</div>'+rows;
+    var rows=[];
+    g[1].forEach(function(k){used[k]=1;if(he[k]===undefined)return;if(!match(k))return;rows.push(k);shown++;});
+    if(rows.length)groups.push({t:g[0],keys:rows});
   });
-  // מפתחות שלא שובצו לקבוצה
-  var extra='';
-  Object.keys(he).forEach(function(k){ if(used[k])return; if(q&&(k+' '+he[k]+' '+(ar[k]||'')).toLowerCase().indexOf(q)<0)return; extra+=crow(k,he[k],ar[k]); shown++; });
-  if(extra) html+='<div class="cgroup-title">📦 נוספים</div>'+extra;
+  // קבוצות לפי קידומת (מודולים חדשים)
+  PREFIX_GROUPS.forEach(function(pg){
+    var rows=[];
+    Object.keys(he).forEach(function(k){if(used[k])return;if(!pg[1].test(k))return;used[k]=1;if(!match(k))return;rows.push(k);shown++;});
+    if(rows.length)groups.push({t:pg[0],keys:rows});
+  });
+  // מה שנשאר
+  var rest=[];Object.keys(he).forEach(function(k){if(used[k])return;if(!match(k))return;rest.push(k);shown++;});
+  if(rest.length)groups.push({t:'📦 נוספים',keys:rest});
+  // רינדור מתקפל — סגור כברירת מחדל, נפתח בחיפוש
+  var html='';
+  groups.forEach(function(g,gi){
+    var open=!!q; // בחיפוש — פתוח
+    html+='<div class="cgroup">'
+      +'<div class="cgroup-head" onclick="toggleCGroup('+gi+')"><span>'+g.t+'</span><span class="cgroup-meta">'+g.keys.length+' '+(open?'▲':'▼')+'</span></div>'
+      +'<div class="cgroup-body" id="cgbody-'+gi+'" style="display:'+(open?'block':'none')+';">'
+      +g.keys.map(function(k){return crow(k,he[k],ar[k]);}).join('')
+      +'</div></div>';
+  });
   document.getElementById('content-list').innerHTML=html||'<div class="empty">לא נמצאו תוצאות</div>';
-  document.getElementById('content-status').textContent='סה"כ '+Object.keys(he).length+' ניסוחים · מוצגים '+shown+(Object.keys(_changed).length?' · '+Object.keys(_changed).length+' שונו':'');
+  document.getElementById('content-status').textContent='סה"כ '+Object.keys(he).length+' ניסוחים · '+groups.length+' מסכים'+(q?' · מוצגים '+shown:'')+(Object.keys(_changed).length?' · '+Object.keys(_changed).length+' שונו':'');
+};
+window.toggleCGroup=function(gi){
+  var b=document.getElementById('cgbody-'+gi);if(!b)return;
+  var open=b.style.display==='none';b.style.display=open?'block':'none';
+  var meta=b.previousElementSibling.querySelector('.cgroup-meta');if(meta)meta.innerHTML=meta.innerHTML.replace(open?'▼':'▲',open?'▲':'▼');
 };
 function crow(k,heV,arV){
   var ch=_changed[k]?' changed':'';
