@@ -1459,8 +1459,8 @@ function renderIncidentsHistory(){
 
 // ===================== קליטת עובדים זרים (#12) =====================
 var OB_LANGS=[
-  {k:'ar',l:'عربية'},{k:'ru',l:'Русский'},{k:'am',l:'አማርኛ'},{k:'hi',l:'हिन्दी'},
-  {k:'zh',l:'中文'},{k:'th',l:'ไทย'},{k:'tr',l:'Türkçe'},{k:'he',l:'עברית'}
+  {k:'ar',l:'عربية',he:'ערבית'},{k:'ru',l:'Русский',he:'רוסית'},{k:'am',l:'አማርኛ',he:'אמהרית'},{k:'hi',l:'हिन्दी',he:'הינדי'},
+  {k:'zh',l:'中文',he:'סינית'},{k:'th',l:'ไทย',he:'תאית'},{k:'tr',l:'Türkçe',he:'טורקית'},{k:'he',l:'עברית',he:'עברית'}
 ];
 var SAFETY_BRIEF={
   he:'הוראות בטיחות באתר:\n• חובה קסדה ונעלי בטיחות תמיד\n• רתמת בטיחות בעבודה בגובה מעל 2 מ׳\n• אין לגעת בחשמל / מכונות ללא אישור\n• דווח מיד על כל מפגע או פציעה\n• שמע להוראות מנהל העבודה',
@@ -1482,15 +1482,17 @@ function initOnboard(){
 }
 function renderObLangs(){
   var g=document.getElementById('ob-lang-chips');if(!g)return;var h='';
-  OB_LANGS.forEach(function(L){h+='<div class="stage-chip'+(_obLang===L.k?' on':'')+'" onclick="selObLang(\''+L.k+'\')"><span>'+L.l+'</span></div>';});
+  OB_LANGS.forEach(function(L){h+='<div class="stage-chip'+(_obLang===L.k?' on':'')+'" onclick="selObLang(\''+L.k+'\')"><span style="font-weight:800;">'+L.l+'</span> <span style="font-size:11px;color:var(--sub);">'+L.he+'</span></div>';});
   g.innerHTML=h;
 }
 function selObLang(k){_obLang=k;renderObLangs();renderObBrief();}
 function renderObBrief(){
   var el=document.getElementById('ob-brief');if(!el)return;
+  var L=null;for(var i=0;i<OB_LANGS.length;i++)if(OB_LANGS[i].k===_obLang)L=OB_LANGS[i];
   var custom=loadJSON('dk_briefings',{});
   var txt=(custom&&custom[_obLang]&&custom[_obLang].trim())?custom[_obLang]:(SAFETY_BRIEF[_obLang]||SAFETY_BRIEF.he);
-  el.textContent=txt;
+  var head=L?('<div style="font-size:13px;font-weight:800;color:var(--blue);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:6px;">🗣️ '+T('obLangLabel')+L.he+' ('+L.l+')</div>'):'';
+  el.innerHTML=head+'<div style="white-space:pre-wrap;">'+esc(txt)+'</div>';
 }
 // נקרא מהמודול כשמגיעים תדריכים מותאמים מהמשרד
 window._dkOnBriefings=function(obj){saveJSON('dk_briefings',obj||{});var a=document.querySelector('.screen.active');if(a&&a.id==='s-onboard-new')renderObBrief();};
@@ -1514,7 +1516,7 @@ function saveOnboard(){
   cloudSave('onboard',entry);
   toast(T('obSaved'),3000);showScreen('s-onboard');
 }
-function obLangLabel(k){for(var i=0;i<OB_LANGS.length;i++)if(OB_LANGS[i].k===k)return OB_LANGS[i].l;return k;}
+function obLangLabel(k){for(var i=0;i<OB_LANGS.length;i++)if(OB_LANGS[i].k===k)return (APP.lang==='ar'?OB_LANGS[i].l:OB_LANGS[i].he);return k;}
 function renderOnboardList(){
   var el=document.getElementById('ob-list');var list=getOnboarded();
   if(!list.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--sub);">'+T('obEmpty')+'</div>';return;}
