@@ -2213,7 +2213,13 @@ function loadSettingsForm(){
 function saveSettings(){
   APP.settings.projectName=document.getElementById('set-project').value.trim();APP.settings.managerName=document.getElementById('set-manager').value.trim();
   APP.settings.managerPhone=document.getElementById('set-phone').value.trim();APP.settings.officeName=document.getElementById('set-office-name').value.trim();
-  APP.settings.officePhone=document.getElementById('set-office-phone').value.trim();APP.settings.lang=APP.lang;saveJSON('sb_settings',APP.settings);toast(T('saved'));
+  APP.settings.officePhone=document.getElementById('set-office-phone').value.trim();APP.settings.lang=APP.lang;
+  if(APP.settings.managerName)APP.settings.registered=true;
+  saveJSON('sb_settings',APP.settings);toast(T('saved'));
+  // סנכרון ל-Firebase כך שהמנהל יופיע בלוח הניהול
+  var d={name:APP.settings.managerName,phone:APP.settings.managerPhone,company:APP.settings.companyName,project:APP.settings.projectName,lang:APP.lang};
+  if(window._dkSync){try{window._dkSync(d);}catch(e){}}
+  else if(window._dkRegister){try{window._dkRegister(d);}catch(e){}}
 }
 function renderContractors(){
   var list=document.getElementById('contractors-list');if(!list)return;
