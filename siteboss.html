@@ -1157,12 +1157,27 @@ function applyLang(){
 function setLang(lang){
   APP.lang=lang;APP.settings.lang=lang;saveJSON('sb_settings',APP.settings);applyLang();
   var a=document.querySelector('.screen.active');if(!a)return;var id=a.id;
-  if(id==='s-safety'){renderSafetyQuestions();}
-  if(id==='s-defects'){renderDefectFilters();renderDefects();}
-  if(id==='s-journal-history')renderJournalHistory();
-  if(id==='s-safety-history')renderSafetyHistory();
-  if(id==='s-journal'){renderWorkersTable();renderWeatherGrid();}
-  if(id==='s-settings')renderContractors();
+  // רענון תוכן דינמי של המסך הפעיל (ללא איפוס קלט המשתמש)
+  var R={
+    's-safety':function(){renderSafetyQuestions();},
+    's-defects':function(){renderDefectFilters();renderDefects();},
+    's-journal-history':renderJournalHistory,
+    's-safety-history':renderSafetyHistory,
+    's-journal':function(){renderWorkersTable();renderWeatherGrid();},
+    's-settings':function(){renderContractors();renderFeaturePrefs();},
+    's-presence':renderPresence,
+    's-presence-history':renderPresenceHistory,
+    's-reminders':renderReminders,
+    's-contractors':renderContractorScores,
+    's-permits':function(){renderPermTypes();renderPermChecks();},
+    's-permits-history':renderPermitsHistory,
+    's-incidents-history':renderIncidentsHistory,
+    's-onboard':renderOnboardList,
+    's-onboard-new':renderObBrief,
+    's-messages':renderMessages,
+    's-help':renderFAQ
+  };
+  if(R[id]){try{R[id]();}catch(e){}}
 }
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
