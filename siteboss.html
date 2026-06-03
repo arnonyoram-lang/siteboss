@@ -2512,6 +2512,8 @@ function warnNoStorage(){
 }
 function _init(){
   if(!storageWorks()){ warnNoStorage(); }
+  // Service Worker — מבטיח שכל מנהל מקבל את הגרסה העדכנית (network-first), גם כ-PWA במסך הבית
+  if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
   APP.settings=loadJSON('sb_settings',{})||{};
   APP.lang=(APP.settings&&APP.settings.lang)||'he';
   APP.features=loadJSON('dk_features',{supervisorApproval:false,safetyStages:false,customTrades:false});
