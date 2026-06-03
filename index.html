@@ -2498,7 +2498,20 @@ function init(){
     try{toast('שגיאה זמנית — נסה לרענן');}catch(_){}
   }
 }
+function storageWorks(){
+  try{var t='__dk_test__';localStorage.setItem(t,'1');var ok=localStorage.getItem(t)==='1';localStorage.removeItem(t);return ok;}catch(e){return false;}
+}
+function warnNoStorage(){
+  // הזיכרון חסום (גלישה פרטית / הגדרת דפדפן) — שמירה לא תעבוד. התרעה ברורה במקום כשל שקט.
+  var msg=APP.lang==='ar'?'⚠️ المتصفح يمنع الحفظ! اخرج من وضع التصفح الخاص (Private/Incognito) وافتح من نفس المتصفح.':'⚠️ הדפדפן חוסם שמירה! צא ממצב גלישה פרטית (Private/Incognito) ופתח מדפדפן רגיל.';
+  try{
+    var b=document.createElement('div');
+    b.style.cssText='position:fixed;top:0;left:0;right:0;background:#e03131;color:#fff;padding:14px 16px;font-size:15px;font-weight:800;text-align:center;z-index:99999;line-height:1.5;';
+    b.textContent=msg;document.body.appendChild(b);
+  }catch(_){}
+}
 function _init(){
+  if(!storageWorks()){ warnNoStorage(); }
   APP.settings=loadJSON('sb_settings',{})||{};
   APP.lang=(APP.settings&&APP.settings.lang)||'he';
   APP.features=loadJSON('dk_features',{supervisorApproval:false,safetyStages:false,customTrades:false});
