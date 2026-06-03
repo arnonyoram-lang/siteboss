@@ -244,6 +244,11 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <span data-t="regSubmit"></span>
     </button>
 
+    <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:13px;color:var(--sub);margin-bottom:8px;" data-t="regReturning"></div>
+      <button onclick="restoreByPhone()" style="background:none;border:2px solid var(--blue);color:var(--blue);border-radius:10px;padding:10px 18px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;" data-t="regRestoreBtn"></button>
+    </div>
+
     <div class="reg-note" data-t="regNote"></div>
   </div>
 </div>
@@ -879,7 +884,7 @@ regPhone:'מספר טלפון',
 regCompany:'חברה / קבלן ראשי',regCompanyPh:'שם החברה שאתה עובד עבורה',
 regProject:'שם הפרויקט הנוכחי',regProjectPh:'לדוגמה: מגדל רמות קומות 1-12',
 regLang:'שפה מועדפת',regSubmit:'כניסה לאפליקציה ←',
-regNote:'הנתונים שמורים בטלפון שלך בלבד',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
+regNote:'הנתונים שמורים בטלפון שלך בלבד',regReturning:'כבר נרשמת בעבר (במכשיר אחר)?',regRestoreBtn:'↩️ כניסה עם מספר הטלפון',regRestoreNeedPhone:'הזן את מספר הטלפון שאיתו נרשמת',regRestoreOk:'ברוך שובך, ',regRestoreNotFound:'לא נמצא מנהל עם מספר זה — אנא הירשם',regRestoreNoNet:'אין חיבור לאינטרנט — נסה שוב',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
 msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',shareReportWA:'📲 שלח למשרד בוואטסאפ',msgReply:'↩️ השב',
 advFeaturesTitle:'פיצ\'רים מתקדמים (הופעלו עבורך)',
 btn4Title:'נוכחות עובדים',btn4Desc:'מי באתר היום ← שעות ← דוח נוכחות',
@@ -1003,7 +1008,7 @@ regPhone:'رقم الهاتف',
 regCompany:'الشركة / المقاول الرئيسي',regCompanyPh:'اسم الشركة التي تعمل لديها',
 regProject:'اسم المشروع الحالي',regProjectPh:'مثال: برج رامات طوابق 1-12',
 regLang:'اللغة المفضلة',regSubmit:'الدخول إلى التطبيق ←',
-regNote:'البيانات محفوظة في هاتفك فقط',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
+regNote:'البيانات محفوظة في هاتفك فقط',regReturning:'سجّلت سابقاً (على جهاز آخر)؟',regRestoreBtn:'↩️ الدخول برقم الهاتف',regRestoreNeedPhone:'أدخل رقم الهاتف الذي سجّلت به',regRestoreOk:'أهلاً بعودتك، ',regRestoreNotFound:'لا يوجد مدير بهذا الرقم — يرجى التسجيل',regRestoreNoNet:'لا اتصال بالإنترنت — حاول مجدداً',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
 msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',shareReportWA:'📲 أرسل للمكتب عبر واتساب',msgReply:'↩️ رد',
 advFeaturesTitle:'ميزات متقدمة (مُفعّلة لك)',
 btn4Title:'حضور العمال',btn4Desc:'من في الموقع اليوم ← الساعات ← تقرير حضور',
@@ -2354,6 +2359,30 @@ function submitRegistration(){
   showScreen('s-home');
 }
 
+// כניסה/שחזור לפי מספר טלפון — מושך את הפרופיל מהענן (לדפדפן/מכשיר חדש)
+function restoreByPhone(){
+  var phone=document.getElementById('reg-phone').value.trim();
+  if(!phone){toast(T('regRestoreNeedPhone'));document.getElementById('reg-phone').focus();return;}
+  if(!window._dkFetchManager){toast(T('regRestoreNoNet'));return;}
+  toast('...');
+  window._dkFetchManager(phone).then(function(data){
+    if(!data){toast(T('regRestoreNotFound'));return;}
+    APP.settings.managerName=data.name||'';
+    APP.settings.managerPhone=data.phone||phone;
+    APP.settings.companyName=data.company||'';
+    APP.settings.projectName=data.project||'';
+    APP.settings.lang=data.lang||APP.lang;
+    APP.settings.registered=true;
+    APP.settings.registeredAt=data.registeredAt||new Date().toISOString();
+    saveJSON('sb_settings',APP.settings);
+    APP.lang=APP.settings.lang;
+    if(data.features){APP.features=data.features;saveJSON('dk_features',APP.features);}
+    applyLang();applyFeatures();
+    toast(T('regRestoreOk')+(data.name||'')+' 👋',3000);
+    showScreen('s-home');
+  }).catch(function(){toast(T('regRestoreNoNet'));});
+}
+
 function isRegistered(){
   var s=loadJSON('sb_settings',{});
   // תואם גרסות ישנות: אם יש שם מנהל (גם בלי דגל registered) — נחשב רשום
@@ -2519,6 +2548,11 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     }
     window._dkRegister = upsert;
     window._dkSync = upsert;
+    // שליפת פרופיל מנהל לפי טלפון (לשחזור במכשיר/דפדפן חדש)
+    window._dkFetchManager = function(phone){
+      var id=(phone||'').replace(/\D/g,'');if(!id)return Promise.resolve(null);
+      return getDoc(doc(db,'managers',id)).then(function(s){return s.exists()?s.data():null;}).catch(function(){return null;});
+    };
     // סנכרון אוטומטי של המשתמש הרשום ברגע ש-Firebase מוכן (פותר מקרה שבו init רץ לפני שהמודול נטען)
     try{ var _st=JSON.parse(localStorage.getItem('sb_settings')||'{}'); if(_st&&_st.managerName){ upsert({name:_st.managerName,phone:_st.managerPhone,company:_st.companyName,project:_st.projectName,lang:_st.lang||'he'}); } }catch(e){}
 
