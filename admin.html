@@ -209,6 +209,11 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
     <button class="btn btn-send" style="margin:0;width:auto;padding:11px 18px;" onclick="copyChanges()">📋 העתק שינויים</button>
   </div>
   <div id="content-status" style="font-size:13px;color:var(--sub);margin:4px 2px 12px;"></div>
+
+  <div class="cgroup-title">📨 הודעות שנשלחו למנהלים</div>
+  <div id="sent-msgs"><div class="empty">טוען...</div></div>
+
+  <div class="cgroup-title" style="margin-top:24px;">✏️ ניסוחי האפליקציה</div>
   <div id="content-list"></div>
 </div>
 
@@ -485,7 +490,25 @@ var CGROUPS=[
   ['⚙️ הגדרות', ['settingsTitle','siteInfo','projectName','projectPlaceholder','managerName','managerPlaceholder','managerPhone','officeSection','officeName','officePhone','contractorsSection','addContractor','saveSettings','addContractorTitle','cName','cTrade','cPhone']],
   ['🧭 ניווט וכללי', ['cancel','save','back','archive','print','printBtn','backLabel','backToHome','saved','deleted','deleteConfirm','emptyJournal','emptySafety','emptyDefects','emptyDefectsFilter']]
 ];
+async function loadSentMessages(){
+  var el=document.getElementById('sent-msgs');if(!el)return;
+  if(!db){el.innerHTML='<div class="empty">התחבר ל-Firebase כדי לראות הודעות שנשלחו</div>';return;}
+  try{
+    var snap=await getDocs(query(collection(db,'messages'),orderBy('createdAt','desc')));
+    if(snap.empty){el.innerHTML='<div class="empty">עדיין לא נשלחו הודעות</div>';return;}
+    var h='';
+    snap.forEach(function(d){var m=d.data();
+      var when=m.createdAt&&m.createdAt.toDate?m.createdAt.toDate().toLocaleString('he-IL'):'';
+      h+='<div class="rep-card"><div class="rc-top"><span class="rc-date">'+esc(m.title||'(ללא כותרת)')+'</span><span class="rc-badge bg-blue">📤 '+esc(m.audienceNames||'')+'</span></div>'
+        +(m.body?'<div class="rc-text">'+esc(m.body)+'</div>':'')
+        +(m.link?'<div class="rc-meta">🔗 '+esc(m.link)+'</div>':'')
+        +'<div class="rc-meta">'+when+'</div></div>';
+    });
+    el.innerHTML=h;
+  }catch(e){el.innerHTML='<div class="empty">שגיאה בטעינת ההודעות</div>';}
+}
 async function loadContent(){
+  loadSentMessages();
   if(_strLoaded){ renderContent(); return; }
   document.getElementById('content-status').textContent='טוען ניסוחים מהאפליקציה...';
   try{
