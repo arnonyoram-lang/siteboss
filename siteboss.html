@@ -126,6 +126,8 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 .stage-chip.on{border-color:var(--accent);background:#fff4d9;color:#7a5800;}
 .fb-type{flex:1;text-align:center;padding:11px 6px;border:2px solid var(--border);border-radius:10px;background:white;font-size:14px;font-weight:700;cursor:pointer;color:var(--sub);}
 .fb-type.active{border-color:var(--blue);background:#e8f0fe;color:var(--blue);}
+.feat-toggle{display:flex;justify-content:space-between;align-items:center;padding:11px 4px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;}
+.feat-toggle input{width:46px;height:26px;cursor:pointer;}
 .faq-item{border-bottom:1px solid var(--border);padding:2px 0;}
 .faq-q{padding:12px 4px;font-size:15px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center;}
 .faq-q .arr{color:var(--sub);transition:transform .2s;flex-shrink:0;}
@@ -362,7 +364,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
         <tbody id="workers-tbody"></tbody>
         <tfoot><tr class="total-row"><td data-t="totalWorkers"></td><td style="text-align:center;" id="workers-total">0</td></tr></tfoot>
       </table>
-      <button class="btn btn-outline btn-sm" style="margin-top:12px;width:100%;" onclick="addCustomTrade()"><span data-t="addTrade"></span></button>
+      <button id="btn-add-trade" class="btn btn-outline btn-sm" style="margin-top:12px;width:100%;" onclick="addCustomTrade()"><span data-t="addTrade"></span></button>
     </div>
     <div class="card"><div class="card-title" data-t="weatherTitle"></div><div class="weather-grid" id="weather-grid"></div></div>
     <div class="card"><div class="card-title" data-t="delaysTitle"></div><textarea id="jnl-delays" data-tp="delaysPlaceholder" rows="3"></textarea></div>
@@ -461,6 +463,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <div id="contractors-list"></div>
       <button class="btn btn-outline" style="margin-top:8px;" onclick="openAddContractor()"><span data-t="addContractor"></span></button>
     </div>
+    <div class="card" id="feature-prefs" style="display:none;"></div>
     <button class="btn btn-blue" onclick="saveSettings()"><span data-t="saveSettings"></span></button>
   </div>
 </div>
@@ -653,6 +656,7 @@ regProject:'שם הפרויקט הנוכחי',regProjectPh:'לדוגמה: מגד
 regLang:'שפה מועדפת',regSubmit:'כניסה לאפליקציה ←',
 regNote:'הנתונים שמורים בטלפון שלך בלבד',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
 msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',shareReportWA:'📲 שלח למשרד בוואטסאפ',msgReply:'↩️ השב',
+advFeaturesTitle:'פיצ\'רים מתקדמים (הופעלו עבורך)',
 helpLink:'❓ עזרה ופנייה למשרד',helpTitle:'עזרה ופנייה',
 faqTitle:'שאלות נפוצות',
 feedbackTitle:'שליחת פנייה למשרד',feedbackType:'סוג הפנייה',fbBug:'תקלה',fbIdea:'הצעה',fbQuestion:'שאלה',
@@ -749,6 +753,7 @@ regProject:'اسم المشروع الحالي',regProjectPh:'مثال: برج �
 regLang:'اللغة المفضلة',regSubmit:'الدخول إلى التطبيق ←',
 regNote:'البيانات محفوظة في هاتفك فقط',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
 msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',shareReportWA:'📲 أرسل للمكتب عبر واتساب',msgReply:'↩️ رد',
+advFeaturesTitle:'ميزات متقدمة (مُفعّلة لك)',
 helpLink:'❓ مساعدة وتواصل مع المكتب',helpTitle:'مساعدة وتواصل',
 faqTitle:'أسئلة شائعة',
 feedbackTitle:'إرسال رسالة للمكتب',feedbackType:'نوع الرسالة',fbBug:'عطل',fbIdea:'اقتراح',fbQuestion:'سؤال',
@@ -1266,7 +1271,7 @@ function showJournalReport(entryOrStr){
   // כפתור אישור פיקוח (לא מודפס)
   var approveBar=document.getElementById('report-approve-bar');
   if(approveBar){
-    if(entry.supervisorApproval){approveBar.style.display='none';}
+    if(entry.supervisorApproval||!isFeatureOn('supervisorApproval')){approveBar.style.display='none';}
     else{approveBar.style.display='block';}
   }
   showScreen('s-report');
@@ -1487,12 +1492,14 @@ function renderSafetyQuestions(){
   var num=0;
   // 12 שאלות בסיס
   for(var i=0;i<qs.length;i++){if(qs[i].special)continue;num++;h+=renderSQ(qs[i],num);}
-  // צ'יפים לבחירת שלב (אחרי 12 הבסיס)
-  h+='<div class="card stage-card"><div class="stage-card-title">'+T('addStageTitle')+'</div><div class="stage-hint">'+T('addStageHint')+'</div><div class="stage-chips">';
-  for(var s=0;s<STAGES.length;s++){var st=STAGES[s];var on=APP.activeStages.indexOf(st.k)>=0;h+='<div class="stage-chip'+(on?' on':'')+'" onclick="toggleStage(\''+st.k+'\')"><span class="stage-chip-i">'+st.i+'</span><span>'+T(st.l)+'</span>'+(on?'<span class="stage-chip-x">✓</span>':'')+'</div>';}
-  h+='</div></div>';
-  // שאלות ייעודיות של השלבים הפעילים
-  for(var j=0;j<qs.length;j++){if(!qs[j].special)continue;num++;h+=renderSQ(qs[j],num);}
+  // צ'יפים לבחירת שלב — רק אם הבעלים הדליק את הפיצ'ר
+  if(isFeatureOn('safetyStages')){
+    h+='<div class="card stage-card"><div class="stage-card-title">'+T('addStageTitle')+'</div><div class="stage-hint">'+T('addStageHint')+'</div><div class="stage-chips">';
+    for(var s=0;s<STAGES.length;s++){var st=STAGES[s];var on=APP.activeStages.indexOf(st.k)>=0;h+='<div class="stage-chip'+(on?' on':'')+'" onclick="toggleStage(\''+st.k+'\')"><span class="stage-chip-i">'+st.i+'</span><span>'+T(st.l)+'</span>'+(on?'<span class="stage-chip-x">✓</span>':'')+'</div>';}
+    h+='</div></div>';
+    // שאלות ייעודיות של השלבים הפעילים
+    for(var j=0;j<qs.length;j++){if(!qs[j].special)continue;num++;h+=renderSQ(qs[j],num);}
+  }
   c.innerHTML=h;
 }
 function answerSQ(key,ans){APP.safetyAnswers[key]=ans;renderSafetyQuestions();}
@@ -1583,7 +1590,7 @@ function loadSettingsForm(){
   var s=APP.settings;
   document.getElementById('set-project').value=s.projectName||'';document.getElementById('set-manager').value=s.managerName||'';
   document.getElementById('set-phone').value=s.managerPhone||'';document.getElementById('set-office-name').value=s.officeName||'';
-  document.getElementById('set-office-phone').value=s.officePhone||'';renderContractors();
+  document.getElementById('set-office-phone').value=s.officePhone||'';renderContractors();renderFeaturePrefs();
 }
 function saveSettings(){
   APP.settings.projectName=document.getElementById('set-project').value.trim();APP.settings.managerName=document.getElementById('set-manager').value.trim();
@@ -1708,10 +1715,51 @@ function isRegistered(){
   return false;
 }
 
+// ===================== פיצ'רים מתקדמים (גילוי מדורג) =====================
+// שכבה 1: זמינות נקבעת ע"י הבעלים (APP.features מה-Firebase). שכבה 2: המנהל בוחר להציג/להסתיר (APP.userPrefs).
+var ADV_FEATURES=[
+  {k:'supervisorApproval',he:'אישור פיקוח ביומן',ar:'مصادقة المشرف في اليومية'},
+  {k:'safetyStages',he:'שאלות בטיחות לפי שלב',ar:'أسئلة سلامة حسب المرحلة'},
+  {k:'customTrades',he:'הוספת מקצוע ביומן',ar:'إضافة مهنة في اليومية'}
+];
+function isFeatureOn(k){
+  if(!(APP.features&&APP.features[k]))return false;       // הבעלים לא הדליק
+  return (APP.userPrefs||{})[k]!==false;                   // המנהל לא הסתיר (דלוק כברירת מחדל)
+}
+function applyFeatures(){
+  var b=document.getElementById('btn-add-trade');if(b)b.style.display=isFeatureOn('customTrades')?'':'none';
+  var act=document.querySelector('.screen.active');
+  if(act&&act.id==='s-safety')renderSafetyQuestions();
+}
+window._dkOnFeatures=function(f){
+  APP.features=Object.assign({supervisorApproval:false,safetyStages:false,customTrades:false},f||{});
+  saveJSON('dk_features',APP.features);applyFeatures();
+  var act=document.querySelector('.screen.active');if(act&&act.id==='s-settings')renderFeaturePrefs();
+};
+function toggleUserPref(k,on){
+  if(!APP.userPrefs)APP.userPrefs={};
+  APP.userPrefs[k]=on;saveJSON('dk_user_prefs',APP.userPrefs);applyFeatures();
+}
+function renderFeaturePrefs(){
+  var wrap=document.getElementById('feature-prefs');if(!wrap)return;
+  var avail=ADV_FEATURES.filter(function(f){return APP.features&&APP.features[f.k];});
+  if(!avail.length){wrap.style.display='none';wrap.innerHTML='';return;}
+  wrap.style.display='block';
+  var h='<div class="card-title" style="margin-top:6px;">⭐ '+T('advFeaturesTitle')+'</div>';
+  avail.forEach(function(f){
+    h+='<label class="feat-toggle"><span>'+(APP.lang==='ar'?f.ar:f.he)+'</span>'
+      +'<input type="checkbox" '+(isFeatureOn(f.k)?'checked':'')+' onchange="toggleUserPref(\''+f.k+'\',this.checked)"></label>';
+  });
+  wrap.innerHTML=h;
+}
+
 function init(){
   APP.settings=loadJSON('sb_settings',{});
   APP.lang=APP.settings.lang||'he';
+  APP.features=loadJSON('dk_features',{supervisorApproval:false,safetyStages:false,customTrades:false});
+  APP.userPrefs=loadJSON('dk_user_prefs',{});
   applyLang();
+  applyFeatures();
   if(!isRegistered()){
     // הצג מסך הרשמה
     document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
@@ -1779,7 +1827,7 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     // הזדהות אנונימית — חובה לפני קריאה/כתיבה (כללי האבטחה דורשים auth).
     // ממתינים לסיום ההזדהות לפני הקמת מאזין ההודעות, אחרת המאזין נכשל בשקט.
     try{const authMod=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");const auth=authMod.getAuth(app);await new Promise(function(res){authMod.signInAnonymously(auth).then(function(){res();}).catch(function(){res();});authMod.onAuthStateChanged(auth,function(u){if(u)res();});setTimeout(res,4000);});}catch(e){}
-    const { doc, setDoc, deleteDoc, collection, query, orderBy, onSnapshot, getDocs } = fsMod;
+    const { doc, setDoc, deleteDoc, collection, query, orderBy, onSnapshot, getDocs, getDoc } = fsMod;
 
     // רישום / עדכון מנהל (id = טלפון מנוקה)
     function upsert(data){
@@ -1809,6 +1857,18 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
         return urls;
       };
     }catch(e){}
+
+    // משיכת הפיצ'רים שהבעלים הדליק למנהל + האזנה חיה לשינויים
+    function myPhoneId(){try{return(JSON.parse(localStorage.getItem('sb_settings')||'{}').managerPhone||'').replace(/\D/g,'');}catch(e){return '';}}
+    function applyMgrFeatures(){
+      var id=myPhoneId(); if(!id) return;
+      try{ onSnapshot(doc(db,'managers',id), function(snap){
+        if(snap.exists()){ var d=snap.data(); if(window._dkOnFeatures) window._dkOnFeatures(d.features||{}); }
+      }, function(){}); }catch(e){}
+      // משיכה חד-פעמית עמידה
+      (function fetchFeat(t){ getDoc(doc(db,'managers',id)).then(function(s){ if(s.exists()&&window._dkOnFeatures)window._dkOnFeatures((s.data()||{}).features||{}); }).catch(function(){ if(t<5)setTimeout(function(){fetchFeat(t+1);},1500); }); })(0);
+    }
+    applyMgrFeatures();
 
     // האזנה להודעות מהמשרד
     var qy = query(collection(db,'messages'), orderBy('createdAt','desc'));
