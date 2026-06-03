@@ -108,6 +108,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
     <button class="nav-btn active" id="nav-dash" onclick="showView('dash')">📊 ניהול</button>
     <button class="nav-btn" id="nav-road" onclick="showView('road')">🗺️ מפת דרכים</button>
     <button class="nav-btn" id="nav-content" onclick="showView('content')">✏️ תוכן וניסוחים</button>
+    <button class="nav-btn" id="nav-feedback" onclick="showView('feedback')">📬 פניות <span id="fb-badge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:12px;margin-right:4px;"></span></button>
     <span class="status-chip chip-off" id="conn-chip">לא מחובר ל-Firebase</span>
   </div>
 </div>
@@ -217,6 +218,21 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
   <div id="content-list"></div>
 </div>
 
+<!-- FEEDBACK VIEW -->
+<div class="wrap" id="view-feedback" style="display:none;">
+  <div class="road-hero">
+    <h2>📬 פניות מהשטח</h2>
+    <p>תקלות, הצעות ושאלות שמנהלי העבודה שלחו — מרוכז במקום אחד.</p>
+  </div>
+  <div class="card" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <div class="aud-btn active" id="fbf-all" onclick="setFbFilter('all')" style="flex:0 0 auto;padding:9px 16px;">הכל</div>
+    <div class="aud-btn" id="fbf-bug" onclick="setFbFilter('bug')" style="flex:0 0 auto;padding:9px 16px;">🐞 תקלות</div>
+    <div class="aud-btn" id="fbf-idea" onclick="setFbFilter('idea')" style="flex:0 0 auto;padding:9px 16px;">💡 הצעות</div>
+    <div class="aud-btn" id="fbf-question" onclick="setFbFilter('question')" style="flex:0 0 auto;padding:9px 16px;">❓ שאלות</div>
+  </div>
+  <div id="feedback-list"><div class="empty">טוען...</div></div>
+</div>
+
 <!-- REPORTS MODAL -->
 <div id="reports-overlay" onclick="if(event.target===this)closeReports()">
   <div class="reports-sheet">
@@ -298,6 +314,7 @@ async function boot(cfg){
     chip.className='status-chip chip-on';
     await loadUsers();
     listenMessages();
+    loadFeedback();
   } catch(e){
     console.error(e);
     _toast('שגיאת חיבור: '+e.message);
@@ -468,13 +485,50 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 
 // ---------- ניווט בין תצוגות ----------
 window.showView = function(v){
-  ['dash','road','content'].forEach(function(x){
+  ['dash','road','content','feedback'].forEach(function(x){
     document.getElementById('view-'+x).style.display = v===x ? 'block' : 'none';
     document.getElementById('nav-'+x).classList.toggle('active', v===x);
   });
   if(v==='road') renderRoadmap();
   if(v==='content') loadContent();
+  if(v==='feedback') loadFeedback();
 };
+// ---------- פניות מהשטח ----------
+var _FB=[], _fbFilter='all';
+window.setFbFilter=function(f){_fbFilter=f;['all','bug','idea','question'].forEach(function(x){document.getElementById('fbf-'+x).classList.toggle('active',x===f);});renderFeedback();};
+async function loadFeedback(){
+  var el=document.getElementById('feedback-list');
+  if(!db){el.innerHTML='<div class="empty">התחבר ל-Firebase</div>';return;}
+  el.innerHTML='<div class="empty">טוען...</div>';
+  try{
+    var snap=await getDocs(collection(db,'feedback'));
+    _FB=[];snap.forEach(function(d){_FB.push(d.data());});
+    _FB.sort(function(a,b){return (b.ts||0)-(a.ts||0);});
+    renderFeedback();
+  }catch(e){el.innerHTML='<div class="empty">שגיאה בטעינת הפניות</div>';}
+}
+function renderFeedback(){
+  var el=document.getElementById('feedback-list');
+  var arr=_fbFilter==='all'?_FB:_FB.filter(function(f){return f.type===_fbFilter;});
+  updateFbBadge();
+  if(!arr.length){el.innerHTML='<div class="empty">אין פניות '+(_fbFilter==='all'?'':'בקטגוריה זו')+'</div>';return;}
+  var typeMap={bug:['🐞 תקלה','bg-red'],idea:['💡 הצעה','bg-orange'],question:['❓ שאלה','bg-blue']};
+  var h='';
+  arr.forEach(function(f){
+    var tm=typeMap[f.type]||['פנייה','bg-blue'];
+    var when=f.date?new Date(f.date).toLocaleString('he-IL'):'';
+    h+='<div class="rep-card"><div class="rc-top"><span class="rc-date">'+esc(f.ownerName||'מנהל')+(f.project?' · '+esc(f.project):'')+'</span><span class="rc-badge '+tm[1]+'">'+tm[0]+'</span></div>'
+      +(f.ref?'<div class="rc-meta">↩️ בהקשר: '+esc(f.ref)+'</div>':'')
+      +'<div class="rc-text">'+esc(f.text||'')+'</div>'
+      +'<div class="rc-meta">📞 '+esc(f.owner||'')+' · '+when+'</div></div>';
+  });
+  el.innerHTML=h;
+}
+function updateFbBadge(){
+  var n=_FB.filter(function(f){return f.status!=='done';}).length;
+  var b=document.getElementById('fb-badge');
+  if(b){if(n>0){b.style.display='inline-block';b.textContent=n;}else b.style.display='none';}
+}
 
 // ---------- תוכן וניסוחים ----------
 var _STR={he:{},ar:{}}, _changed={}, _strLoaded=false;

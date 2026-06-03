@@ -124,6 +124,14 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 .stage-chip{display:flex;align-items:center;gap:6px;padding:9px 13px;border-radius:22px;border:2px solid var(--border);background:white;font-size:14px;font-weight:700;cursor:pointer;color:var(--text);}
 .stage-chip-i{font-size:18px;}
 .stage-chip.on{border-color:var(--accent);background:#fff4d9;color:#7a5800;}
+.fb-type{flex:1;text-align:center;padding:11px 6px;border:2px solid var(--border);border-radius:10px;background:white;font-size:14px;font-weight:700;cursor:pointer;color:var(--sub);}
+.fb-type.active{border-color:var(--blue);background:#e8f0fe;color:var(--blue);}
+.faq-item{border-bottom:1px solid var(--border);padding:2px 0;}
+.faq-q{padding:12px 4px;font-size:15px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center;}
+.faq-q .arr{color:var(--sub);transition:transform .2s;flex-shrink:0;}
+.faq-item.open .faq-q .arr{transform:rotate(90deg);}
+.faq-a{font-size:14px;color:var(--sub);line-height:1.6;padding:0 4px 12px;display:none;}
+.faq-item.open .faq-a{display:block;}
 .stage-chip-x{background:var(--accent);color:#3d2c00;width:18px;height:18px;border-radius:50%;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;}
 .safety-question.special{border-color:var(--accent);background:#fff8e8;}
 .sq-special-tag{display:inline-block;background:var(--accent);color:#3d2c00;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;margin-bottom:8px;}
@@ -279,6 +287,9 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn3Title"></span><span class="home-btn-desc" data-t="btn3Desc"></span></span>
     </button>
   </div>
+  <div style="text-align:center;margin-top:18px;">
+    <button onclick="showScreen('s-help')" style="background:none;border:none;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;" data-t="helpLink"></button>
+  </div>
   <div class="offline-note" data-t="offlineNote"></div>
 </div>
 
@@ -290,6 +301,38 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     <div style="width:40px"></div>
   </div>
   <div class="screen-body"><div id="messages-list"></div></div>
+</div>
+
+<!-- HELP & FEEDBACK -->
+<div class="screen" id="s-help">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="helpTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body">
+    <div class="card">
+      <div class="card-title" data-t="faqTitle"></div>
+      <div id="faq-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="feedbackTitle"></div>
+      <div id="feedback-ref" style="display:none;background:var(--blue-bg,#e8f0fe);border-radius:8px;padding:8px 10px;font-size:13px;margin-bottom:10px;color:var(--blue-d);"></div>
+      <div class="form-group">
+        <label data-t="feedbackType"></label>
+        <div class="weather-row" style="display:flex;gap:8px;">
+          <div class="fb-type active" data-fb="bug" onclick="selFbType('bug')">🐞 <span data-t="fbBug"></span></div>
+          <div class="fb-type" data-fb="idea" onclick="selFbType('idea')">💡 <span data-t="fbIdea"></span></div>
+          <div class="fb-type" data-fb="question" onclick="selFbType('question')">❓ <span data-t="fbQuestion"></span></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-t="feedbackText"></label>
+        <textarea id="fb-text" data-tp="feedbackPlaceholder" rows="4"></textarea>
+      </div>
+      <button class="btn btn-green" onclick="submitFeedback()"><span data-t="feedbackSend"></span></button>
+    </div>
+  </div>
 </div>
 
 <!-- JOURNAL -->
@@ -609,7 +652,17 @@ regCompany:'חברה / קבלן ראשי',regCompanyPh:'שם החברה שאתה
 regProject:'שם הפרויקט הנוכחי',regProjectPh:'לדוגמה: מגדל רמות קומות 1-12',
 regLang:'שפה מועדפת',regSubmit:'כניסה לאפליקציה ←',
 regNote:'הנתונים שמורים בטלפון שלך בלבד',setupProject:'לחץ להגדרת פרויקט ⚙️',statJournal:'ימי יומן',statOpen:'ליקויים פתוחים',statSafety:'בטיחות השבוע',
-msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',shareReportWA:'📲 שלח למשרד בוואטסאפ',backLabel:'חזרה',backToHome:'→ חזרה לדף הקודם',
+msgInboxTitle:'הודעות מהמשרד',msgBannerTitle:'הודעות חדשות',msgBannerSub:'לחץ לקריאה',emptyMsg:'אין הודעות חדשות',msgFrom:'מהמשרד',msgOpenLink:'פתח קישור ←',shareReportWA:'📲 שלח למשרד בוואטסאפ',msgReply:'↩️ השב',
+helpLink:'❓ עזרה ופנייה למשרד',helpTitle:'עזרה ופנייה',
+faqTitle:'שאלות נפוצות',
+feedbackTitle:'שליחת פנייה למשרד',feedbackType:'סוג הפנייה',fbBug:'תקלה',fbIdea:'הצעה',fbQuestion:'שאלה',
+feedbackText:'פרט את הפנייה',feedbackPlaceholder:'כתוב כאן את הבעיה / ההצעה / השאלה...',feedbackSend:'📨 שלח פנייה',
+feedbackThanks:'✅ הפנייה נשלחה — נטפל בהקדם',feedbackEmpty:'יש לכתוב את תוכן הפנייה',feedbackRefTo:'בהקשר להודעה: ',
+faq1q:'ההקלטה לא עובדת?',faq1a:'ודא שאישרת לאפליקציה גישה למיקרופון בהגדרות הדפדפן. מומלץ Chrome באנדרואיד.',
+faq2q:'איך מוסיפים את האפליקציה למסך הבית?',faq2a:'אנדרואיד: תפריט 3 הנקודות ← "הוספה למסך הבית". אייפון: כפתור השיתוף ⬆️ ב-Safari ← "הוספה למסך הבית".',
+faq3q:'איך שולחים דוח למשרד?',faq3a:'בסיום יומן/בטיחות לוחצים על "📲 שלח למשרד בוואטסאפ" בדוח. הדוח נשלח כהודעה מסודרת.',
+faq4q:'הנתונים נשמרים? מה אם אחליף טלפון?',faq4a:'כן — הנתונים נשמרים בטלפון וגם בענן. בהחלפת טלפון תתחבר עם אותו מספר והכל יחזור.',
+faq5q:'חובה לחתום על היומן?',faq5a:'כן, חתימת מנהל העבודה חובה לקבילות משפטית. ניתן גם לקבל אישור מפקח בנפרד.',backLabel:'חזרה',backToHome:'→ חזרה לדף הקודם',
 installBannerText:'הוסף את דקה למסך הבית',installHow:'איך?',installBtn:'התקן',gotIt:'הבנתי 👍',installTitle:'הוספה למסך הבית 📲',
 installAndroid:'1|לחץ על תפריט 3 הנקודות (⋮) — למעלה או למטה, תלוי בדפדפן|2|בחר "הוספה למסך הבית" (או "התקנת אפליקציה")|3|לחץ "הוסף" / "התקן"|4|האייקון יופיע במסך הבית ✅',
 installIos:'1|ודא שאתה ב-Safari (לא Chrome)|2|לחץ על כפתור השיתוף ⬆️ בתחתית|3|גלול ובחר "הוספה למסך הבית"|4|לחץ "הוסף" למעלה ✅',
@@ -695,7 +748,17 @@ regCompany:'الشركة / المقاول الرئيسي',regCompanyPh:'اسم �
 regProject:'اسم المشروع الحالي',regProjectPh:'مثال: برج رامات طوابق 1-12',
 regLang:'اللغة المفضلة',regSubmit:'الدخول إلى التطبيق ←',
 regNote:'البيانات محفوظة في هاتفك فقط',setupProject:'انقر لإعداد المشروع ⚙️',statJournal:'أيام اليومية',statOpen:'عيوب مفتوحة',statSafety:'سلامة الأسبوع',
-msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',shareReportWA:'📲 أرسل للمكتب عبر واتساب',backLabel:'رجوع',backToHome:'→ العودة إلى الصفحة السابقة',
+msgInboxTitle:'رسائل من المكتب',msgBannerTitle:'رسائل جديدة',msgBannerSub:'انقر للقراءة',emptyMsg:'لا توجد رسائل جديدة',msgFrom:'من المكتب',msgOpenLink:'افتح الرابط ←',shareReportWA:'📲 أرسل للمكتب عبر واتساب',msgReply:'↩️ رد',
+helpLink:'❓ مساعدة وتواصل مع المكتب',helpTitle:'مساعدة وتواصل',
+faqTitle:'أسئلة شائعة',
+feedbackTitle:'إرسال رسالة للمكتب',feedbackType:'نوع الرسالة',fbBug:'عطل',fbIdea:'اقتراح',fbQuestion:'سؤال',
+feedbackText:'تفاصيل الرسالة',feedbackPlaceholder:'اكتب هنا المشكلة / الاقتراح / السؤال...',feedbackSend:'📨 إرسال',
+feedbackThanks:'✅ تم إرسال الرسالة — سنعالجها قريباً',feedbackEmpty:'يرجى كتابة محتوى الرسالة',feedbackRefTo:'بخصوص الرسالة: ',
+faq1q:'التسجيل الصوتي لا يعمل؟',faq1a:'تأكد من السماح للتطبيق بالوصول إلى الميكروفون في إعدادات المتصفح. يُفضّل Chrome على أندرويد.',
+faq2q:'كيف أضيف التطبيق إلى الشاشة الرئيسية؟',faq2a:'أندرويد: قائمة النقاط الثلاث ← "إضافة إلى الشاشة الرئيسية". آيفون: زر المشاركة ⬆️ في Safari ← "إضافة إلى الشاشة الرئيسية".',
+faq3q:'كيف أرسل تقريراً للمكتب؟',faq3a:'في نهاية اليومية/السلامة اضغط "📲 أرسل للمكتب عبر واتساب" في التقرير.',
+faq4q:'هل تُحفظ البيانات؟ ماذا لو غيّرت الهاتف؟',faq4a:'نعم — تُحفظ في الهاتف وفي السحابة. عند تغيير الهاتف ادخل بنفس الرقم وسيعود كل شيء.',
+faq5q:'هل التوقيع على اليومية إلزامي؟',faq5a:'نعم، توقيع مدير العمل إلزامي للحجية القانونية. يمكن أيضاً الحصول على مصادقة المشرف.',backLabel:'رجوع',backToHome:'→ العودة إلى الصفحة السابقة',
 installBannerText:'أضف דקה إلى الشاشة الرئيسية',installHow:'كيف؟',installBtn:'تثبيت',gotIt:'فهمت 👍',installTitle:'الإضافة إلى الشاشة الرئيسية 📲',
 installAndroid:'1|اضغط قائمة النقاط الثلاث (⋮) — في الأعلى أو الأسفل حسب المتصفح|2|اختر "إضافة إلى الشاشة الرئيسية" (أو "تثبيت التطبيق")|3|اضغط "إضافة" / "تثبيت"|4|ستظهر الأيقونة على الشاشة الرئيسية ✅',
 installIos:'1|تأكد أنك في Safari (وليس Chrome)|2|اضغط زر المشاركة ⬆️ في الأسفل|3|مرّر واختر "إضافة إلى الشاشة الرئيسية"|4|اضغط "إضافة" في الأعلى ✅',
@@ -841,6 +904,7 @@ function onScreenEnter(id){
   if(id==='s-safety-history')renderSafetyHistory();
   if(id==='s-settings')loadSettingsForm();
   if(id==='s-messages')renderMessages();
+  if(id==='s-help')initHelp();
   if((id==='s-home'||id==='s-messages')&&window._dkFetchMessages){try{window._dkFetchMessages();}catch(e){}}
   updateBottomBack(id);
 }
@@ -882,9 +946,11 @@ function updateMsgBanner(){
     document.getElementById('msg-banner-count').textContent=n;
   } else { b.style.display='none'; }
 }
+var _sortedMsgs=[];
 function renderMessages(){
   var list=document.getElementById('messages-list');if(!list)return;
   var msgs=getMessages().slice().sort(function(a,b){return (b.ts||0)-(a.ts||0);});
+  _sortedMsgs=msgs;
   if(!msgs.length){list.innerHTML='<div style="text-align:center;padding:50px 20px;color:var(--sub);font-size:15px;">📭<br><br>'+T('emptyMsg')+'</div>';}
   else{
     var lr=getLastRead();var h='';
@@ -896,7 +962,10 @@ function renderMessages(){
       if(m.title)h+='<div style="font-weight:800;font-size:16px;margin-bottom:4px;">'+esc(m.title)+'</div>';
       if(m.body)h+='<div style="font-size:14px;line-height:1.6;white-space:pre-wrap;color:var(--text);">'+esc(m.body)+'</div>';
       if(m.link)h+='<a href="'+esc(m.link)+'" target="_blank" style="display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;font-size:14px;text-decoration:none;">'+T('msgOpenLink')+'</a>';
-      h+='<div style="font-size:11px;color:var(--sub);margin-top:8px;">'+when+'</div>';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">';
+      h+='<span style="font-size:11px;color:var(--sub);">'+when+'</span>';
+      h+='<button onclick="replyToMessage('+i+')" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;color:var(--blue);cursor:pointer;font-family:inherit;">'+T('msgReply')+'</button>';
+      h+='</div>';
       h+='</div>';
     }
     list.innerHTML=h;
@@ -908,6 +977,50 @@ function renderMessages(){
 }
 // נקודת כניסה ל-Firebase: נקרא מהמודול כשמגיעות הודעות חדשות
 window._dkOnMessages=function(msgs){saveJSON('dk_messages',msgs);updateMsgBanner();var act=document.querySelector('.screen.active');if(act&&act.id==='s-messages')renderMessages();};
+
+// ===================== עזרה ופנייה =====================
+var _fbType='bug', _fbRef='';
+function initHelp(){
+  _fbType='bug';_fbRef='';
+  document.getElementById('fb-text').value='';
+  document.getElementById('feedback-ref').style.display='none';
+  document.querySelectorAll('.fb-type').forEach(function(b){b.classList.toggle('active',b.dataset.fb==='bug');});
+  renderFAQ();
+}
+function renderFAQ(){
+  var el=document.getElementById('faq-list');if(!el)return;
+  var h='';
+  for(var i=1;i<=5;i++){
+    h+='<div class="faq-item" id="faq-'+i+'"><div class="faq-q" onclick="toggleFaq('+i+')"><span>'+T('faq'+i+'q')+'</span><span class="arr">›</span></div><div class="faq-a">'+T('faq'+i+'a')+'</div></div>';
+  }
+  el.innerHTML=h;
+}
+function toggleFaq(i){var el=document.getElementById('faq-'+i);if(el)el.classList.toggle('open');}
+function selFbType(t){_fbType=t;document.querySelectorAll('.fb-type').forEach(function(b){b.classList.toggle('active',b.dataset.fb===t);});}
+function replyToMessage(idx){
+  var m=_sortedMsgs[idx];
+  _fbRef=m&&m.title?m.title:'';
+  showScreen('s-help');
+  selFbType('question');
+  var ref=document.getElementById('feedback-ref');
+  if(_fbRef){ref.style.display='block';ref.textContent=T('feedbackRefTo')+_fbRef;}
+  setTimeout(function(){var t=document.getElementById('fb-text');if(t)t.focus();},150);
+}
+function submitFeedback(){
+  var text=document.getElementById('fb-text').value.trim();
+  if(!text){toast(T('feedbackEmpty'));return;}
+  var s=APP.settings||{};
+  var entry={id:Date.now(),ts:Date.now(),type:_fbType,text:text,ref:_fbRef||'',
+    owner:(s.managerPhone||'').replace(/\D/g,''),ownerName:s.managerName||'',project:s.projectName||'',
+    status:'new',date:new Date().toISOString(),lang:APP.lang};
+  // שמירה מקומית (גיבוי) + ענן
+  var local=loadJSON('dk_feedback',[]);local.unshift(entry);saveJSON('dk_feedback',local);
+  if(window._dkSaveDoc){try{window._dkSaveDoc('feedback',(entry.owner||'x')+'_'+entry.id,entry);}catch(e){}}
+  document.getElementById('fb-text').value='';_fbRef='';
+  document.getElementById('feedback-ref').style.display='none';
+  toast(T('feedbackThanks'),3500);
+  showScreen('s-home');
+}
 var _recog=null,_voiceTarget=null,_voiceActive=false,_voiceFinal='',_voiceBtn=null;
 function _voiceStopUI(){_voiceActive=false;if(_voiceBtn){_voiceBtn.innerHTML='🎙️';_voiceBtn.classList.remove('recording');}}
 function toggleVoice(target,btnId){
