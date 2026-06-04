@@ -311,7 +311,8 @@ import {
   getFirestore, collection, getDocs, addDoc, query, orderBy, where,
   onSnapshot, serverTimestamp, doc, setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
 
 let db = null;
 let USERS = [];
@@ -356,7 +357,13 @@ async function boot(cfg){
   try {
     const app = initializeApp(cfg);
     db = getFirestore(app);
-    try{ await signInAnonymously(getAuth(app)); }catch(e){ /* אם אנונימי מושבת בקונסול — ימשיך עם הכללים הקיימים */ }
+    var _auth = getAuth(app);
+    await new Promise(function(res){
+      var done=false;function fin(){if(!done){done=true;res();}}
+      signInAnonymously(_auth).then(fin).catch(fin);
+      onAuthStateChanged(_auth,function(u){if(u)fin();});
+      setTimeout(fin,5000);
+    });
     document.getElementById('setup-banner').style.display='none';
     document.getElementById('stats').style.display='flex';
     document.getElementById('main-grid').style.display='block';
@@ -374,12 +381,13 @@ async function boot(cfg){
 }
 
 // ---------- users ----------
-async function loadUsers(){
-  USERS = [];
+async function loadUsers(tries){
+  tries=tries||0;
   try {
     const snap = await getDocs(collection(db,'managers'));
+    USERS = [];
     snap.forEach(function(d){ USERS.push(Object.assign({id:d.id}, d.data())); });
-  } catch(e){ console.error(e); }
+  } catch(e){ console.error(e); if(tries<5){ setTimeout(function(){loadUsers(tries+1);},1500); return; } }
   document.getElementById('st-users').textContent = USERS.length;
   var weekAgo = Date.now() - 7*864e5;
   var active = USERS.filter(function(u){
