@@ -22,7 +22,8 @@
 
 ## ארכיטקטורת נתונים (חשוב!)
 - **כרגע: 100% localStorage, אפס שרת.** כל מכשיר = אי מבודד.
-- מפתחות localStorage: `sb_settings`, `sb_journals`, `sb_defects`, `sb_safety`, `dk_journal_serial`, `dk_messages`, `dk_msg_lastread`.
+- מפתחות localStorage: `sb_settings`, `sb_journals`, `sb_defects`, `sb_safety`, `dk_journal_serial`, `dk_messages`, `dk_msg_lastread`, `dk_jnl_draft` (טיוטת יומן יומית), `dk_usage` (מונה שימוש למיון כפתורי בית), `pres_YYYY-MM-DD`, `dk_reminders`, `dk_permits`, `dk_incidents`, `dk_onboard`, `dk_features`, `dk_user_prefs`.
+- שיפורי UX (יוני 2026): "המשך מאתמול" ביומן (`copyLastJournal`/`setWorkers`), טיוטה אוטומטית (`saveJnlDraft`), מודל ליקוי עם שדות מקופלים (`setDefMore`) + צ'יפי יעד (`setDeadlineDays`) + שכפול (`duplicateDefect`) + חיוג, ❌ בטיחות פותח מצלמה (answerSQ), תגי ✓/מונה בבית (`setHomeBadge`), מיון כפתורים לפי שימוש (`bumpUsage`/`sortHomeButtons`), צוות-מאתמול בנוכחות (`copyYesterdayCrew`) + שעת כניסה 07:00 + עריכת שעה (`editPresTime`), רטט ב-toast.
 - **תמונות נשמרות base64 ב-localStorage** — סיכון אמיתי: מגבלת ~5MB, ו-`saveJSON` עושה `catch(e){}` ששובל שגיאות → אובדן נתונים שקט. לתקן כשעוברים ל-Firebase Storage.
 
 ## מצב Firebase — ✅ מחובר ופועל (siteboss-b2dd2)
