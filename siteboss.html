@@ -961,6 +961,7 @@ btnExpTitle:'עוזר חכם',btnExpDesc:'נהלים, סיכונים, מכתבי
 expIntro:'מה תרצה? כתוב חופשי והעוזר המתאים יענה. למשל: "תכתוב נוהל כניסה לאתר", "מה הסיכונים בעבודה בגובה השבוע", "מכתב לקבלן על ליקוי שלא תוקן", "סכם לי את פגישת הבטיחות", "תעזור לי להחליט בין שני קבלני משנה".',
 saveFailFull:'⚠️ לא נשמר — הזיכרון מלא. מחק תמונות/דוחות ישנים ונסה שוב',
 searchPlaceholder:'🔍 חיפוש (תיאור, קומה, קבלן…)',loadMore:'טען עוד',noSearchResults:'לא נמצאו תוצאות',
+syncedToast:'☁️ סונכרן לענן',
 expRouted:'מומחה',expSoon:'מנוע ה-AI עוד לא מחובר במכשיר הזה — אבל זיהיתי בדיוק לאיזה מומחה לפנות ובניתי לו את ההנחיה המלאה. כשנחבר את המודל, התשובה המלאה תופיע כאן.',expCtxNote:'הקשר האתר שלך מוזרק אוטומטית',
 faqTitle:'שאלות נפוצות',
 feedbackTitle:'שליחת פנייה למשרד',feedbackType:'סוג הפנייה',fbBug:'תקלה',fbIdea:'הצעה',fbQuestion:'שאלה',
@@ -1093,6 +1094,7 @@ btnExpTitle:'مساعد ذكي',btnExpDesc:'إجراءات، مخاطر، رسا
 expIntro:'ماذا تريد؟ اكتب بحرية وسيجيبك الخبير المناسب. مثلاً: "اكتب إجراء دخول للموقع"، "ما مخاطر العمل على ارتفاع هذا الأسبوع"، "رسالة لمقاول حول عيب لم يُصلَح"، "لخّص لي اجتماع السلامة"، "ساعدني أقرّر بين مقاولَي باطن".',
 saveFailFull:'⚠️ لم يُحفظ — الذاكرة ممتلئة. احذف صوراً/تقارير قديمة وحاول ثانية',
 searchPlaceholder:'🔍 بحث (وصف، طابق، مقاول…)',loadMore:'تحميل المزيد',noSearchResults:'لا توجد نتائج',
+syncedToast:'☁️ تمت المزامنة',
 expRouted:'خبير',expSoon:'محرك الذكاء الاصطناعي غير موصول بعد على هذا الجهاز — لكنني حدّدت الخبير المناسب وبنيت له التعليمات الكاملة. عند توصيل النموذج، ستظهر الإجابة الكاملة هنا.',expCtxNote:'سياق موقعك يُضاف تلقائياً',
 faqTitle:'أسئلة شائعة',
 feedbackTitle:'إرسال رسالة للمكتب',feedbackType:'نوع الرسالة',fbBug:'عطل',fbIdea:'اقتراح',fbQuestion:'سؤال',
@@ -1208,8 +1210,30 @@ function _dkStorePhotoUrls(coll,entryId,urls){
   var key=DK_COLL_KEY[coll];if(!key||!urls||!urls.length)return;
   try{var list=loadJSON(key,[]);var ch=false;for(var i=0;i<list.length;i++){if(list[i]&&list[i].id===entryId){list[i].photoUrls=urls;ch=true;break;}}if(ch)saveJSON(key,list);}catch(e){}
 }
+// תור סנכרון — רשומות שנשמרו בלי קליטה (לפי הפניה, בלי לשכפל תמונות base64); נשלחות כשחוזרת רשת
+function _dkEnqueueSync(coll,id){
+  if(!coll||!id||!DK_COLL_KEY[coll])return;
+  try{var q=loadJSON('dk_sync_queue',[]);if(!q.some(function(x){return x.coll===coll&&x.id===id;})){q.push({coll:coll,id:id});saveJSON('dk_sync_queue',q);}}catch(e){}
+}
+function _dkFlushSync(){
+  if(navigator.onLine===false||!window._dkSaveDoc)return;
+  var q;try{q=loadJSON('dk_sync_queue',[]);}catch(e){return;}
+  if(!q||!q.length)return;
+  var remaining=[],sent=0;
+  q.forEach(function(item){
+    try{
+      var key=DK_COLL_KEY[item.coll];var rec=loadJSON(key,[]).find(function(r){return r&&r.id===item.id;});
+      if(rec){cloudSave(item.coll,rec);sent++;} // נשלח (cloudSave כבר מקוון כעת)
+    }catch(e){remaining.push(item);}
+  });
+  saveJSON('dk_sync_queue',remaining);
+  if(sent)try{toast(T('syncedToast'),2500);}catch(e){}
+}
 function cloudSave(coll,entry){
-  if(!window._dkSaveDoc||!entry)return Promise.resolve(false);
+  if(!entry)return Promise.resolve(false);
+  // אין קליטה / Firebase עדיין לא מוכן → לתור, יישלח כשחוזרת רשת (בלי לאבד, בלי ✅ כוזב)
+  if(navigator.onLine===false||!window._dkSaveDoc){_dkEnqueueSync(coll,entry.id);return Promise.resolve(false);}
+  if(!window._dkSaveDoc)return Promise.resolve(false);
   var s=APP.settings||{};var owner=(s.managerPhone||'').replace(/\D/g,'');
   var docId=(owner||'x')+'_'+entry.id;
   var copy={};for(var k in entry){if(k==='photos')continue;copy[k]=entry[k];}
@@ -2907,7 +2931,7 @@ function dkOfflineWatch(){
     el.textContent=APP.lang==='ar'?'⚠️ لا يوجد اتصال — يتم الحفظ على الجهاز':'⚠️ אין חיבור — הנתונים נשמרים במכשיר';
     el.style.transform=off?'translateY(0)':'translateY(110%)';
   }
-  window.addEventListener('online',upd);window.addEventListener('offline',upd);upd();
+  window.addEventListener('online',function(){upd();try{_dkFlushSync();}catch(e){}});window.addEventListener('offline',upd);upd();
 }
 function storageWorks(){
   try{var t='__dk_test__';localStorage.setItem(t,'1');var ok=localStorage.getItem(t)==='1';localStorage.removeItem(t);return ok;}catch(e){return false;}
@@ -3023,6 +3047,8 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     window._dkDeleteDoc = function(coll, id){
       try{ return deleteDoc(doc(db, coll, String(id))).catch(function(){}); }catch(e){ return Promise.resolve(); }
     };
+    // Firebase מוכן — שלח רשומות שנתקעו בתור הסנכרון (נשמרו בלי קליטה)
+    try{ setTimeout(function(){ if(window._dkFlushSync)_dkFlushSync(); }, 2000); }catch(e){}
     // העלאת תמונות ל-Firebase Storage → מחזיר מערך כתובות
     try{
       const stMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js");
