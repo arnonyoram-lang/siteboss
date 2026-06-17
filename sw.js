@@ -1,5 +1,5 @@
 // דקה — Service Worker (network-first) — מבטיח שמנהלים תמיד מקבלים את הגרסה העדכנית
-const CACHE = 'dk-cache-v1';
+const CACHE = 'dk-cache-v2';
 self.addEventListener('install', function(e){ self.skipWaiting(); });
 self.addEventListener('activate', function(e){ e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', function(e){

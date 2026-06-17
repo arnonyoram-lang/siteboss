@@ -80,6 +80,13 @@
 ## תהליך עבודה
 1. ערוך `siteboss.html`. 2. `cp siteboss.html index.html`. 3. בדוק ב-preview (פורט 3456) שאין שגיאות console. 4. commit + push למאסטר. הודעות commit בעברית.
 
+## עוזר חכם (שכבת מומחי-AI) — שלב 1 בנוי
+- מקור-אמת מיובא מ"עוזר מנהל" (`lib/skills.ts`+`lib/experts.ts`). מסך `s-expert`, כפתור בית `home-mod-expert`.
+- 9 מומחים (`DK_SKILLS`): documents(כולל SOP), risk, summary(כולל meeting→actions), premortem, decision, contract, negotiation, hr(כולל hiring-kit), collection.
+- ניתוב לפי כוונה: `pickExpertDK(text)` (ניקוד מילות-מפתח, מילה שלמה×3). צ'יפים לבחירה ידנית (`expChip`).
+- הזרקת הקשר אתר: `dkBusinessContext()` (חברה/פרויקט/מנהל/ליקויים פתוחים) → `dkBuildSystemPrompt(exp)`.
+- **המודל עדיין לא מחובר**: `runModel(systemPrompt,userText)` מחזיר `Promise.resolve(null)` → המסך מציג שזיהה את המומחה ובנה הנחיה מלאה. זו נקודת החיבור היחידה — למלא בה Firebase AI Logic (Gemini) כשנחבר. נבדק: ניתוב 10/10 כוונות נכון, הזרקת הקשר, צ'אט.
+
 ## רעיונות עתידיים שעלו (טרם נבנו)
 - הוראות בטיחות בכל השפות (וידאו/אודיו בשפת האם של הפועל הזר + חתימה לפני כניסה לאתר).
 - Push notifications אמיתיים (שלב 2 אחרי שיש משתמשים ב-Firebase).

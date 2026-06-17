@@ -317,6 +317,10 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <span class="home-btn-icon">📋</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn9Title"></span><span class="home-btn-desc" data-t="btn9Desc"></span></span>
     </button>
+    <button id="home-mod-expert" class="home-btn" style="background:linear-gradient(135deg,#5b3fb0,#3d2880);" onclick="showScreen('s-expert')">
+      <span class="home-btn-icon">🧠</span>
+      <span class="home-btn-texts"><span class="home-btn-title" data-t="btnExpTitle"></span><span class="home-btn-desc" data-t="btnExpDesc"></span></span>
+    </button>
   </div>
   <div style="text-align:center;margin-top:18px;">
     <button onclick="showScreen('s-help')" style="background:none;border:none;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;" data-t="helpLink"></button>
@@ -332,6 +336,23 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     <div style="width:40px"></div>
   </div>
   <div class="screen-body"><div id="messages-list"></div></div>
+</div>
+
+<!-- EXPERT AI ASSISTANT -->
+<div class="screen" id="s-expert">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="expTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body" style="display:flex;flex-direction:column;height:calc(100vh - 64px);padding-bottom:0;">
+    <div id="exp-chips" style="display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;-webkit-overflow-scrolling:touch;"></div>
+    <div id="exp-log" style="flex:1;overflow-y:auto;padding:4px 2px;"></div>
+    <div style="display:flex;gap:8px;padding:10px 2px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--border);">
+      <textarea id="exp-input" rows="1" data-tp="expPlaceholder" style="flex:1;min-height:48px;max-height:120px;resize:none;font-size:16px;padding:12px;border-radius:12px;border:1.5px solid var(--border);font-family:inherit;"></textarea>
+      <button class="btn btn-blue" style="min-width:64px;font-size:22px;padding:0;" onclick="sendExpert()">↑</button>
+    </div>
+  </div>
 </div>
 
 <!-- HELP & FEEDBACK -->
@@ -934,6 +955,9 @@ helpLink:'❓ עזרה ופנייה למשרד',helpTitle:'עזרה ופנייה
 copyYesterday:'📋 המשך מאתמול',noLastJournal:'אין יומן קודם להעתקה',draftRestored:'💾 שוחזרה טיוטה שלא נשמרה',copiedYesterday:'הועתק מהיומן האחרון — עדכן ושמור',
 moreDetails:'פרטים נוספים (מיקום, יעד, חומרה)',dupDefect:'⧉ שכפל',btnCall:'📞 חייג',dlTomorrow:'מחר',dl3days:'3 ימים',dlWeek:'שבוע',
 doneToday:'✓ בוצע היום',sameCrew:'👥 אותו צוות כמו אתמול',noPrevCrew:'אין רשימת נוכחות קודמת',presInTime:'שעת כניסה',
+btnExpTitle:'עוזר חכם',btnExpDesc:'נהלים, סיכונים, מכתבים, החלטות',expTitle:'🧠 עוזר חכם',expPlaceholder:'כתוב מה צריך — נוהל בטיחות, מכתב לקבלן, סיכום פגישה, מה הסיכונים…',
+expIntro:'מה תרצה? כתוב חופשי והעוזר המתאים יענה. למשל: "תכתוב נוהל כניסה לאתר", "מה הסיכונים בעבודה בגובה השבוע", "מכתב לקבלן על ליקוי שלא תוקן", "סכם לי את פגישת הבטיחות", "תעזור לי להחליט בין שני קבלני משנה".',
+expRouted:'מומחה',expSoon:'מנוע ה-AI עוד לא מחובר במכשיר הזה — אבל זיהיתי בדיוק לאיזה מומחה לפנות ובניתי לו את ההנחיה המלאה. כשנחבר את המודל, התשובה המלאה תופיע כאן.',expCtxNote:'הקשר האתר שלך מוזרק אוטומטית',
 faqTitle:'שאלות נפוצות',
 feedbackTitle:'שליחת פנייה למשרד',feedbackType:'סוג הפנייה',fbBug:'תקלה',fbIdea:'הצעה',fbQuestion:'שאלה',
 feedbackText:'פרט את הפנייה',feedbackPlaceholder:'כתוב כאן את הבעיה / ההצעה / השאלה...',feedbackSend:'📨 שלח פנייה',
@@ -1061,6 +1085,9 @@ helpLink:'❓ مساعدة وتواصل مع المكتب',helpTitle:'مساعد
 copyYesterday:'📋 متابعة من الأمس',noLastJournal:'لا توجد يومية سابقة للنسخ',draftRestored:'💾 استُعيدت مسودة غير محفوظة',copiedYesterday:'نُسخ من آخر يومية — حدّث واحفظ',
 moreDetails:'تفاصيل إضافية (موقع، موعد، أهمية)',dupDefect:'⧉ تكرار',btnCall:'📞 اتصل',dlTomorrow:'غداً',dl3days:'3 أيام',dlWeek:'أسبوع',
 doneToday:'✓ تم اليوم',sameCrew:'👥 نفس طاقم الأمس',noPrevCrew:'لا توجد قائمة حضور سابقة',presInTime:'وقت الدخول',
+btnExpTitle:'مساعد ذكي',btnExpDesc:'إجراءات، مخاطر، رسائل، قرارات',expTitle:'🧠 مساعد ذكي',expPlaceholder:'اكتب ما تحتاجه — إجراء سلامة، رسالة لمقاول، تلخيص اجتماع، ما المخاطر…',
+expIntro:'ماذا تريد؟ اكتب بحرية وسيجيبك الخبير المناسب. مثلاً: "اكتب إجراء دخول للموقع"، "ما مخاطر العمل على ارتفاع هذا الأسبوع"، "رسالة لمقاول حول عيب لم يُصلَح"، "لخّص لي اجتماع السلامة"، "ساعدني أقرّر بين مقاولَي باطن".',
+expRouted:'خبير',expSoon:'محرك الذكاء الاصطناعي غير موصول بعد على هذا الجهاز — لكنني حدّدت الخبير المناسب وبنيت له التعليمات الكاملة. عند توصيل النموذج، ستظهر الإجابة الكاملة هنا.',expCtxNote:'سياق موقعك يُضاف تلقائياً',
 faqTitle:'أسئلة شائعة',
 feedbackTitle:'إرسال رسالة للمكتب',feedbackType:'نوع الرسالة',fbBug:'عطل',fbIdea:'اقتراح',fbQuestion:'سؤال',
 feedbackText:'تفاصيل الرسالة',feedbackPlaceholder:'اكتب هنا المشكلة / الاقتراح / السؤال...',feedbackSend:'📨 إرسال',
@@ -1259,6 +1286,7 @@ function onScreenEnter(id){
   if(id==='s-settings')loadSettingsForm();
   if(id==='s-messages')renderMessages();
   if(id==='s-help')initHelp();
+  if(id==='s-expert')initExpert();
   if(id==='s-presence')initPresence();
   if(id==='s-presence-history')renderPresenceHistory();
   if(id==='s-reminders')renderReminders();
@@ -1315,7 +1343,7 @@ function setHomeBadge(btnId,text,kind){
 }
 // מיון כפתורי הבית לפי תדירות שימוש — מה שבשימוש יומי עולה למעלה
 function bumpUsage(screenId){
-  var map={'s-journal':'modJournal','s-defects':'modDefects','s-safety':'modSafety','s-presence':'modPresence','s-reminders':'modReminders','s-incidents':'modIncidents','s-onboard':'modOnboard','s-contractors':'modContractors','s-permits':'modPermits'};
+  var map={'s-journal':'modJournal','s-defects':'modDefects','s-safety':'modSafety','s-presence':'modPresence','s-reminders':'modReminders','s-incidents':'modIncidents','s-onboard':'modOnboard','s-contractors':'modContractors','s-permits':'modPermits','s-expert':'modExpert'};
   var k=map[screenId];if(!k)return;
   var u=loadJSON('dk_usage',{});u[k]=(u[k]||0)+1;saveJSON('dk_usage',u);
 }
@@ -1324,7 +1352,7 @@ function sortHomeButtons(){
   var btns=Array.prototype.slice.call(document.querySelectorAll('#s-home .home-btn'));
   if(btns.length<2)return;
   var parent=btns[0].parentNode;
-  var idMap={'home-mod-journal':'modJournal','home-mod-defects':'modDefects','home-mod-safety':'modSafety','home-mod-presence':'modPresence','home-mod-reminders':'modReminders','home-mod-incidents':'modIncidents','home-mod-onboard':'modOnboard','home-mod-contractors':'modContractors','home-mod-permits':'modPermits'};
+  var idMap={'home-mod-journal':'modJournal','home-mod-defects':'modDefects','home-mod-safety':'modSafety','home-mod-presence':'modPresence','home-mod-reminders':'modReminders','home-mod-incidents':'modIncidents','home-mod-onboard':'modOnboard','home-mod-contractors':'modContractors','home-mod-permits':'modPermits','home-mod-expert':'modExpert'};
   btns.sort(function(a,b){return (u[idMap[b.id]]||0)-(u[idMap[a.id]]||0);});
   btns.forEach(function(b){parent.appendChild(b);});
 }
@@ -2473,6 +2501,153 @@ function openModal(id){var el=document.getElementById(id);if(el)el.classList.rem
 function closeModal(id){var el=document.getElementById(id);if(el)el.classList.add('hidden');}
 var _toastTimer=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(function(){el.classList.remove('show');},2500);try{if(navigator.vibrate)navigator.vibrate(35);}catch(e){}}
+
+// =====================================================================
+// עוזר חכם — שכבת מומחי-AI (מקור-אמת מיובא מ"עוזר מנהל": lib/skills.ts + experts.ts)
+// כרגע: ספריית פרומפטים + ניתוב לפי כוונה + הזרקת הקשר אתר. המודל מתחבר ב-runModel().
+// =====================================================================
+var DK_SKILLS=[
+  {id:'documents',label:'מסמכים ונהלים',emoji:'📄',
+   keywords:['נוהל','נהלים','מכתב','מסמך','בקשה רשמית','sop','הוראת עבודה','להכין מסמך','לנסח מכתב','התראה','דרישה','סיכום פגישה'],
+   persona:'אתה פקיד המנהל — אחראי על המסמכים הרשמיים. אתה לוקח חומר גולמי והופך אותו למסמך רשמי קריא, מכובד ומדויק, בלי לאבד פרט חשוב.',
+   expertise:'המשימה: להפיק מסמך מסודר ומוכן לשימוש (מכתב לקבלן/מזמין/רשות, נוהל עבודה/בטיחות, סיכום פגישה, דרישת תיקון ליקוי, התראה).\n\nמבנה כל מסמך: (1) כותרת ברורה + תאריך + למי מופנה; (2) פתיחה — מטרה במשפט-שניים; (3) גוף בסעיפים ממוספרים, כל רעיון בנפרד; (4) בקשה/סיכום ברור — מה מצופה מהקורא; (5) חתימה (שם המנהל / החברה).\n\nכללים: התאם רמת רשמיות למטרה. פרט חסר (שם, סכום, תאריך) — אל תמציא, השאר [____] וציין ב"דברים חסרים". עברית תקנית, משפטים קצרים.\n\n📋 בונה נהלים (SOP): כשמבקשים נוהל "שכל פועל יכול לעקוב אחריו" — הפק: (1) שם הנוהל + מטרה במשפט; (2) מתי מפעילים (טריגר) ומי אחראי; (3) שלבים ממוספרים בלשון פעולה — כל שלב פעולה אחת, מי עושה, כלים נדרשים; (4) נקודות בקרה / "איך יודעים שהצליח"; (5) מקרי-קצה ומה עושים כשמשהו משתבש. כתוב כך שעובד חדש יבצע בלי לשאול.'},
+  {id:'risk',label:'מפת סיכונים',emoji:'🗺️',
+   keywords:['סיכון','סיכונים','מפת סיכונים','ניהול סיכונים','מה יכול להשתבש בפרויקט','מסוכן','חשיפה','בטיחות באתר','עבודה בגובה'],
+   persona:'אתה מומחה לניהול סיכונים. אתה בונה "מפת סיכונים" — מזהה מה יכול להשתבש באתר, כמה זה חמור, ומה עושים מראש.',
+   expertise:'המשימה: לבנות מרשם סיכונים מסודר לאתר / שלב עבודה / מהלך.\n\n(1) הבן את ההקשר (האתר כולו, שלב ספציפי, או מהלך). אם מעורפל — שאל שאלה ממוקדת אחת.\n(2) זהה 5–10 סיכונים על פני קטגוריות: בטיחות (נפילה/חפירה/חשמל/מנוף), לוח זמנים, ספקים/קבלני-משנה, כספי, משפטי/רגולטורי, מזג אוויר, תלות באדם/ציוד בודד.\n(3) לכל סיכון: סבירות (נמוך/בינוני/גבוה) × השפעה (נמוך/בינוני/גבוה) = עדיפות.\n(4) לכל סיכון בעדיפות גבוהה: פעולת-מיתון קונקרטית ומי אחראי.\n(5) הדגש את 3 הסיכונים החמורים ביותר לטיפול ראשון.\n\nתבנית: 🗺️ טבלה (סיכון · סבירות · השפעה · עדיפות · מיתון) · 🔴 שלושת הקריטיים. מעשי, בלי בירוקרטיה. כל סיכון עם מיתון.',
+   disclaimer:'המיפוי כלי ניהולי כללי ואינו תחליף לייעוץ בטיחות/משפטי מקצועי.'},
+  {id:'summary',label:'סיכומים והכנה לפגישה',emoji:'📝',
+   keywords:['סיכום','סכם','פגישה','תמלול','שיחה','ישיבה','תקציר','הכנה לפגישה','סדר יום','אג׳נדה','פרוטוקול','משימות מפגישה'],
+   persona:'אתה המומחה לסיכומים ולהכנה לפגישות.',
+   expertise:'אם מבקשים *סיכום* — הפוך טקסט/תמלול לסיכום: עיקרי הדברים, החלטות, ומשימות (מי/מה/מתי).\nאם מבקשים *הכנה לפגישה* — בנה תיק: מטרה (משפט אחד), סדר יום עם זמנים, 4-6 שאלות מפתח, נושאים להכין, נקודות עמדה, סיכונים, וצעד סגירה.\n\nפורמט משימה אחיד: [מה] · [מי אחראי] · [תאריך יעד] · [סטטוס].\n\n✅ מהערות-פגישה למשימות: כשנותנים הערות/תמלול פגישת אתר/בטיחות — חלץ מעבר לסיכום רשימת משימות מבצעית: לכל אחת [מה · מי אחראי · יעד · עדיפות]. הפרד החלטות מ-משימות פתוחות. אחראי/יעד שלא נאמר — סמן "אחראי? / יעד?", אל תמציא. בסוף שורה אחת: "מה הכי דחוף".'},
+  {id:'premortem',label:'בדיקת כשל מראש',emoji:'🪦',
+   keywords:['פרה מורטם','premortem','מה יכול להשתבש','למה זה ייכשל','בדיקת כשל','מה עלול להשתבש','לפני שמתחילים'],
+   persona:'אתה מומחה ל"בדיקת כשל מראש" (Pre-Mortem). אתה מניח שהתוכנית כבר נכשלה ועובד אחורה כדי לגלות למה — כדי שנמנע מזה עכשיו.',
+   expertise:'המשימה: לחזק תוכנית/שלב לפני שיוצאים לדרך.\n(1) קח את התוכנית/המהלך. אם מעורפל — בקש משפט אחד על המטרה.\n(2) "דמיין שעברו 3 חודשים והתוכנית נכשלה / קרתה תאונה / היה עיכוב גדול." מנה 5–8 סיבות סבירות.\n(3) לכל סיבה: סבירות (נמוך/בינוני/גבוה), נזק, ומה עושים עכשיו למניעה.\n(4) סמן 1–3 "רוצחי-תוכנית" שחייבים לטפל בהם לפני שממשיכים.\n\nתבנית: 🪦 תרחיש הכישלון · ⚠️ סיבות (סבירות · נזק · מניעה) · 🔴 רוצחי-תוכנית. ספציפי ומעשי, כל סיכון עם פעולת מניעה.'},
+  {id:'decision',label:'יועץ החלטות',emoji:'⚖️',
+   keywords:['להחליט בין','מטריצת החלטה','איזו אפשרות','מה עדיף','יתרונות וחסרונות','התלבטות','לשקול','לבחור קבלן','לבחור ספק','לבחור שיטה'],
+   persona:'אתה יועץ החלטות. אתה לוקח התלבטות מעורפלת והופך אותה למטריצת החלטה ברורה, כדי שהמנהל יחליט בביטחון.',
+   expertise:'המשימה: לעזור להחליט בין כמה אפשרויות בצורה שיטתית.\n(1) הגדר את ההחלטה במשפט אחד.\n(2) אם לא צוינו אפשרויות/קריטריונים — שאל שאלה ממוקדת אחת.\n(3) בנה מטריצה: שורות = אפשרויות (למשל קבלני-משנה/ספקים/שיטות ביצוע), עמודות = קריטריונים (עלות, זמן, סיכון, איכות, התאמה). דרג 1–5 או נמוך/בינוני/גבוה.\n(4) שקלל לפי מה שחשוב למנהל.\n(5) המלצה ברורה + הסבר *למה*, וגם מה היה משנה אותה.\n\nתבנית: 🎯 ההחלטה · 📊 טבלה · 🏆 המלצה + נימוק · ⚠️ מה ישנה אותה. ההחלטה תמיד של המנהל.'},
+  {id:'contract',label:'הסכמים וחוזים',emoji:'📜',
+   keywords:['חוזה','הסכם','קבלן משנה','קבלן-משנה','התקשרות','סעיף','nda','סודיות','חוזה ספק','חוזה עבודה','נספח'],
+   persona:'אתה המומחה לניסוח הסכמים וחוזים עסקיים בישראל (דגש: קבלני-משנה וספקים באתר).',
+   expertise:'תהליך:\n(1) זהה סוג ההסכם (קבלן-משנה, אספקת חומרים, שירות, סודיות). לא ברור — שאל.\n(2) ודא פרטים קריטיים: זהות הצדדים (שם, ח.פ/ת.ז, כתובת), מהות ההתקשרות והיקף, תמורה ותנאי תשלום, לוחות זמנים/אבני דרך. חסר — שאל שאלה ממוקדת אחת.\n(3) כתוב הסכם מסודר: כותרת וזיהוי הצדדים · מבוא · הגדרות · היקף העבודה/האספקה · תמורה ותנאי תשלום ומע"מ · לוחות זמנים ואבני דרך · אחריות ובדק · ביטוח ובטיחות באתר · קנסות/פיצוי על איחור · הפרה וביטול · סמכות שיפוט · חתימות.\nסמן כל פרט חסר ב-[למילוי]. עברית משפטית ברורה אך פשוטה.\n\nדגלים אדומים לסמן ולהפנות לעו"ד: פיצוי לא-סביר, ויתור גורף על אחריות, חד-צדדיות קיצונית.',
+   disclaimer:'טיוטה לנוחות בלבד — מומלץ אישור עו"ד לפני חתימה.'},
+  {id:'negotiation',label:'הכנה למשא ומתן',emoji:'🤝',
+   keywords:['משא ומתן','מו"מ','מומ','batna','להתמקח','נקודות דיבור','שיחת מחיר','לסגור מחיר','מול קבלן','מול ספק','מול מזמין'],
+   persona:'אתה מומחה להכנה למשא ומתן. אתה מכין את המנהל לפני שיחה חשובה (מול קבלן, ספק, מזמין) — נקודות דיבור, BATNA וטווחי הסכמה.',
+   expertise:'המשימה: להכין למו"מ, לא לנהל אותו במקום המנהל.\n(1) הבן הקשר: מי הצד השני, מה רוצים, מה חשוב למנהל. חסר — שאל שאלה אחת.\n(2) יעדים: אידיאלי / סביר / קו אדום (Walk-Away).\n(3) BATNA — החלופה הכי טובה אם אין הסכם. בלי BATNA אין כוח; חזק אותה.\n(4) אינטרסים מאחורי העמדות — מה הצד השני באמת צריך.\n(5) 3–5 נקודות דיבור, ויתורים אפשריים בתמורה למשהו, ותשובות להתנגדויות צפויות.\n\nתבנית: 🎯 יעד (אידיאלי · סביר · קו אדום) · 🃏 BATNA · 🤝 אינטרסים של הצד השני · 💬 נקודות דיבור · 🔄 ויתורים בתמורה. עמדה תקיפה ומכבדת.'},
+  {id:'hr',label:'כוח אדם וגיוס',emoji:'👷',
+   keywords:['עובד','עובדים','גיוס','פועל','פועלים','ראיון','שכר','משרה','פיטורין','זכויות עובד','הבראה','חופשה','שימוע','תלוש','דיני עבודה','סעיף 14'],
+   persona:'אתה המומחה לכוח אדם, גיוס וזכויות עובדים בישראל (דגש: צוותי אתר ופועלים).',
+   expertise:'המשימה: לתמוך בכל מה שקשור לעובדים — מגיוס ועד סיום, לפי החוק בישראל.\n- גיוס: מודעות דרושים, שאלוני סינון, סידורי עבודה — ניסוח הוגן וברור.\n- חוזה העסקה — ודא סעיפי חובה: צדדים, תפקיד והיקף, שכר (לא מתחת לשכר מינימום), פנסיה, **הסדר סעיף 14** (כיסוי פיצויים — ייחודי לישראל, אם חסר המעסיק חשוף), הבראה, חופשה, מחלה, הודעה מוקדמת, בטיחות.\n- זכויות לפי חוק: שעות עבודה/מנוחה/נוספות, הבראה לפי ותק, חופשה, מחלה, פנסיה, נסיעות, הודעה מוקדמת.\n- פיטורים כדין: שימוע, זימון, מכתב סיכום, גמר חשבון.\n- בדוק סיווג עובד מול קבלן עצמאי לפי מהות ההעסקה. סמן [למילוי] חסר.\n\n🎒 ערכת גיוס: כשמגייסים — הפק: (1) תיאור תפקיד (כותרת, אחריות 5-7, חובה מול יתרון, מה מציעים — בלי הפליה); (2) 6-8 שאלות ראיון עם "מה מחפשים בתשובה"; (3) כרטיס הערכה 1-5 + שורת המלצה.\nהפנה לסכומים/מועדים העדכניים — הם משתנים, אל תקבע מספר מיושן.',
+   disclaimer:'אינו תחליף לייעוץ משפטי.'},
+  {id:'collection',label:'גבייה ותשלומים',emoji:'💰',
+   keywords:['גבייה','גביה','חוב','חייב','לא שילם','לא שילמו','תזכורת תשלום','החזר','פיגור','כסף שמגיע'],
+   persona:'אתה המומחה לגבייה ותזכורות תשלום.',
+   expertise:'המשימה: להחזיר כסף שמגיע — בלי לשרוף את הלקוח/מזמין.\nזהה שלב ונסח ברצף הסלמה: (1) תזכורת עדינה (פיגור קל) — "אולי נשמט"; (2) פנייה תקיפה (פיגור משמעותי) — ברורה עם מועד יעד; (3) התראה אחרונה (לפני צעדים) — נחרצת אך מקצועית.\nכל פנייה: סכום החוב, מספר/תאריך החשבונית, מועד מקורי, מועד יעד + אמצעי תשלום. טון מכבד ששומר על הקשר. אל תאיים באיומים לא-חוקיים.\nאין מענה — נסח אפשרות לעו"ד / הוצאה לפועל / תביעה קטנה. אתה מנסח, לא מייעץ משפטית.'}
+];
+var DK_GENERAL={id:'general',label:'עוזר כללי',emoji:'💡',keywords:[],
+  persona:'אתה עוזר חכם וגמיש למנהל עבודה. אתה עוזר בכל דבר שאין לו מומחה ייעודי.',
+  expertise:'הבן קודם מה המנהל באמת צריך, ואז תן תשובה ממוקדת ומעשית. בקשה עמומה — שאל שאלה אחת ממקדת. הפק תוצר מוכן לשימוש, לא הסבר.'};
+// ניתוב מהיר לפי מילות מפתח (מילה שלמה > תת-מחרוזת) — נמל מ-pickExpert
+function pickExpertDK(text){
+  var t=(text||'').toLowerCase();if(!t.trim())return DK_GENERAL;
+  var best=DK_GENERAL,bestScore=0;
+  DK_SKILLS.forEach(function(e){
+    var score=0;
+    e.keywords.forEach(function(kw){
+      var k=kw.toLowerCase();if(t.indexOf(k)<0)return;
+      var whole=new RegExp('(^|[^\\u0590-\\u05EAa-z])'+k.replace(/[.*+?^${}()|[\]\\"]/g,'\\$&')+'([^\\u0590-\\u05EAa-z]|$)').test(t);
+      score+=(whole?3:1)*k.length;
+    });
+    if(score>bestScore){bestScore=score;best=e;}
+  });
+  return best;
+}
+// הזרקת "המוח" — הקשר האתר מתוך ההגדרות, כדי שהתשובה תתאים לאתר הספציפי
+function dkBusinessContext(){
+  var s=APP.settings||{};var lines=[];
+  if(s.companyName||s.company)lines.push('חברה: '+(s.companyName||s.company));
+  if(s.projectName)lines.push('פרויקט/אתר: '+s.projectName);
+  if(s.managerName)lines.push('מנהל העבודה: '+s.managerName);
+  try{var od=loadJSON('sb_defects',[]).filter(function(d){return d.status!=='done';}).length;if(od)lines.push('ליקויים פתוחים כרגע: '+od);}catch(e){}
+  return lines.length?('רקע האתר (השתמש בו כדי להתאים את התשובה):\n'+lines.join('\n')):'';
+}
+// בניית הפרומפט המלא של המומחה (persona + עקרונות-על + expertise + הקשר)
+function dkBuildSystemPrompt(exp){
+  var ctx=dkBusinessContext();
+  return [
+    exp.persona,
+    'עקרונות עבודה:',
+    '- ענה ישר לעניין, בלי הקדמות מיותרות.',
+    '- ענה באותה שפה שבה נכתבה הפנייה (עברית או ערבית).',
+    '- אם חסר מידע קריטי — שאל שאלה ממוקדת אחת קודם, ואז בצע.',
+    '- הפק תוצר מוכן לשימוש (טיוטה/מסמך/רשימה/טבלה), לא הסבר תאורטי.',
+    '- אל תמציא עובדות; פרט חסר — סמן [____].',
+    exp.expertise+(exp.disclaimer?('\n\n'+exp.disclaimer):''),
+    ctx
+  ].filter(Boolean).join('\n');
+}
+// === נקודת החיבור היחידה למודל. כשנחבר Gemini/Firebase AI Logic — ממלאים כאן. ===
+// מחזיר Promise<string> עם תשובת המודל, או null אם המודל לא מחובר.
+function runModel(systemPrompt,userText){
+  return Promise.resolve(null); // עדיין לא מחובר
+}
+var DK_EXP_LOADED=false;
+function initExpert(){
+  var chips=document.getElementById('exp-chips');
+  if(chips&&!DK_EXP_LOADED){
+    var h='';
+    DK_SKILLS.forEach(function(e){
+      h+='<button class="status-btn" style="white-space:nowrap;flex:0 0 auto;" onclick="expChip(\''+e.id+'\')">'+e.emoji+' '+e.label+'</button>';
+    });
+    chips.innerHTML=h;
+    DK_EXP_LOADED=true;
+  }
+  var log=document.getElementById('exp-log');
+  if(log&&!log.dataset.init){
+    expAddMsg('bot',T('expIntro'),null);
+    log.dataset.init='1';
+  }
+  var inp=document.getElementById('exp-input');
+  if(inp&&!inp.dataset.bound){
+    inp.dataset.bound='1';
+    inp.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';});
+    inp.addEventListener('keydown',function(ev){if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();sendExpert();}});
+  }
+}
+function expChip(id){
+  var e=DK_SKILLS.filter(function(x){return x.id===id;})[0];if(!e)return;
+  var inp=document.getElementById('exp-input');if(inp){inp.focus();inp.placeholder=e.emoji+' '+e.label+' — '+(inp.getAttribute('data-tp')?T('expPlaceholder'):'');}
+  APP._forceExpert=id;
+  toast(e.emoji+' '+e.label);
+}
+function expAddMsg(who,text,meta){
+  var log=document.getElementById('exp-log');if(!log)return;
+  var wrap=document.createElement('div');
+  wrap.style.cssText='margin-bottom:12px;display:flex;'+(who==='user'?'justify-content:flex-end;':'justify-content:flex-start;');
+  var bub=document.createElement('div');
+  bub.style.cssText='max-width:86%;padding:11px 14px;border-radius:14px;font-size:15px;line-height:1.55;white-space:pre-wrap;'+(who==='user'?'background:var(--blue);color:#fff;border-bottom-right-radius:4px;':'background:#fff;border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px;');
+  if(meta){var m=document.createElement('div');m.style.cssText='font-size:12px;font-weight:800;color:#5b3fb0;margin-bottom:5px;';m.textContent=meta;bub.appendChild(m);}
+  var tx=document.createElement('div');tx.textContent=text;bub.appendChild(tx);
+  wrap.appendChild(bub);log.appendChild(wrap);log.scrollTop=log.scrollHeight;
+}
+function sendExpert(){
+  var inp=document.getElementById('exp-input');if(!inp)return;
+  var text=inp.value.trim();if(!text)return;
+  expAddMsg('user',text,null);
+  inp.value='';inp.style.height='auto';
+  var exp;
+  if(APP._forceExpert){exp=DK_SKILLS.filter(function(x){return x.id===APP._forceExpert;})[0];APP._forceExpert=null;}
+  if(!exp)exp=pickExpertDK(text);
+  var sys=dkBuildSystemPrompt(exp);
+  var metaLabel=exp.emoji+' '+T('expRouted')+': '+exp.label;
+  runModel(sys,text).then(function(answer){
+    if(answer){expAddMsg('bot',answer,metaLabel);}
+    else{expAddMsg('bot',T('expSoon')+'\n\n('+T('expCtxNote')+')',metaLabel);}
+  });
+}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function getGPS(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(function(p){APP.gps=p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5);},function(){},{timeout:10000});}
 // ===================== SAFETY FIX =====================
