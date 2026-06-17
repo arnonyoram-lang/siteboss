@@ -324,8 +324,9 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btnExpTitle"></span><span class="home-btn-desc" data-t="btnExpDesc"></span></span>
     </button>
   </div>
-  <div style="text-align:center;margin-top:18px;">
+  <div style="text-align:center;margin-top:18px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
     <button onclick="showScreen('s-help')" style="background:none;border:none;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;" data-t="helpLink"></button>
+    <button onclick="showScreen('s-legal')" style="background:none;border:none;color:var(--sub);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;" data-t="legalLink"></button>
   </div>
   <div class="offline-note" data-t="offlineNote"></div>
 </div>
@@ -355,6 +356,16 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <button class="btn btn-blue" style="min-width:64px;font-size:22px;padding:0;" onclick="sendExpert()">↑</button>
     </div>
   </div>
+</div>
+
+<!-- LEGAL: תנאי שימוש ופרטיות -->
+<div class="screen" id="s-legal">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="legalTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body"><div id="legal-body" style="line-height:1.7;font-size:14px;"></div></div>
 </div>
 
 <!-- HELP & FEEDBACK -->
@@ -733,7 +744,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     <div class="topbar-center"><div class="topbar-title" id="report-topbar-title">דוח</div></div>
     <div style="display:flex;gap:6px;align-items:center">
       <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
-      <button class="icon-btn no-print" onclick="window.print()">🖨️</button>
+      <button class="icon-btn no-print" aria-label="הדפסה / שמירה כ-PDF" title="הדפסה / שמירה כ-PDF" onclick="window.print()">🖨️</button>
     </div>
   </div>
   <div class="screen-body">
@@ -961,7 +972,8 @@ btnExpTitle:'עוזר חכם',btnExpDesc:'נהלים, סיכונים, מכתבי
 expIntro:'מה תרצה? כתוב חופשי והעוזר המתאים יענה. למשל: "תכתוב נוהל כניסה לאתר", "מה הסיכונים בעבודה בגובה השבוע", "מכתב לקבלן על ליקוי שלא תוקן", "סכם לי את פגישת הבטיחות", "תעזור לי להחליט בין שני קבלני משנה".',
 saveFailFull:'⚠️ לא נשמר — הזיכרון מלא. מחק תמונות/דוחות ישנים ונסה שוב',
 searchPlaceholder:'🔍 חיפוש (תיאור, קומה, קבלן…)',loadMore:'טען עוד',noSearchResults:'לא נמצאו תוצאות',
-syncedToast:'☁️ סונכרן לענן',
+syncedToast:'☁️ סונכרן לענן',legalTitle:'תנאי שימוש ופרטיות',legalLink:'תנאי שימוש ופרטיות',
+onbTipTitle:'👋 ברוכים הבאים לדקה',onbTipBody:'3 צעדים להתחלה:\n1. פתח 📋 יומן ותעד את היום — קול או הקלדה.\n2. צילמת ליקוי? 📸 ליקויים → שלח לקבלן בלחיצה.\n3. כל בוקר עבור על 🦺 בטיחות וחתום.\nהכול נשמר במכשיר ומגובה לענן.',onbTipBtn:'הבנתי, בוא נתחיל',
 expRouted:'מומחה',expSoon:'מנוע ה-AI עוד לא מחובר במכשיר הזה — אבל זיהיתי בדיוק לאיזה מומחה לפנות ובניתי לו את ההנחיה המלאה. כשנחבר את המודל, התשובה המלאה תופיע כאן.',expCtxNote:'הקשר האתר שלך מוזרק אוטומטית',
 faqTitle:'שאלות נפוצות',
 feedbackTitle:'שליחת פנייה למשרד',feedbackType:'סוג הפנייה',fbBug:'תקלה',fbIdea:'הצעה',fbQuestion:'שאלה',
@@ -1094,7 +1106,8 @@ btnExpTitle:'مساعد ذكي',btnExpDesc:'إجراءات، مخاطر، رسا
 expIntro:'ماذا تريد؟ اكتب بحرية وسيجيبك الخبير المناسب. مثلاً: "اكتب إجراء دخول للموقع"، "ما مخاطر العمل على ارتفاع هذا الأسبوع"، "رسالة لمقاول حول عيب لم يُصلَح"، "لخّص لي اجتماع السلامة"، "ساعدني أقرّر بين مقاولَي باطن".',
 saveFailFull:'⚠️ لم يُحفظ — الذاكرة ممتلئة. احذف صوراً/تقارير قديمة وحاول ثانية',
 searchPlaceholder:'🔍 بحث (وصف، طابق، مقاول…)',loadMore:'تحميل المزيد',noSearchResults:'لا توجد نتائج',
-syncedToast:'☁️ تمت المزامنة',
+syncedToast:'☁️ تمت المزامنة',legalTitle:'شروط الاستخدام والخصوصية',legalLink:'شروط الاستخدام والخصوصية',
+onbTipTitle:'👋 أهلاً بك في دقيقة',onbTipBody:'3 خطوات للبدء:\n1. افتح 📋 اليومية ووثّق اليوم — صوت أو كتابة.\n2. صوّرت عيباً؟ 📸 العيوب → أرسل للمقاول بضغطة.\n3. كل صباح راجع 🦺 السلامة ووقّع.\nكل شيء محفوظ على الجهاز ومنسوخ للسحابة.',onbTipBtn:'فهمت، لنبدأ',
 expRouted:'خبير',expSoon:'محرك الذكاء الاصطناعي غير موصول بعد على هذا الجهاز — لكنني حدّدت الخبير المناسب وبنيت له التعليمات الكاملة. عند توصيل النموذج، ستظهر الإجابة الكاملة هنا.',expCtxNote:'سياق موقعك يُضاف تلقائياً',
 faqTitle:'أسئلة شائعة',
 feedbackTitle:'إرسال رسالة للمكتب',feedbackType:'نوع الرسالة',fbBug:'عطل',fbIdea:'اقتراح',fbQuestion:'سؤال',
@@ -1334,7 +1347,9 @@ function onScreenEnter(id){
   if(id==='s-settings')loadSettingsForm();
   if(id==='s-messages')renderMessages();
   if(id==='s-help')initHelp();
+  if(id==='s-legal')renderLegal();
   if(id==='s-expert')initExpert();
+  if(id==='s-home'&&typeof maybeShowOnboardTip==='function')maybeShowOnboardTip();
   if(id==='s-presence')initPresence();
   if(id==='s-presence-history')renderPresenceHistory();
   if(id==='s-reminders')renderReminders();
@@ -2918,6 +2933,43 @@ function init(){
   }
   try{ dkOfflineWatch(); }catch(_){}
 }
+// תנאי שימוש ופרטיות — טקסט פשוט (תבנית; מומלץ אישור עו"ד לפני פרסום מסחרי)
+function renderLegal(){
+  var el=document.getElementById('legal-body');if(!el)return;
+  var co=(APP.settings&&(APP.settings.companyName||APP.settings.company))||'[שם החברה]';
+  var he='<h3>פרטיות</h3>'
+    +'<p>אפליקציית "דקה" נועדה לתיעוד עבודת מנהלי עבודה בשטח. הנתונים שאתה מזין (יומני עבודה, ליקויים, בטיחות, נוכחות, תמונות, חתימות ומיקום GPS) נשמרים <b>במכשיר שלך</b> ומגובים בענן (Firebase) לצורך שמירה וראות הבעלים/המשרד.</p>'
+    +'<p>אנו אוספים: שם, טלפון, שם חברה/פרויקט, ותכני התיעוד שאתה יוצר. מיקום ה-GPS נאסף בבדיקות בטיחות לצורך תיעוד מקום הבדיקה בלבד.</p>'
+    +'<p>המידע משמש להפעלת השירות בלבד ואינו נמכר לצד שלישי. זכותך לעיין, לתקן או לבקש מחיקה — פנה ל-'+esc(co)+'.</p>'
+    +'<h3>תנאי שימוש</h3>'
+    +'<p>השירות מסופק כפי-שהוא ("AS IS"). אתה אחראי לדיוק הנתונים שאתה מזין. דוחות בטיחות ויומני עבודה אינם תחליף לחובות החוקיות החלות עליך כמנהל עבודה.</p>'
+    +'<p>שמור גיבוי לתיעוד קריטי. החברה אינה אחראית לאובדן נתונים עקב תקלה, מחיקה או מכשיר פגום.</p>'
+    +'<p style="color:var(--sub);font-size:12px;margin-top:14px;">מסמך זה הוא תבנית לנוחות ואינו ייעוץ משפטי. מומלץ אישור עו"ד לפני שימוש מסחרי.</p>';
+  var ar='<h3>الخصوصية</h3>'
+    +'<p>تطبيق "دقيقة" مُعدّ لتوثيق عمل مدراء العمل في الموقع. البيانات التي تُدخلها (يوميات، عيوب، سلامة، حضور، صور، توقيعات وموقع GPS) تُحفظ <b>على جهازك</b> وتُنسخ احتياطياً في السحابة (Firebase) للحفظ ولرؤية المالك/المكتب.</p>'
+    +'<p>نجمع: الاسم، الهاتف، اسم الشركة/المشروع، ومحتوى التوثيق الذي تنشئه. يُجمع موقع GPS في فحوصات السلامة لتوثيق مكان الفحص فقط.</p>'
+    +'<p>تُستخدم المعلومات لتشغيل الخدمة فقط ولا تُباع لطرف ثالث. يحق لك الاطلاع والتصحيح وطلب الحذف — تواصل مع '+esc(co)+'.</p>'
+    +'<h3>شروط الاستخدام</h3>'
+    +'<p>تُقدَّم الخدمة "كما هي". أنت مسؤول عن دقة البيانات. تقارير السلامة واليوميات ليست بديلاً عن واجباتك القانونية كمدير عمل.</p>'
+    +'<p>احتفظ بنسخة احتياطية للتوثيق الهام. الشركة غير مسؤولة عن فقدان البيانات بسبب عطل أو حذف أو جهاز تالف.</p>'
+    +'<p style="color:var(--sub);font-size:12px;margin-top:14px;">هذا المستند نموذج للتسهيل وليس استشارة قانونية. يُنصح بمراجعة محامٍ قبل الاستخدام التجاري.</p>';
+  el.innerHTML=APP.lang==='ar'?ar:he;
+}
+// טיפ ראשון — מוצג פעם אחת אחרי הרשמה, מסביר את 3 הצעדים
+function maybeShowOnboardTip(){
+  try{ if(localStorage.getItem('dk_onboard_tip')==='1')return; }catch(e){}
+  if(!(APP.settings&&APP.settings.registered))return;
+  if(document.getElementById('dk-onbtip'))return;
+  var ov=document.createElement('div');ov.id='dk-onbtip';
+  ov.style.cssText='position:fixed;inset:0;z-index:9500;background:rgba(15,61,122,.6);display:flex;align-items:center;justify-content:center;padding:22px;';
+  ov.innerHTML='<div style="background:#fff;border-radius:16px;padding:22px;max-width:360px;width:100%;box-shadow:0 14px 40px rgba(0,0,0,.3);">'
+    +'<div style="font-size:19px;font-weight:900;margin-bottom:10px;">'+T('onbTipTitle')+'</div>'
+    +'<div style="font-size:15px;line-height:1.7;white-space:pre-line;color:var(--text);">'+esc(T('onbTipBody'))+'</div>'
+    +'<button class="btn btn-blue" style="width:100%;margin-top:16px;" onclick="dismissOnboardTip()">'+T('onbTipBtn')+'</button>'
+    +'</div>';
+  document.body.appendChild(ov);
+}
+function dismissOnboardTip(){try{localStorage.setItem('dk_onboard_tip','1');}catch(e){}var el=document.getElementById('dk-onbtip');if(el)el.remove();}
 // חיווי לא-מקוון — מרגיע את המנהל שהנתונים נשמרים גם בלי קליטה
 function dkOfflineWatch(){
   var el=document.getElementById('dk-offline');
