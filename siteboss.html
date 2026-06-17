@@ -1199,8 +1199,15 @@ function saveJSON(k,v){
 }
 function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 // מראה רשומה ל-Firebase (ללא תמונות כבדות — אלו יעברו ל-Storage בהמשך). חתימות נשמרות.
+// מיפוי שם-אוסף-ענן → מפתח localStorage (כדי לעדכן את הרשומה המקומית עם כתובות הענן)
+var DK_COLL_KEY={journals:'sb_journals',defects:'sb_defects',safety:'sb_safety',incidents:'dk_incidents',onboard:'dk_onboard',permits:'dk_permits'};
+// שומר את כתובות התמונות בענן על הרשומה המקומית — כך שכשמפנים מקום (_freeSpace), עדיין אפשר להציג מהענן
+function _dkStorePhotoUrls(coll,entryId,urls){
+  var key=DK_COLL_KEY[coll];if(!key||!urls||!urls.length)return;
+  try{var list=loadJSON(key,[]);var ch=false;for(var i=0;i<list.length;i++){if(list[i]&&list[i].id===entryId){list[i].photoUrls=urls;ch=true;break;}}if(ch)saveJSON(key,list);}catch(e){}
+}
 function cloudSave(coll,entry){
-  if(!window._dkSaveDoc||!entry)return;
+  if(!window._dkSaveDoc||!entry)return Promise.resolve(false);
   var s=APP.settings||{};var owner=(s.managerPhone||'').replace(/\D/g,'');
   var docId=(owner||'x')+'_'+entry.id;
   var copy={};for(var k in entry){if(k==='photos')continue;copy[k]=entry[k];}
@@ -1208,15 +1215,17 @@ function cloudSave(coll,entry){
   copy.owner=owner;copy.ownerName=s.managerName||'';copy.project=s.projectName||'';
   copy.cloudAt=new Date().toISOString();
   try{window._dkSaveDoc(coll,docId,copy);}catch(e){}
-  // העלאת תמונות ל-Storage (אסינכרוני) ועדכון הכתובות במסמך. מחזיר Promise כדי שמיגרציה תדע מתי באמת הסתיים.
+  // העלאת תמונות ל-Storage (אסינכרוני) ועדכון הכתובות במסמך ובמקומי. מחזיר Promise כדי שמיגרציה תדע מתי באמת הסתיים.
   if(entry.photos&&entry.photos.length&&window._dkUploadPhotos){
     try{return window._dkUploadPhotos('photos/'+(owner||'x')+'/'+coll+'/'+entry.id,entry.photos).then(function(urls){
-      if(urls&&urls.length)window._dkSaveDoc(coll,docId,{photoUrls:urls});
+      if(urls&&urls.length){window._dkSaveDoc(coll,docId,{photoUrls:urls});_dkStorePhotoUrls(coll,entry.id,urls);}
       return true;
     });}catch(e){return Promise.reject(e);}
   }
   return Promise.resolve(true);
 }
+// מחזיר את התמונות להצגה: base64 מקומי אם קיים, אחרת כתובות הענן (אחרי פינוי מקום)
+function dkPhotosOf(entry){return (entry&&entry.photos&&entry.photos.length)?entry.photos:((entry&&entry.photoUrls)||[]);}
 function cloudDelete(coll,entry){
   if(!window._dkDeleteDoc||!entry)return;
   var owner=((APP.settings&&APP.settings.managerPhone)||'').replace(/\D/g,'');
@@ -1535,7 +1544,8 @@ function renderReminders(){
 function addReminder(){
   var text=document.getElementById('rem-text').value.trim();if(!text)return;
   var rem=getReminders();rem.unshift({id:Date.now(),text:text,date:document.getElementById('rem-date').value||'',done:false});
-  saveJSON('dk_reminders',rem);document.getElementById('rem-text').value='';document.getElementById('rem-date').value='';
+  if(!saveJSON('dk_reminders',rem)){toast(T('saveFailFull'),6000);return;}
+  document.getElementById('rem-text').value='';document.getElementById('rem-date').value='';
   renderReminders();updateReminderBadge();
 }
 function toggleReminder(id){var rem=getReminders();for(var i=0;i<rem.length;i++)if(rem[i].id===id){rem[i].done=!rem[i].done;break;}saveJSON('dk_reminders',rem);renderReminders();updateReminderBadge();}
@@ -1579,7 +1589,8 @@ function saveIncident(){
     injured:document.getElementById('inc-injured').value.trim(),
     action:document.getElementById('inc-action').value.trim(),
     photos:_incPhotos.slice(),reporter:s.managerName||'',project:s.projectName||''};
-  var list=getIncidents();list.unshift(entry);saveJSON('dk_incidents',list);
+  var list=getIncidents();list.unshift(entry);
+  if(!saveJSON('dk_incidents',list)){toast(T('saveFailFull'),6000);return;}
   cloudSave('incidents',entry);
   toast(T('incSaved'),3000);
   shareIncidentWA(entry);
@@ -1604,7 +1615,7 @@ function renderIncidentsHistory(){
       +'<div style="font-size:14px;line-height:1.5;">'+esc(e.desc)+'</div>'
       +(e.location?'<div style="font-size:13px;color:var(--sub);margin-top:4px;">📍 '+esc(e.location)+'</div>':'')
       +(e.injured?'<div style="font-size:13px;color:var(--red);margin-top:4px;">🩹 '+esc(e.injured)+'</div>':'')
-      +(e.photos&&e.photos.length?'<div class="photos-grid" style="margin-top:8px;">'+e.photos.map(function(p){return '<div class="photo-thumb"><img src="'+p+'"></div>';}).join('')+'</div>':'')
+      +(function(){var ph=dkPhotosOf(e);return ph.length?'<div class="photos-grid" style="margin-top:8px;">'+ph.map(function(p){return '<div class="photo-thumb"><img src="'+p+'"></div>';}).join('')+'</div>':'';})()
       +'<button class="btn btn-gray btn-sm" style="margin-top:8px;" onclick="shareIncidentWA(getIncidents().find(function(x){return x.id==='+e.id+';}))">📲 שלח שוב</button>'
       +'</div>';
   });
@@ -1666,7 +1677,8 @@ function saveOnboard(){
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),name:name,
     permit:document.getElementById('ob-permit').value.trim(),permitPhoto:_obPhoto||null,
     lang:_obLang,signature:obSignPad.dataURL(),project:s.projectName||'',by:s.managerName||''};
-  var list=getOnboarded();list.unshift(entry);saveJSON('dk_onboard',list);
+  var list=getOnboarded();list.unshift(entry);
+  if(!saveJSON('dk_onboard',list)){toast(T('saveFailFull'),6000);return;}
   cloudSave('onboard',entry);
   toast(T('obSaved'),3000);showScreen('s-onboard');
 }
@@ -1759,7 +1771,8 @@ function savePermit(){
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),type:_permType,worker:worker,
     location:document.getElementById('perm-location').value.trim(),validUntil:document.getElementById('perm-valid').value,
     checks:checkList,signature:permSignPad.dataURL(),by:s.managerName||'',project:s.projectName||''};
-  var list=getPermits();list.unshift(entry);saveJSON('dk_permits',list);
+  var list=getPermits();list.unshift(entry);
+  if(!saveJSON('dk_permits',list)){toast(T('saveFailFull'),6000);return;}
   cloudSave('permits',entry);
   toast(T('permSaved'),3000);showScreen('s-permits-history');
 }
@@ -2097,7 +2110,7 @@ function showJournalReport(entryOrStr){
     if(entry.delays)h+='<p>'+T('reportDelays')+'</p><p>'+esc(entry.delays).replace(/\n/g,'<br>')+'</p>';
     if(entry.tasks)h+='<p>'+T('reportTasks')+'</p><p>'+esc(entry.tasks).replace(/\n/g,'<br>')+'</p>';
   }
-  if(entry.photos&&entry.photos.length){h+='<div class="report-section-title">'+T('reportPhotos')+'</div><div class="photos-grid">';for(var p=0;p<entry.photos.length;p++)h+='<div class="photo-thumb"><img src="'+entry.photos[p]+'"></div>';h+='</div>';}
+  var _rp=dkPhotosOf(entry);if(_rp.length){h+='<div class="report-section-title">'+T('reportPhotos')+'</div><div class="photos-grid">';for(var p=0;p<_rp.length;p++)h+='<div class="photo-thumb"><img src="'+_rp[p]+'"></div>';h+='</div>';}
   // ===== חתימות =====
   h+='<div style="display:flex;gap:14px;margin-top:18px;flex-wrap:wrap;">';
   // חתימת מנהל עבודה
@@ -2177,7 +2190,7 @@ function renderDefects(){
     if(d.floor||d.area)h+='<span>📍 '+esc((d.floor||'')+(d.area?' / '+d.area:''))+'</span>';
     if(d.contractor)h+='<span>👷 '+esc(d.contractor)+'</span>';
     h+='<span>'+dl+'</span></div>';
-    if(d.photos&&d.photos.length){h+='<div class="photos-grid" style="margin-bottom:10px;">';for(var p=0;p<Math.min(d.photos.length,3);p++)h+='<div class="photo-thumb"><img src="'+d.photos[p]+'"></div>';h+='</div>';}
+    var _dp=dkPhotosOf(d);if(_dp.length){h+='<div class="photos-grid" style="margin-bottom:10px;">';for(var p=0;p<Math.min(_dp.length,3);p++)h+='<div class="photo-thumb"><img src="'+_dp[p]+'"></div>';h+='</div>';}
     // פרטי תיקון אם קיימים
     if(d.fix){
       var fdt=d.fix.when?new Date(d.fix.when).toLocaleString(APP.lang==='ar'?'ar-IL':'he-IL'):'';
@@ -2731,6 +2744,9 @@ function submitRegistration(){
   var project=document.getElementById('reg-project').value.trim();
   if(!name){toast(APP.lang==='ar'?'يرجى إدخال الاسم الكامل':'יש להזין שם מלא');document.getElementById('reg-name').focus();return;}
   if(!phone){toast(APP.lang==='ar'?'يرجى إدخال رقم الهاتف':'יש להזין מספר טלפון');document.getElementById('reg-phone').focus();return;}
+  // נרמול טלפון לספרות בלבד — מונע חשבונות כפולים ("050-1" מול "0501") ו-docId לא-עקבי
+  phone=phone.replace(/\D/g,'');
+  if(phone.length<9){toast(APP.lang==='ar'?'رقم هاتف غير صحيح':'מספר טלפון לא תקין');document.getElementById('reg-phone').focus();return;}
   // שמור הגדרות
   APP.settings.managerName=name;
   APP.settings.managerPhone=phone;
