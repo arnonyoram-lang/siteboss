@@ -2310,7 +2310,7 @@ function saveFix(){
   toast(T('fixedLabel')+' ✅');
   renderDefects();
 }
-function delDefect(id){if(!confirm(T('deleteConfirm')))return;var ds=loadJSON('sb_defects',[]);var ent=ds.find(function(d){return d.id===id;});ds=ds.filter(function(d){return d.id!==id;});saveJSON('sb_defects',ds);if(ent)cloudDelete('defects',ent);renderDefects();toast(T('deleted'));}
+function delDefect(id){var ds=loadJSON('sb_defects',[]);var ent=ds.find(function(d){return d.id===id;});var nm=ent&&ent.desc?(' "'+ent.desc.slice(0,30)+'"'):'';if(!confirm((APP.lang==='ar'?'حذف العيب؟':'למחוק את הליקוי?')+nm))return;ds=ds.filter(function(d){return d.id!==id;});saveJSON('sb_defects',ds);if(ent)cloudDelete('defects',ent);renderDefects();toast(T('deleted'));}
 function sendDefWA(id){var ds=loadJSON('sb_defects',[]);var d=ds.find(function(x){return x.id===id;});if(!d)return;var cs=APP.settings.contractors||[];var c=d.contractor?cs.find(function(x){return x.name===d.contractor;}):null;sendDefWADirect(d,c?c.phone:'');}
 function sendDefWADirect(d,phone){
   var sk=d.severity==='urgent'?'sevUrgent':d.severity==='low'?'sevLow':'sevNormal';
@@ -2510,7 +2510,7 @@ function saveContractor(){
   if(!APP.settings.contractors)APP.settings.contractors=[];
   APP.settings.contractors.push(c);saveJSON('sb_settings',APP.settings);renderContractors();closeModal('modal-contractor');toast(T('saved'));
 }
-function delContractor(idx){if(!confirm(T('deleteConfirm')))return;APP.settings.contractors.splice(idx,1);saveJSON('sb_settings',APP.settings);renderContractors();toast(T('deleted'));}
+function delContractor(idx){var c=(APP.settings.contractors||[])[idx];var nm=c&&c.name?(' "'+c.name+'"'):'';if(!confirm((APP.lang==='ar'?'حذف المقاول؟':'למחוק את הקבלן?')+nm))return;APP.settings.contractors.splice(idx,1);saveJSON('sb_settings',APP.settings);renderContractors();toast(T('deleted'));}
 function openModal(id){var el=document.getElementById(id);if(el)el.classList.remove('hidden');applyLang();}
 function closeModal(id){var el=document.getElementById(id);if(el)el.classList.add('hidden');}
 var _toastTimer=null;
@@ -2858,6 +2858,22 @@ function init(){
     try{var hs=document.getElementById('s-home');if(hs){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});hs.classList.add('active');}}catch(_){}
     try{toast('שגיאה זמנית — נסה לרענן');}catch(_){}
   }
+  try{ dkOfflineWatch(); }catch(_){}
+}
+// חיווי לא-מקוון — מרגיע את המנהל שהנתונים נשמרים גם בלי קליטה
+function dkOfflineWatch(){
+  var el=document.getElementById('dk-offline');
+  if(!el){
+    el=document.createElement('div');el.id='dk-offline';
+    el.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:9000;background:#5a6b7d;color:#fff;text-align:center;font-size:13px;font-weight:700;padding:8px calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-bottom));transform:translateY(110%);transition:transform .25s;';
+    document.body.appendChild(el);
+  }
+  function upd(){
+    var off=(navigator.onLine===false);
+    el.textContent=APP.lang==='ar'?'⚠️ لا يوجد اتصال — يتم الحفظ على الجهاز':'⚠️ אין חיבור — הנתונים נשמרים במכשיר';
+    el.style.transform=off?'translateY(0)':'translateY(110%)';
+  }
+  window.addEventListener('online',upd);window.addEventListener('offline',upd);upd();
 }
 function storageWorks(){
   try{var t='__dk_test__';localStorage.setItem(t,'1');var ok=localStorage.getItem(t)==='1';localStorage.removeItem(t);return ok;}catch(e){return false;}
