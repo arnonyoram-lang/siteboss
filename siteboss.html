@@ -660,7 +660,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     <div class="topbar-center"><div class="topbar-title" data-t="defectsTitle"></div></div>
     <div class="lang-toggle"><button class="lang-btn" data-lang="he" onclick="setLang('he')">עב</button><button class="lang-btn" data-lang="ar" onclick="setLang('ar')">عر</button></div>
   </div>
-  <div class="screen-body"><div class="filter-tabs" id="defect-filters"></div><div id="defects-list"></div></div>
+  <div class="screen-body"><input id="defect-search" type="search" data-tp="searchPlaceholder" oninput="setDefSearch(this.value)" style="width:100%;box-sizing:border-box;padding:11px 12px;font-size:15px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:10px;"><div class="filter-tabs" id="defect-filters"></div><div id="defects-list"></div></div>
   <button class="fab" onclick="openAddDefect()">+</button>
 </div>
 
@@ -960,6 +960,7 @@ doneToday:'✓ בוצע היום',sameCrew:'👥 אותו צוות כמו אתמ
 btnExpTitle:'עוזר חכם',btnExpDesc:'נהלים, סיכונים, מכתבים, החלטות',expTitle:'🧠 עוזר חכם',expPlaceholder:'כתוב מה צריך — נוהל בטיחות, מכתב לקבלן, סיכום פגישה, מה הסיכונים…',
 expIntro:'מה תרצה? כתוב חופשי והעוזר המתאים יענה. למשל: "תכתוב נוהל כניסה לאתר", "מה הסיכונים בעבודה בגובה השבוע", "מכתב לקבלן על ליקוי שלא תוקן", "סכם לי את פגישת הבטיחות", "תעזור לי להחליט בין שני קבלני משנה".',
 saveFailFull:'⚠️ לא נשמר — הזיכרון מלא. מחק תמונות/דוחות ישנים ונסה שוב',
+searchPlaceholder:'🔍 חיפוש (תיאור, קומה, קבלן…)',loadMore:'טען עוד',noSearchResults:'לא נמצאו תוצאות',
 expRouted:'מומחה',expSoon:'מנוע ה-AI עוד לא מחובר במכשיר הזה — אבל זיהיתי בדיוק לאיזה מומחה לפנות ובניתי לו את ההנחיה המלאה. כשנחבר את המודל, התשובה המלאה תופיע כאן.',expCtxNote:'הקשר האתר שלך מוזרק אוטומטית',
 faqTitle:'שאלות נפוצות',
 feedbackTitle:'שליחת פנייה למשרד',feedbackType:'סוג הפנייה',fbBug:'תקלה',fbIdea:'הצעה',fbQuestion:'שאלה',
@@ -1091,6 +1092,7 @@ doneToday:'✓ تم اليوم',sameCrew:'👥 نفس طاقم الأمس',noPre
 btnExpTitle:'مساعد ذكي',btnExpDesc:'إجراءات، مخاطر، رسائل، قرارات',expTitle:'🧠 مساعد ذكي',expPlaceholder:'اكتب ما تحتاجه — إجراء سلامة، رسالة لمقاول، تلخيص اجتماع، ما المخاطر…',
 expIntro:'ماذا تريد؟ اكتب بحرية وسيجيبك الخبير المناسب. مثلاً: "اكتب إجراء دخول للموقع"، "ما مخاطر العمل على ارتفاع هذا الأسبوع"، "رسالة لمقاول حول عيب لم يُصلَح"، "لخّص لي اجتماع السلامة"، "ساعدني أقرّر بين مقاولَي باطن".',
 saveFailFull:'⚠️ لم يُحفظ — الذاكرة ممتلئة. احذف صوراً/تقارير قديمة وحاول ثانية',
+searchPlaceholder:'🔍 بحث (وصف، طابق، مقاول…)',loadMore:'تحميل المزيد',noSearchResults:'لا توجد نتائج',
 expRouted:'خبير',expSoon:'محرك الذكاء الاصطناعي غير موصول بعد على هذا الجهاز — لكنني حدّدت الخبير المناسب وبنيت له التعليمات الكاملة. عند توصيل النموذج، ستظهر الإجابة الكاملة هنا.',expCtxNote:'سياق موقعك يُضاف تلقائياً',
 faqTitle:'أسئلة شائعة',
 feedbackTitle:'إرسال رسالة للمكتب',feedbackType:'نوع الرسالة',fbBug:'عطل',fbIdea:'اقتراح',fbQuestion:'سؤال',
@@ -1294,6 +1296,11 @@ function goBack(){
   onScreenEnter(prev);
 }
 function onScreenEnter(id){
+  // איפוס דפדוף בכניסה למסך (מתחילים מ-20 האחרונים)
+  if(id==='s-journal-history')APP.jnlPage=1;
+  if(id==='s-safety-history')APP.sfPage=1;
+  if(id==='s-incidents-history')APP.incPage=1;
+  if(id==='s-defects'){APP.defPage=1;APP.defSearch='';var ds=document.getElementById('defect-search');if(ds)ds.value='';}
   if(id==='s-home')refreshHome();
   if(id==='s-journal')initJournal();
   if(id==='s-journal-history')renderJournalHistory();
@@ -1609,7 +1616,7 @@ function shareIncidentWA(e){
 function renderIncidentsHistory(){
   var el=document.getElementById('inc-history-list');var list=getIncidents();
   if(!list.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--green);font-weight:700;">'+T('incHistEmpty')+'</div>';return;}
-  var h='';list.forEach(function(e){
+  var PAGE=20;var shown=Math.min((APP.incPage||1)*PAGE,list.length);var h='';list.slice(0,shown).forEach(function(e){
     var color=e.type==='accident'?'var(--red)':e.type==='nearmiss'?'var(--orange)':'var(--sub)';
     h+='<div class="card" style="border-right:4px solid '+color+';"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:800;">'+incTypeLabel(e.type)+'</span><span style="font-size:12px;color:var(--sub);">'+new Date(e.ts).toLocaleString('he-IL')+'</span></div>'
       +'<div style="font-size:14px;line-height:1.5;">'+esc(e.desc)+'</div>'
@@ -1619,6 +1626,7 @@ function renderIncidentsHistory(){
       +'<button class="btn btn-gray btn-sm" style="margin-top:8px;" onclick="shareIncidentWA(getIncidents().find(function(x){return x.id==='+e.id+';}))">📲 שלח שוב</button>'
       +'</div>';
   });
+  if(shown<list.length)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.incPage=(APP.incPage||1)+1;renderIncidentsHistory();">'+T('loadMore')+' ('+(list.length-shown)+')</button>';
   el.innerHTML=h;
 }
 
@@ -2065,8 +2073,8 @@ function renderJournalHistory(){
   var list=document.getElementById('journal-history-list');if(!list)return;
   var journals=loadJSON('sb_journals',[]);
   if(!journals.length){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);white-space:pre-line;">'+T('emptyJournal')+'</div>';return;}
-  var h='';
-  for(var i=0;i<journals.length;i++){
+  var h='';var PAGE=20;var shown=Math.min((APP.jnlPage||1)*PAGE,journals.length);
+  for(var i=0;i<shown;i++){
     var j=journals[i];var d=new Date(j.date);
     var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
     var tw=0;if(j.workers)for(var k=0;k<j.workers.length;k++)tw+=j.workers[k].qty;
@@ -2079,6 +2087,7 @@ function renderJournalHistory(){
       +'<div class="history-item-sub">'+T('totalWorkers')+': '+tw+' &nbsp;·&nbsp; '+appBadge+'</div>'
       +'</div>';
   }
+  if(shown<journals.length)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.jnlPage=(APP.jnlPage||1)+1;renderJournalHistory();">'+T('loadMore')+' ('+(journals.length-shown)+')</button>';
   list.innerHTML=h;
 }
 function showJournalReportById(id){
@@ -2167,15 +2176,22 @@ function saveSupervisorApprove(){
   var h='';for(var i=0;i<fs.length;i++){var f=fs[i];h+='<div class="filter-tab'+(APP.currentFilter===f.k?' active':'')+'" onclick="setDefFilter(\''+f.k+'\')">'+T(f.l)+'</div>';}
   el.innerHTML=h;
 }
-function setDefFilter(f){APP.currentFilter=f;renderDefectFilters();renderDefects();}
+function setDefFilter(f){APP.currentFilter=f;APP.defPage=1;renderDefectFilters();renderDefects();}
+function setDefSearch(q){APP.defSearch=(q||'').trim().toLowerCase();APP.defPage=1;renderDefects();}
 function renderDefects(){
   var list=document.getElementById('defects-list');if(!list)return;
   var defects=loadJSON('sb_defects',[]);
-  var filtered=defects.filter(function(d){return APP.currentFilter==='all'||d.status===APP.currentFilter;});
+  var q=APP.defSearch||'';
+  var filtered=defects.filter(function(d){
+    if(!(APP.currentFilter==='all'||d.status===APP.currentFilter))return false;
+    if(q){var hay=((d.desc||'')+' '+(d.floor||'')+' '+(d.area||'')+' '+(d.contractor||'')).toLowerCase();if(hay.indexOf(q)<0)return false;}
+    return true;
+  });
   if(!defects.length){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);white-space:pre-line;">'+T('emptyDefects')+'</div>';return;}
-  if(!filtered.length){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);">'+T('emptyDefectsFilter')+'</div>';return;}
+  if(!filtered.length){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);">'+T(q?'noSearchResults':'emptyDefectsFilter')+'</div>';return;}
+  var PAGE=20;var shown=(APP.defPage||1)*PAGE;var total=filtered.length;if(shown>total)shown=total;
   var h='';
-  for(var i=0;i<filtered.length;i++){
+  for(var i=0;i<shown;i++){
     var d=filtered[i];
     var sc='sev-'+(d.severity||'normal');
     var sk=d.severity==='urgent'?'sevUrgent':d.severity==='low'?'sevLow':'sevNormal';
@@ -2219,6 +2235,7 @@ function renderDefects(){
     h+='<button class="status-btn" onclick="delDefect('+d.id+')" style="background:#fdecea;color:var(--red);">🗑️</button>';
     h+='</div></div>';
   }
+  if(shown<total)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.defPage=(APP.defPage||1)+1;renderDefects();">'+T('loadMore')+' ('+(total-shown)+')</button>';
   list.innerHTML=h;
 }
 function openAddDefect(){APP.defectPhotos=[];APP.selectedSev='normal';document.getElementById('def-desc').value='';document.getElementById('def-floor').value='';document.getElementById('def-area').value='';document.getElementById('def-deadline').value='';renderDefectPhotos();populateContractorSelect();updateSevBtns();setDefMore(false);openModal('modal-defect');}
@@ -2433,8 +2450,8 @@ function renderSafetyHistory(){
   var list=document.getElementById('safety-history-list');if(!list)return;
   var safety=loadJSON('sb_safety',[]);
   if(!safety.length){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);white-space:pre-line;">'+T('emptySafety')+'</div>';return;}
-  var h='';
-  for(var i=0;i<safety.length;i++){
+  var h='';var PAGE=20;var shown=Math.min((APP.sfPage||1)*PAGE,safety.length);
+  for(var i=0;i<shown;i++){
     var r=safety[i];var d=new Date(r.date);var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
     var fails=0;for(var k in r.answers){if(r.answers[k]==='fail')fails++;}
     var wt=r.stageLabel?(' · '+r.stageLabel):(r.workType?(' · '+wtLabel(r.workType)):'');
@@ -2443,6 +2460,7 @@ function renderSafetyHistory(){
       +'<div class="history-item-sub">'+(fails?'❌ '+fails+' '+(APP.lang==='ar'?'عيوب':'ליקויים'):'✅ '+(APP.lang==='ar'?'سليم':'תקין'))+'</div>'
       +'</div>';
   }
+  if(shown<safety.length)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.sfPage=(APP.sfPage||1)+1;renderSafetyHistory();">'+T('loadMore')+' ('+(safety.length-shown)+')</button>';
   list.innerHTML=h;
 }
 function showSafetyReportById(id){
