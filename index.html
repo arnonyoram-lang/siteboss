@@ -959,6 +959,7 @@ moreDetails:'פרטים נוספים (מיקום, יעד, חומרה)',dupDefect
 doneToday:'✓ בוצע היום',sameCrew:'👥 אותו צוות כמו אתמול',noPrevCrew:'אין רשימת נוכחות קודמת',presInTime:'שעת כניסה',
 btnExpTitle:'עוזר חכם',btnExpDesc:'נהלים, סיכונים, מכתבים, החלטות',expTitle:'🧠 עוזר חכם',expPlaceholder:'כתוב מה צריך — נוהל בטיחות, מכתב לקבלן, סיכום פגישה, מה הסיכונים…',
 expIntro:'מה תרצה? כתוב חופשי והעוזר המתאים יענה. למשל: "תכתוב נוהל כניסה לאתר", "מה הסיכונים בעבודה בגובה השבוע", "מכתב לקבלן על ליקוי שלא תוקן", "סכם לי את פגישת הבטיחות", "תעזור לי להחליט בין שני קבלני משנה".',
+saveFailFull:'⚠️ לא נשמר — הזיכרון מלא. מחק תמונות/דוחות ישנים ונסה שוב',
 expRouted:'מומחה',expSoon:'מנוע ה-AI עוד לא מחובר במכשיר הזה — אבל זיהיתי בדיוק לאיזה מומחה לפנות ובניתי לו את ההנחיה המלאה. כשנחבר את המודל, התשובה המלאה תופיע כאן.',expCtxNote:'הקשר האתר שלך מוזרק אוטומטית',
 faqTitle:'שאלות נפוצות',
 feedbackTitle:'שליחת פנייה למשרד',feedbackType:'סוג הפנייה',fbBug:'תקלה',fbIdea:'הצעה',fbQuestion:'שאלה',
@@ -1089,6 +1090,7 @@ moreDetails:'تفاصيل إضافية (موقع، موعد، أهمية)',dupDe
 doneToday:'✓ تم اليوم',sameCrew:'👥 نفس طاقم الأمس',noPrevCrew:'لا توجد قائمة حضور سابقة',presInTime:'وقت الدخول',
 btnExpTitle:'مساعد ذكي',btnExpDesc:'إجراءات، مخاطر، رسائل، قرارات',expTitle:'🧠 مساعد ذكي',expPlaceholder:'اكتب ما تحتاجه — إجراء سلامة، رسالة لمقاول، تلخيص اجتماع، ما المخاطر…',
 expIntro:'ماذا تريد؟ اكتب بحرية وسيجيبك الخبير المناسب. مثلاً: "اكتب إجراء دخول للموقع"، "ما مخاطر العمل على ارتفاع هذا الأسبوع"، "رسالة لمقاول حول عيب لم يُصلَح"، "لخّص لي اجتماع السلامة"، "ساعدني أقرّر بين مقاولَي باطن".',
+saveFailFull:'⚠️ لم يُحفظ — الذاكرة ممتلئة. احذف صوراً/تقارير قديمة وحاول ثانية',
 expRouted:'خبير',expSoon:'محرك الذكاء الاصطناعي غير موصول بعد على هذا الجهاز — لكنني حدّدت الخبير المناسب وبنيت له التعليمات الكاملة. عند توصيل النموذج، ستظهر الإجابة الكاملة هنا.',expCtxNote:'سياق موقعك يُضاف تلقائياً',
 faqTitle:'أسئلة شائعة',
 feedbackTitle:'إرسال رسالة للمكتب',feedbackType:'نوع الرسالة',fbBug:'عطل',fbIdea:'اقتراح',fbQuestion:'سؤال',
@@ -1206,12 +1208,14 @@ function cloudSave(coll,entry){
   copy.owner=owner;copy.ownerName=s.managerName||'';copy.project=s.projectName||'';
   copy.cloudAt=new Date().toISOString();
   try{window._dkSaveDoc(coll,docId,copy);}catch(e){}
-  // העלאת תמונות ל-Storage (אסינכרוני) ועדכון הכתובות במסמך
+  // העלאת תמונות ל-Storage (אסינכרוני) ועדכון הכתובות במסמך. מחזיר Promise כדי שמיגרציה תדע מתי באמת הסתיים.
   if(entry.photos&&entry.photos.length&&window._dkUploadPhotos){
-    try{window._dkUploadPhotos('photos/'+(owner||'x')+'/'+coll+'/'+entry.id,entry.photos).then(function(urls){
+    try{return window._dkUploadPhotos('photos/'+(owner||'x')+'/'+coll+'/'+entry.id,entry.photos).then(function(urls){
       if(urls&&urls.length)window._dkSaveDoc(coll,docId,{photoUrls:urls});
-    });}catch(e){}
+      return true;
+    });}catch(e){return Promise.reject(e);}
   }
+  return Promise.resolve(true);
 }
 function cloudDelete(coll,entry){
   if(!window._dkDeleteDoc||!entry)return;
@@ -1223,13 +1227,15 @@ window._dkMigratePhotos=function(){
   if(!window._dkUploadPhotos)return;                 // Storage לא מוכן
   if(loadJSON('dk_photo_migrated',false))return;     // כבר בוצע
   var sets=[['journals','sb_journals'],['defects','sb_defects'],['incidents','dk_incidents']];
-  var count=0;
+  var count=0;var jobs=[];
   sets.forEach(function(p){
     var list=loadJSON(p[1],[]);
-    list.forEach(function(e){ if(e&&e.photos&&e.photos.length&&!e.photoUrls){count++;try{cloudSave(p[0],e);}catch(x){}} });
+    list.forEach(function(e){ if(e&&e.photos&&e.photos.length&&!e.photoUrls){count++;try{jobs.push(Promise.resolve(cloudSave(p[0],e)));}catch(x){jobs.push(Promise.reject(x));}} });
   });
-  saveJSON('dk_photo_migrated',true);
-  if(count)toast((APP.lang==='ar'?'يتم رفع ':'מעלה ')+count+(APP.lang==='ar'?' صور سابقة للسحابة':' תמונות ישנות לענן'),3500);
+  if(!count){saveJSON('dk_photo_migrated',true);return;}
+  toast((APP.lang==='ar'?'يتم رفع ':'מעלה ')+count+(APP.lang==='ar'?' صور سابقة للسحابة':' תמונות ישנות לענן'),3500);
+  // סמן "בוצע" רק אם כל ההעלאות הצליחו — אחרת ינוסה שוב בהפעלה הבאה
+  Promise.all(jobs).then(function(){saveJSON('dk_photo_migrated',true);}).catch(function(){/* יישאר לא-מסומן → ניסיון חוזר */});
 };
 function T(k){return(STRINGS[APP.lang]||STRINGS.he)[k]||k;}
 function applyLang(){
@@ -1425,7 +1431,7 @@ function addPresence(){
   if(!name){toast(APP.lang==='ar'?'أدخل اسم العامل':'יש להזין שם עובד');return;}
   var list=getPresenceToday();
   list.unshift({id:Date.now(),name:name,trade:document.getElementById('pres-trade').value.trim(),inTs:presInTimestamp(),outTs:null});
-  saveJSON(presKey(),list);
+  if(!saveJSON(presKey(),list)){toast(T('saveFailFull'),6000);return;}
   document.getElementById('pres-name').value='';document.getElementById('pres-trade').value='';
   cloudSavePresence();renderPresence();
   var nm=document.getElementById('pres-name');if(nm)nm.focus();
@@ -2251,7 +2257,9 @@ function saveDefect(){
   var desc=document.getElementById('def-desc').value.trim();if(!desc){toast(T('defDescPlaceholder'));return;}
   var defects=loadJSON('sb_defects',[]);
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),desc:desc,floor:document.getElementById('def-floor').value.trim(),area:document.getElementById('def-area').value.trim(),contractor:document.getElementById('def-contractor').value,deadline:document.getElementById('def-deadline').value,severity:APP.selectedSev,status:'open',photos:APP.defectPhotos.slice()};
-  defects.unshift(entry);saveJSON('sb_defects',defects);cloudSave('defects',entry);closeModal('modal-defect');toast(T('saved'));renderDefects();
+  defects.unshift(entry);
+  if(!saveJSON('sb_defects',defects)){toast(T('saveFailFull'),6000);return;} // אל תסגור מודל / תציג ✅ אם השמירה נכשלה
+  cloudSave('defects',entry);closeModal('modal-defect');toast(T('saved'));renderDefects();
   if(entry.contractor){var cs=APP.settings.contractors||[];var c=cs.find(function(x){return x.name===entry.contractor;});if(c&&c.phone)sendDefWADirect(entry,c.phone);}
 }
 function setDefStatus(id,status){var ds=loadJSON('sb_defects',[]);var ent=null;for(var i=0;i<ds.length;i++){if(ds[i].id===id){ds[i].status=status;ent=ds[i];break;}}saveJSON('sb_defects',ds);if(ent)cloudSave('defects',ent);renderDefects();}
@@ -2403,7 +2411,9 @@ function confirmSafety(){
   var stages=(APP.activeStages||[]).slice();
   var stageLabel=stages.length?stages.map(wtLabel).join(', '):wtLabel('general');
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),stages:stages,stageLabel:stageLabel,answers:Object.assign({},APP.safetyAnswers),questions:qs,signature:signData,lang:APP.lang,gps:APP.gps};
-  var safety=loadJSON('sb_safety',[]);safety.unshift(entry);saveJSON('sb_safety',safety);cloudSave('safety',entry);
+  var safety=loadJSON('sb_safety',[]);safety.unshift(entry);
+  if(!saveJSON('sb_safety',safety)){toast(T('saveFailFull'),6000);return;}
+  cloudSave('safety',entry);
   toast(T('saved'));showSafetyReport(entry);
 }
 function renderSafetyHistory(){
