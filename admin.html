@@ -124,6 +124,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
     <button class="nav-btn" id="nav-feedback" onclick="showView('feedback')">📬 פניות <span id="fb-badge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:12px;margin-right:4px;"></span></button>
     <button class="nav-btn" id="nav-briefings" onclick="showView('briefings')">🗣️ תדריכים</button>
     <span class="status-chip chip-off" id="conn-chip">לא מחובר ל-Firebase</span>
+    <button class="nav-btn" id="nav-logout" onclick="adminLogout()" style="display:none;">🚪 יציאה</button>
   </div>
 </div>
 
@@ -311,7 +312,7 @@ import {
   getFirestore, collection, getDocs, addDoc, query, orderBy, where,
   onSnapshot, serverTimestamp, doc, setDoc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js').catch(function(){}); }catch(e){} }
 
 let db = null;
@@ -324,6 +325,48 @@ window._toast = function(m){
   var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
   setTimeout(function(){t.classList.remove('show');},2600);
 };
+
+// ---------- שער כניסת בעלים (Email/Password) ----------
+function ensureAdminLogin(auth){
+  return new Promise(function(resolve){
+    // אם כבר מחובר עם משתמש אמיתי (לא אנונימי) — המשך ישר
+    if(auth.currentUser && !auth.currentUser.isAnonymous){ resolve(auth.currentUser); return; }
+    var ov=document.getElementById('admin-login');
+    if(!ov){
+      ov=document.createElement('div');
+      ov.id='admin-login';
+      ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#0f3d7a;display:flex;align-items:center;justify-content:center;padding:20px;';
+      ov.innerHTML='<div style="background:#fff;border-radius:16px;padding:26px 22px;max-width:360px;width:100%;box-shadow:0 14px 40px rgba(0,0,0,.3);">'
+        +'<div style="font-size:34px;text-align:center;margin-bottom:6px;">🦺</div>'
+        +'<div style="font-size:20px;font-weight:900;text-align:center;margin-bottom:4px;">כניסת בעלים — דקה</div>'
+        +'<div style="font-size:13px;color:#67788a;text-align:center;margin-bottom:18px;">עמוד הניהול מוגן. התחבר עם חשבון הבעלים.</div>'
+        +'<input id="al-email" type="email" autocomplete="username" placeholder="אימייל" style="width:100%;box-sizing:border-box;padding:13px;font-size:16px;border:1.5px solid #d7dee6;border-radius:10px;margin-bottom:10px;">'
+        +'<input id="al-pass" type="password" autocomplete="current-password" placeholder="סיסמה" style="width:100%;box-sizing:border-box;padding:13px;font-size:16px;border:1.5px solid #d7dee6;border-radius:10px;margin-bottom:14px;">'
+        +'<button id="al-btn" style="width:100%;padding:14px;font-size:16px;font-weight:800;background:#1c5fb0;color:#fff;border:none;border-radius:10px;cursor:pointer;">התחבר</button>'
+        +'<div id="al-err" style="color:#e03131;font-size:13px;text-align:center;margin-top:10px;min-height:18px;"></div>'
+        +'</div>';
+      document.body.appendChild(ov);
+    }
+    ov.style.display='flex';
+    var btn=document.getElementById('al-btn');var err=document.getElementById('al-err');
+    function attempt(){
+      var email=(document.getElementById('al-email').value||'').trim();
+      var pass=document.getElementById('al-pass').value||'';
+      if(!email||!pass){err.textContent='הזן אימייל וסיסמה';return;}
+      btn.disabled=true;btn.textContent='מתחבר…';err.textContent='';
+      signInWithEmailAndPassword(auth,email,pass).then(function(cred){
+        ov.style.display='none';resolve(cred.user);
+      }).catch(function(e){
+        btn.disabled=false;btn.textContent='התחבר';
+        err.textContent=(e&&/password|credential|user-not-found|invalid/i.test(e.code||e.message))?'אימייל או סיסמה שגויים':('שגיאה: '+(e.code||e.message));
+      });
+    }
+    btn.onclick=attempt;
+    document.getElementById('al-pass').onkeydown=function(ev){if(ev.key==='Enter')attempt();};
+    document.getElementById('al-email').focus();
+  });
+}
+window.adminLogout = function(){ try{ if(window._dkAuth) signOut(window._dkAuth).then(function(){location.reload();}); }catch(e){ location.reload(); } };
 
 // ---------- connect ----------
 window.connectFirebase = function(){
@@ -358,12 +401,11 @@ async function boot(cfg){
     const app = initializeApp(cfg);
     db = getFirestore(app);
     var _auth = getAuth(app);
-    await new Promise(function(res){
-      var done=false;function fin(){if(!done){done=true;res();}}
-      signInAnonymously(_auth).then(fin).catch(fin);
-      onAuthStateChanged(_auth,function(u){if(u)fin();});
-      setTimeout(fin,5000);
-    });
+    window._dkAuth = _auth;
+    try{ await setPersistence(_auth, browserLocalPersistence); }catch(e){}
+    // שער בעלים: כניסה עם אימייל+סיסמה (משתמש בעלים יחיד שנוצר ב-Firebase Console). אנונימי כבר לא מספיק.
+    var user = await ensureAdminLogin(_auth);
+    if(!user) return; // נשאר על מסך הכניסה עד הזדהות
     document.getElementById('setup-banner').style.display='none';
     document.getElementById('stats').style.display='flex';
     document.getElementById('main-grid').style.display='block';
@@ -371,6 +413,7 @@ async function boot(cfg){
     var chip=document.getElementById('conn-chip');
     chip.textContent='מחובר ✓ ('+(cfg.projectId||'')+')';
     chip.className='status-chip chip-on';
+    var lo=document.getElementById('nav-logout');if(lo)lo.style.display='';
     await loadUsers();
     listenMessages();
     loadFeedback();
