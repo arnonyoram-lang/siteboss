@@ -90,7 +90,9 @@
 - 9 מומחים (`DK_SKILLS`): documents(כולל SOP), risk, summary(כולל meeting→actions), premortem, decision, contract, negotiation, hr(כולל hiring-kit), collection.
 - ניתוב לפי כוונה: `pickExpertDK(text)` (ניקוד מילות-מפתח, מילה שלמה×3). צ'יפים לבחירה ידנית (`expChip`).
 - הזרקת הקשר אתר: `dkBusinessContext()` (חברה/פרויקט/מנהל/ליקויים פתוחים) → `dkBuildSystemPrompt(exp)`.
-- **המודל עדיין לא מחובר**: `runModel(systemPrompt,userText)` מחזיר `Promise.resolve(null)` → המסך מציג שזיהה את המומחה ובנה הנחיה מלאה. זו נקודת החיבור היחידה — למלא בה Firebase AI Logic (Gemini) כשנחבר. נבדק: ניתוב 10/10 כוונות נכון, הזרקת הקשר, צ'אט.
+- **המודל מחובר (קוד) ל-Firebase AI Logic/Gemini**: `runModel` מאציל ל-`window._dkRunModel` (אינסטנס AI מבודד 11.x, lazy, מודל `gemini-2.0-flash`), בועת "חושב…", fallback בטוח. **דורש הפעלת AI Logic בקונסול** כדי לפעול חי (אחרת מציג "לא מחובר"). נבדק: ניתוב, הזרקת הקשר, האצלה/תשובה/fallback/throw-safe.
+- **Phone Auth (אופציונלי, מבודד)**: כפתור בהגדרות `openPhoneSecure` → `_dkSendSmsCode`/`_dkVerifySmsCode` (RecaptchaVerifier בלתי-נראה). דורש הפעלת Phone provider. graceful אם כבוי.
+- **ייצוא CSV**: `dkExportCSV('defects'|'journals')` — BOM לאקסל-עברית. **ניקוי base64**: `_dkTrimPhotos` (שומר 15 אחרונות, מסיר ישנות שכבר בענן).
 
 ## רעיונות עתידיים שעלו (טרם נבנו)
 - הוראות בטיחות בכל השפות (וידאו/אודיו בשפת האם של הפועל הזר + חתימה לפני כניסה לאתר).

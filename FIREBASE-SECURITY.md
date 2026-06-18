@@ -76,7 +76,23 @@ service cloud.firestore {
 זה סוגר גם את נתוני השטח (כל מנהל = רק הנתונים שלו) **וגם** פותר כניסה בין-מכשירית. דורש:
 1. Authentication → Sign-in method → **Phone → Enable** (דורש Blaze — כבר יש; SMS עולה ~אגורות לאימות).
 2. הוספת הדומיין `arnonyoram-lang.github.io` ל-Authorized domains (בד"כ כבר שם).
-3. קוד באפליקציה: אימות SMS חד-פעמי שמקשר את המנהל לטלפון שלו, ונרמול פורמט הטלפון (owner = בפורמט אחיד מול `request.auth.token.phone_number`).
-4. החלפת הכלל של נתוני השטח ל: `allow read, write: if request.auth != null && request.resource.data.owner == ... / resource.data.owner == ...` לפי הטלפון המאומת.
+3. ✅ **קוד האפליקציה כבר נבנה** (commit `bf121ce`): כפתור "🔒 אבטח את החשבון בקוד SMS" בהגדרות → אימות SMS (RecaptchaVerifier בלתי-נראה). מבודד ובטוח — אם הספק כבוי, מציג "שירות האימות לא הופעל" בלי לשבור כלום.
+4. אחרי שתאמת — נחליף את הכלל של נתוני השטח לנעילה-לפי-owner (טיוטה למטה; נסגור יחד את התאמת פורמט הטלפון E164↔digits בבדיקה).
 
-**למה לא דחפתי את קוד ה-Phone Auth כבר:** אי אפשר לבדוק SMS בלי טלפון אמיתי + הפעלת הספק ב-Console, ושינוי נתיב ההתחברות של אפליקציה *חיה* עם מנהלים רשומים מסוכן. נעשה את זה כמו שעשינו את Storage — אתה מפעיל את הספק, ואנחנו בודקים יחד שלב-שלב לפני שזה נכנס לכולם.
+**מה שתעשה (כשנעשה ביחד):** Authentication → Sign-in method → **Phone → Enable**. ודא ש-`arnonyoram-lang.github.io` ב-Authorized domains. ואז נבדוק את זרימת ה-SMS על הטלפון שלך לפני שמחילים את הכלל המחמיר.
+
+**טיוטת כלל נתוני-שטח לפי owner (לשלב A, נסגור יחד):**
+```
+match /{coll}/{id} {
+  allow read, write: if request.auth != null
+    && coll in ['journals','defects','safety','presence','incidents','onboard','permits']
+    && request.auth.token.phone_number != null
+    && request.auth.token.phone_number[ request.auth.token.phone_number.size()-9 : ] ==
+       resource.data.owner[ resource.data.owner.size()-9 : ];
+}
+```
+(הרעיון: התאמת 9 הספרות האחרונות של הטלפון המאומת מול owner, ללא תלות בקידומת +972/0. נאמת בבדיקה.)
+
+## חיבור העוזר החכם (Gemini) — קוד מוכן, דורש הפעלה
+✅ `runModel` כבר מחובר ל-Firebase AI Logic (commit `f86d5f8`), מבודד ובטוח (fallback ל"לא מחובר" אם כבוי).
+**מה שתעשה:** Firebase Console → **Build → AI Logic** (או "Firebase AI Logic"/"Vertex AI in Firebase") → **Get started / Enable**, בחר את **Gemini Developer API**. זהו — העוזר יתחיל לכתוב תשובות אמיתיות. (עלות לפי שימוש; יש Blaze.)
