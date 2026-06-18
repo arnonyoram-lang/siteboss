@@ -756,6 +756,11 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
         <button class="btn btn-outline" style="flex:1;min-width:130px;" onclick="dkExportCSV('journals')"><span data-t="exportJournals"></span></button>
       </div>
     </div>
+    <div class="card">
+      <div class="card-title" data-t="phoneSecSection"></div>
+      <button class="btn btn-outline" id="phone-sec-btn" onclick="openPhoneSecure()"><span data-t="phoneSecBtn"></span></button>
+      <div id="phone-sec-done" style="display:none;color:var(--green);font-weight:700;text-align:center;" data-t="phoneSecDone"></div>
+    </div>
     <button class="btn btn-blue" onclick="saveSettings()"><span data-t="saveSettings"></span></button>
   </div>
 </div>
@@ -948,6 +953,23 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
   </div>
 </div>
 
+<!-- אימות SMS (Phone Auth) -->
+<div class="modal-overlay hidden" id="modal-phone">
+  <div class="modal-sheet">
+    <div class="modal-title" data-t="phoneSecTitle"></div>
+    <p style="font-size:14px;color:var(--sub);line-height:1.6;margin-bottom:14px;" data-t="phoneSecBody"></p>
+    <div id="phone-step1">
+      <div class="form-group"><input id="phone-sec-num" type="tel" inputmode="numeric" dir="ltr"></div>
+      <button class="btn btn-blue" onclick="phoneSendCode()"><span data-t="phoneSendCode"></span></button>
+    </div>
+    <div id="phone-step2" style="display:none;">
+      <div class="form-group"><input id="phone-sec-code" type="tel" inputmode="numeric" dir="ltr" maxlength="6" data-tp="phoneEnterCode" style="text-align:center;letter-spacing:6px;font-size:22px;"></div>
+      <button class="btn btn-blue" onclick="phoneConfirmCode()"><span data-t="phoneVerifyBtn"></span></button>
+    </div>
+    <button class="btn btn-gray" style="margin-top:8px;" onclick="closeModal('modal-phone')"><span data-t="cancel"></span></button>
+    <div id="dk-recaptcha"></div>
+  </div>
+</div>
 <div id="toast"></div><script>
 const STRINGS={
 he:{appTagline:'יומן ומשימות שטח — הכל בדקה אחת',
@@ -996,6 +1018,7 @@ expIntro:'מה תרצה? כתוב חופשי והעוזר המתאים יענה.
 saveFailFull:'⚠️ לא נשמר — הזיכרון מלא. מחק תמונות/דוחות ישנים ונסה שוב',
 searchPlaceholder:'🔍 חיפוש (תיאור, קומה, קבלן…)',loadMore:'טען עוד',noSearchResults:'לא נמצאו תוצאות',
 exportSection:'ייצוא נתונים (Excel/CSV)',exportDefects:'⬇️ ליקויים',exportJournals:'⬇️ יומנים',exportEmpty:'אין נתונים לייצוא',
+phoneSecSection:'אבטחת חשבון',phoneSecBtn:'🔒 אבטח את החשבון בקוד SMS',phoneSecDone:'✅ החשבון מאומת',phoneSecTitle:'אימות חשבון ב-SMS',phoneSecBody:'נשלח קוד בן 6 ספרות לטלפון שלך. האימות מבטיח שרק אתה ניגש לנתונים שלך.',phoneSendCode:'שלח קוד',phoneCodeSent:'📩 קוד נשלח',phoneEnterCode:'הזן את הקוד שקיבלת',phoneVerifyBtn:'אמת',phoneVerifiedOk:'✅ החשבון אומת בהצלחה',phoneSvcOff:'שירות האימות עדיין לא הופעל (Phone Auth בקונסול)',phoneBadCode:'קוד שגוי, נסה שוב',
 syncedToast:'☁️ סונכרן לענן',legalTitle:'תנאי שימוש ופרטיות',legalLink:'תנאי שימוש ופרטיות',
 onbTipTitle:'👋 ברוכים הבאים לדקה',onbTipBody:'3 צעדים להתחלה:\n1. פתח 📋 יומן ותעד את היום — קול או הקלדה.\n2. צילמת ליקוי? 📸 ליקויים → שלח לקבלן בלחיצה.\n3. כל בוקר עבור על 🦺 בטיחות וחתום.\nהכול נשמר במכשיר ומגובה לענן.',onbTipBtn:'הבנתי, בוא נתחיל',
 expThinking:'⏳ חושב…',expRouted:'מומחה',expSoon:'מנוע ה-AI עוד לא מחובר במכשיר הזה — אבל זיהיתי בדיוק לאיזה מומחה לפנות ובניתי לו את ההנחיה המלאה. כשנחבר את המודל, התשובה המלאה תופיע כאן.',expCtxNote:'הקשר האתר שלך מוזרק אוטומטית',
@@ -1131,6 +1154,7 @@ expIntro:'ماذا تريد؟ اكتب بحرية وسيجيبك الخبير ا
 saveFailFull:'⚠️ لم يُحفظ — الذاكرة ممتلئة. احذف صوراً/تقارير قديمة وحاول ثانية',
 searchPlaceholder:'🔍 بحث (وصف، طابق، مقاول…)',loadMore:'تحميل المزيد',noSearchResults:'لا توجد نتائج',
 exportSection:'تصدير البيانات (Excel/CSV)',exportDefects:'⬇️ العيوب',exportJournals:'⬇️ اليوميات',exportEmpty:'لا توجد بيانات للتصدير',
+phoneSecSection:'تأمين الحساب',phoneSecBtn:'🔒 أمّن حسابك برمز SMS',phoneSecDone:'✅ الحساب موثّق',phoneSecTitle:'توثيق الحساب عبر SMS',phoneSecBody:'سيُرسَل رمز من 6 أرقام إلى هاتفك. التوثيق يضمن وصولك أنت فقط لبياناتك.',phoneSendCode:'إرسال الرمز',phoneCodeSent:'📩 تم إرسال الرمز',phoneEnterCode:'أدخل الرمز الذي وصلك',phoneVerifyBtn:'تحقّق',phoneVerifiedOk:'✅ تم توثيق الحساب',phoneSvcOff:'خدمة التوثيق غير مفعّلة بعد (Phone Auth في الكونسول)',phoneBadCode:'رمز خاطئ، حاول ثانية',
 syncedToast:'☁️ تمت المزامنة',legalTitle:'شروط الاستخدام والخصوصية',legalLink:'شروط الاستخدام والخصوصية',
 onbTipTitle:'👋 أهلاً بك في دقيقة',onbTipBody:'3 خطوات للبدء:\n1. افتح 📋 اليومية ووثّق اليوم — صوت أو كتابة.\n2. صوّرت عيباً؟ 📸 العيوب → أرسل للمقاول بضغطة.\n3. كل صباح راجع 🦺 السلامة ووقّع.\nكل شيء محفوظ على الجهاز ومنسوخ للسحابة.',onbTipBtn:'فهمت، لنبدأ',
 expThinking:'⏳ يفكّر…',expRouted:'خبير',expSoon:'محرك الذكاء الاصطناعي غير موصول بعد على هذا الجهاز — لكنني حدّدت الخبير المناسب وبنيت له التعليمات الكاملة. عند توصيل النموذج، ستظهر الإجابة الكاملة هنا.',expCtxNote:'سياق موقعك يُضاف تلقائياً',
@@ -2593,6 +2617,7 @@ function loadSettingsForm(){
   document.getElementById('set-project').value=s.projectName||'';document.getElementById('set-manager').value=s.managerName||'';
   document.getElementById('set-phone').value=s.managerPhone||'';document.getElementById('set-office-name').value=s.officeName||'';
   document.getElementById('set-office-phone').value=s.officePhone||'';renderContractors();renderFeaturePrefs();
+  if(typeof reflectPhoneVerified==='function')reflectPhoneVerified();
 }
 function saveSettings(){
   APP.settings.projectName=document.getElementById('set-project').value.trim();APP.settings.managerName=document.getElementById('set-manager').value.trim();
@@ -2784,6 +2809,38 @@ function sendExpert(){
   });
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// === אימות SMS (Phone Auth) — אופציונלי, מבודד. נשען על window._dkSendSmsCode/_dkVerifySmsCode מהמודול. ===
+function _phoneE164(p){p=(p||'').replace(/\D/g,'');if(p.indexOf('972')===0)return '+'+p;if(p.charAt(0)==='0')return '+972'+p.slice(1);return '+'+p;}
+function reflectPhoneVerified(){
+  var done=!!localStorage.getItem('dk_phone_verified');
+  var btn=document.getElementById('phone-sec-btn'),ok=document.getElementById('phone-sec-done');
+  if(btn)btn.style.display=done?'none':'';
+  if(ok)ok.style.display=done?'block':'none';
+}
+function openPhoneSecure(){
+  if(!window._dkSendSmsCode){toast(T('phoneSvcOff'),5000);return;}
+  document.getElementById('phone-step1').style.display='';document.getElementById('phone-step2').style.display='none';
+  var num=document.getElementById('phone-sec-num');if(num)num.value=_phoneE164((APP.settings||{}).managerPhone);
+  openModal('modal-phone');
+}
+function phoneSendCode(){
+  if(!window._dkSendSmsCode){toast(T('phoneSvcOff'),5000);return;}
+  var phone=_phoneE164(document.getElementById('phone-sec-num').value);
+  toast('…');
+  window._dkSendSmsCode(phone).then(function(){
+    document.getElementById('phone-step1').style.display='none';document.getElementById('phone-step2').style.display='';
+    toast(T('phoneCodeSent'),3000);document.getElementById('phone-sec-code').focus();
+  }).catch(function(){toast(T('phoneSvcOff'),5000);});
+}
+function phoneConfirmCode(){
+  if(!window._dkVerifySmsCode)return;
+  var code=(document.getElementById('phone-sec-code').value||'').replace(/\D/g,'');
+  if(code.length<6){toast(T('phoneBadCode'));return;}
+  window._dkVerifySmsCode(code).then(function(phoneNum){
+    try{localStorage.setItem('dk_phone_verified',phoneNum||((APP.settings||{}).managerPhone||'1'));}catch(e){}
+    closeModal('modal-phone');reflectPhoneVerified();toast(T('phoneVerifiedOk'),4000);
+  }).catch(function(){toast(T('phoneBadCode'),4000);});
+}
 // ייצוא CSV (נפתח באקסל) — UTF-8 BOM לעברית, ציטוט בטוח
 function _csvCell(v){v=(v==null?'':String(v));return '"'+v.replace(/"/g,'""')+'"';}
 function dkExportCSV(type){
@@ -3210,6 +3267,23 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
         .then(function(model){ return model.generateContent(systemPrompt + "\n\n---\n\n" + userText); })
         .then(function(res){ return (res && res.response && res.response.text && res.response.text()) || null; })
         .catch(function(){ window.__dkAIModelP=null; return null; }); // איפוס כדי לנסות שוב בפעם הבאה
+    };
+
+    // === אימות SMS (Phone Auth) — אופציונלי. פעיל רק אם הופעל Phone provider בקונסול. ===
+    var _dkPhoneConfirm = null;
+    window._dkSendSmsCode = async function(phoneE164){
+      const authMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+      const a = authMod.getAuth(app);
+      if(!window.__dkRecaptcha){
+        window.__dkRecaptcha = new authMod.RecaptchaVerifier(a, 'dk-recaptcha', { size:'invisible' });
+      }
+      _dkPhoneConfirm = await authMod.signInWithPhoneNumber(a, phoneE164, window.__dkRecaptcha);
+      return true;
+    };
+    window._dkVerifySmsCode = async function(code){
+      if(!_dkPhoneConfirm) throw new Error('no-confirmation');
+      const cred = await _dkPhoneConfirm.confirm(code);
+      return (cred && cred.user && cred.user.phoneNumber) || null;
     };
 
     // משיכת הפיצ'רים שהבעלים הדליק למנהל + האזנה חיה לשינויים
