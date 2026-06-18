@@ -990,7 +990,7 @@ saveFailFull:'⚠️ לא נשמר — הזיכרון מלא. מחק תמונו�
 searchPlaceholder:'🔍 חיפוש (תיאור, קומה, קבלן…)',loadMore:'טען עוד',noSearchResults:'לא נמצאו תוצאות',
 syncedToast:'☁️ סונכרן לענן',legalTitle:'תנאי שימוש ופרטיות',legalLink:'תנאי שימוש ופרטיות',
 onbTipTitle:'👋 ברוכים הבאים לדקה',onbTipBody:'3 צעדים להתחלה:\n1. פתח 📋 יומן ותעד את היום — קול או הקלדה.\n2. צילמת ליקוי? 📸 ליקויים → שלח לקבלן בלחיצה.\n3. כל בוקר עבור על 🦺 בטיחות וחתום.\nהכול נשמר במכשיר ומגובה לענן.',onbTipBtn:'הבנתי, בוא נתחיל',
-expRouted:'מומחה',expSoon:'מנוע ה-AI עוד לא מחובר במכשיר הזה — אבל זיהיתי בדיוק לאיזה מומחה לפנות ובניתי לו את ההנחיה המלאה. כשנחבר את המודל, התשובה המלאה תופיע כאן.',expCtxNote:'הקשר האתר שלך מוזרק אוטומטית',
+expThinking:'⏳ חושב…',expRouted:'מומחה',expSoon:'מנוע ה-AI עוד לא מחובר במכשיר הזה — אבל זיהיתי בדיוק לאיזה מומחה לפנות ובניתי לו את ההנחיה המלאה. כשנחבר את המודל, התשובה המלאה תופיע כאן.',expCtxNote:'הקשר האתר שלך מוזרק אוטומטית',
 faqTitle:'שאלות נפוצות',
 feedbackTitle:'שליחת פנייה למשרד',feedbackType:'סוג הפנייה',fbBug:'תקלה',fbIdea:'הצעה',fbQuestion:'שאלה',
 feedbackText:'פרט את הפנייה',feedbackPlaceholder:'כתוב כאן את הבעיה / ההצעה / השאלה...',feedbackSend:'📨 שלח פנייה',
@@ -1124,7 +1124,7 @@ saveFailFull:'⚠️ لم يُحفظ — الذاكرة ممتلئة. احذف �
 searchPlaceholder:'🔍 بحث (وصف، طابق، مقاول…)',loadMore:'تحميل المزيد',noSearchResults:'لا توجد نتائج',
 syncedToast:'☁️ تمت المزامنة',legalTitle:'شروط الاستخدام والخصوصية',legalLink:'شروط الاستخدام والخصوصية',
 onbTipTitle:'👋 أهلاً بك في دقيقة',onbTipBody:'3 خطوات للبدء:\n1. افتح 📋 اليومية ووثّق اليوم — صوت أو كتابة.\n2. صوّرت عيباً؟ 📸 العيوب → أرسل للمقاول بضغطة.\n3. كل صباح راجع 🦺 السلامة ووقّع.\nكل شيء محفوظ على الجهاز ومنسوخ للسحابة.',onbTipBtn:'فهمت، لنبدأ',
-expRouted:'خبير',expSoon:'محرك الذكاء الاصطناعي غير موصول بعد على هذا الجهاز — لكنني حدّدت الخبير المناسب وبنيت له التعليمات الكاملة. عند توصيل النموذج، ستظهر الإجابة الكاملة هنا.',expCtxNote:'سياق موقعك يُضاف تلقائياً',
+expThinking:'⏳ يفكّر…',expRouted:'خبير',expSoon:'محرك الذكاء الاصطناعي غير موصول بعد على هذا الجهاز — لكنني حدّدت الخبير المناسب وبنيت له التعليمات الكاملة. عند توصيل النموذج، ستظهر الإجابة الكاملة هنا.',expCtxNote:'سياق موقعك يُضاف تلقائياً',
 faqTitle:'أسئلة شائعة',
 feedbackTitle:'إرسال رسالة للمكتب',feedbackType:'نوع الرسالة',fbBug:'عطل',fbIdea:'اقتراح',fbQuestion:'سؤال',
 feedbackText:'تفاصيل الرسالة',feedbackPlaceholder:'اكتب هنا المشكلة / الاقتراح / السؤال...',feedbackSend:'📨 إرسال',
@@ -2708,10 +2708,11 @@ function dkBuildSystemPrompt(exp){
     ctx
   ].filter(Boolean).join('\n');
 }
-// === נקודת החיבור היחידה למודל. כשנחבר Gemini/Firebase AI Logic — ממלאים כאן. ===
-// מחזיר Promise<string> עם תשובת המודל, או null אם המודל לא מחובר.
+// === נקודת החיבור למודל. מאציל ל-window._dkRunModel (Firebase AI Logic/Gemini) אם הוגדר. ===
+// מחזיר Promise<string> עם תשובת המודל, או null אם המודל לא מחובר/נכשל.
 function runModel(systemPrompt,userText){
-  return Promise.resolve(null); // עדיין לא מחובר
+  if(window._dkRunModel){try{return Promise.resolve(window._dkRunModel(systemPrompt,userText));}catch(e){return Promise.resolve(null);}}
+  return Promise.resolve(null);
 }
 var DK_EXP_LOADED=false;
 function initExpert(){
@@ -2762,7 +2763,13 @@ function sendExpert(){
   if(!exp)exp=pickExpertDK(text);
   var sys=dkBuildSystemPrompt(exp);
   var metaLabel=exp.emoji+' '+T('expRouted')+': '+exp.label;
+  // בועת "חושב…" עד שהמודל עונה
+  var log=document.getElementById('exp-log');
+  var think=document.createElement('div');think.style.cssText='margin-bottom:12px;display:flex;justify-content:flex-start;';
+  think.innerHTML='<div style="padding:11px 14px;border-radius:14px;background:#fff;border:1px solid var(--border);color:var(--sub);font-size:15px;">'+T('expThinking')+'</div>';
+  if(log){log.appendChild(think);log.scrollTop=log.scrollHeight;}
   runModel(sys,text).then(function(answer){
+    if(think&&think.parentNode)think.parentNode.removeChild(think);
     if(answer){expAddMsg('bot',answer,metaLabel);}
     else{expAddMsg('bot',T('expSoon')+'\n\n('+T('expCtxNote')+')',metaLabel);}
   });
@@ -3152,6 +3159,25 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
       if(window._dkMigratePhotos) setTimeout(window._dkMigratePhotos, 3500);
       if(window._dkTrimPhotos) setTimeout(window._dkTrimPhotos, 6000); // ניקוי base64 ישן אחרי שהמיגרציה רצה
     }catch(e){}
+
+    // === עוזר חכם: חיבור Gemini דרך Firebase AI Logic ===
+    // עצל-טעינה ומבודד (אינסטנס נפרד 'dkAI' שלא נוגע ב-Firestore/Storage). אם הספק לא הופעל בקונסול —
+    // generateContent נדחה → מחזיר null → המסך מציג את הודעת "לא מחובר" כרגיל (אפס סיכון לקיים).
+    window._dkRunModel = function(systemPrompt, userText){
+      if(!window.__dkAIModelP){
+        window.__dkAIModelP = (async function(){
+          const appMod11 = await import("https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js");
+          const aiMod = await import("https://www.gstatic.com/firebasejs/11.3.0/firebase-ai.js");
+          var aiApp; try{ aiApp = appMod11.getApp('dkAI'); }catch(e){ aiApp = appMod11.initializeApp(FIREBASE_CONFIG, 'dkAI'); }
+          const ai = aiMod.getAI(aiApp, { backend: new aiMod.GoogleAIBackend() });
+          return aiMod.getGenerativeModel(ai, { model: 'gemini-2.0-flash' });
+        })();
+      }
+      return window.__dkAIModelP
+        .then(function(model){ return model.generateContent(systemPrompt + "\n\n---\n\n" + userText); })
+        .then(function(res){ return (res && res.response && res.response.text && res.response.text()) || null; })
+        .catch(function(){ window.__dkAIModelP=null; return null; }); // איפוס כדי לנסות שוב בפעם הבאה
+    };
 
     // משיכת הפיצ'רים שהבעלים הדליק למנהל + האזנה חיה לשינויים
     function myPhoneId(){try{return(JSON.parse(localStorage.getItem('sb_settings')||'{}').managerPhone||'').replace(/\D/g,'');}catch(e){return '';}}
