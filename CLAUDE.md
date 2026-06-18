@@ -37,7 +37,8 @@
   - `managers` (doc id = טלפון מנוקה): name, phone, company, project, lang, registeredAt, lastSeen
   - `messages`: title, body, link, audience ('all' | array of phones), audienceNames, createdAt(serverTimestamp)
 - **Firebase הוא תנאי הכרחי** ל: עמוד ניהול, הודעות, ראות הבעלים בנתונים, גיבוי. בלעדיו אלה לא עובדים.
-- **אבטחה (יוני 2026):** ראה `FIREBASE-SECURITY.md`. admin.html מאחורי כניסת בעלים (Email/Password — `ensureAdminLogin`). כללי Firestore שלב B (ביניים) מוכנים להדבקה: רשימת מנהלים+כתיבת הודעות = בעלים בלבד (UID), נתוני שטח = auth. שלב A (Phone Auth, נעילה לפי owner) — collaborative, טרם בוצע. כל רשומת ענן כבר נושאת `owner`=טלפון מנוקה (ב-`cloudSave`).
+- **אבטחה (יוני 2026) — ✅ פעיל:** ראה `FIREBASE-SECURITY.md`. admin.html מאחורי כניסת בעלים (Email/Password — `ensureAdminLogin`) — **הופעל בקונסול + נוצר משתמש בעלים**. כללי Firestore שלב B **פורסמו וחיים**: רשימת מנהלים+כתיבת הודעות+פניות+תדריכים = בעלים בלבד (לפי UID), נתוני שטח = auth. נבדק חי: בעלים נכנס ורואה נתונים, אפליקציה שומרת רגיל. כל רשומת ענן נושאת `owner`=טלפון מנוקה (ב-`cloudSave`).
+- **שלב A (Phone Auth, נעילה לפי owner על נתוני שטח) — טרם בוצע** (שדרוג עתידי, collaborative).
 
 ## פיצ'רים שכבר נבנו ונבדקו
 1. **3 מודולים**: יומן עבודה (קול→טקסט, כוח אדם, מזג אוויר, תמונות), ליקויים ומשימות (חומרה דחוף/רגיל/נמוך, סטטוס, וואטסאפ לקבלן), בטיחות יומית (5 סוגי עבודה, 12+ שאלות, חתימה, GPS).
