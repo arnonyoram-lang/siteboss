@@ -1301,6 +1301,25 @@ window._dkMigratePhotos=function(){
   // סמן "בוצע" רק אם כל ההעלאות הצליחו — אחרת ינוסה שוב בהפעלה הבאה
   Promise.all(jobs).then(function(){saveJSON('dk_photo_migrated',true);}).catch(function(){/* יישאר לא-מסומן → ניסיון חוזר */});
 };
+// ניקוי מקום: מסיר base64 כבד מרשומות *ישנות* שכבר יש להן photoUrls בענן.
+// שומר את ה-15 האחרונות בכל אוסף עם base64 לצפייה לא-מקוונת. רץ בהפעלה אחרי שה-Storage מוכן.
+function _dkTrimPhotos(){
+  var KEEP=15;var sets=['sb_journals','sb_defects','sb_safety','dk_incidents'];var freed=0;
+  sets.forEach(function(key){
+    try{
+      var list=loadJSON(key,[]);var ch=false;
+      for(var i=0;i<list.length;i++){
+        var r=list[i];
+        // i<KEEP = מהחדשות (list ב-unshift, כלומר החדש בראש) → לשמור base64
+        if(i>=KEEP && r && r.photos && r.photos.length && r.photoUrls && r.photoUrls.length){
+          r.photos=[];r._photosOffloaded=true;ch=true;freed++;
+        }
+      }
+      if(ch)saveJSON(key,list);
+    }catch(e){}
+  });
+  return freed;
+}
 function T(k){return(STRINGS[APP.lang]||STRINGS.he)[k]||k;}
 function applyLang(){
   document.documentElement.lang=APP.lang;
@@ -3131,6 +3150,7 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
       };
       // מיגרציה חד-פעמית של תמונות ישנות לענן (אחרי שהאימות+Storage מוכנים)
       if(window._dkMigratePhotos) setTimeout(window._dkMigratePhotos, 3500);
+      if(window._dkTrimPhotos) setTimeout(window._dkTrimPhotos, 6000); // ניקוי base64 ישן אחרי שהמיגרציה רצה
     }catch(e){}
 
     // משיכת הפיצ'רים שהבעלים הדליק למנהל + האזנה חיה לשינויים
