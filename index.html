@@ -749,6 +749,13 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <button class="btn btn-outline" style="margin-top:8px;" onclick="openAddContractor()"><span data-t="addContractor"></span></button>
     </div>
     <div class="card" id="feature-prefs" style="display:none;"></div>
+    <div class="card">
+      <div class="card-title" data-t="exportSection"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-outline" style="flex:1;min-width:130px;" onclick="dkExportCSV('defects')"><span data-t="exportDefects"></span></button>
+        <button class="btn btn-outline" style="flex:1;min-width:130px;" onclick="dkExportCSV('journals')"><span data-t="exportJournals"></span></button>
+      </div>
+    </div>
     <button class="btn btn-blue" onclick="saveSettings()"><span data-t="saveSettings"></span></button>
   </div>
 </div>
@@ -988,6 +995,7 @@ btnExpTitle:'עוזר חכם',btnExpDesc:'נהלים, סיכונים, מכתבי
 expIntro:'מה תרצה? כתוב חופשי והעוזר המתאים יענה. למשל: "תכתוב נוהל כניסה לאתר", "מה הסיכונים בעבודה בגובה השבוע", "מכתב לקבלן על ליקוי שלא תוקן", "סכם לי את פגישת הבטיחות", "תעזור לי להחליט בין שני קבלני משנה".',
 saveFailFull:'⚠️ לא נשמר — הזיכרון מלא. מחק תמונות/דוחות ישנים ונסה שוב',
 searchPlaceholder:'🔍 חיפוש (תיאור, קומה, קבלן…)',loadMore:'טען עוד',noSearchResults:'לא נמצאו תוצאות',
+exportSection:'ייצוא נתונים (Excel/CSV)',exportDefects:'⬇️ ליקויים',exportJournals:'⬇️ יומנים',exportEmpty:'אין נתונים לייצוא',
 syncedToast:'☁️ סונכרן לענן',legalTitle:'תנאי שימוש ופרטיות',legalLink:'תנאי שימוש ופרטיות',
 onbTipTitle:'👋 ברוכים הבאים לדקה',onbTipBody:'3 צעדים להתחלה:\n1. פתח 📋 יומן ותעד את היום — קול או הקלדה.\n2. צילמת ליקוי? 📸 ליקויים → שלח לקבלן בלחיצה.\n3. כל בוקר עבור על 🦺 בטיחות וחתום.\nהכול נשמר במכשיר ומגובה לענן.',onbTipBtn:'הבנתי, בוא נתחיל',
 expThinking:'⏳ חושב…',expRouted:'מומחה',expSoon:'מנוע ה-AI עוד לא מחובר במכשיר הזה — אבל זיהיתי בדיוק לאיזה מומחה לפנות ובניתי לו את ההנחיה המלאה. כשנחבר את המודל, התשובה המלאה תופיע כאן.',expCtxNote:'הקשר האתר שלך מוזרק אוטומטית',
@@ -1122,6 +1130,7 @@ btnExpTitle:'مساعد ذكي',btnExpDesc:'إجراءات، مخاطر، رسا
 expIntro:'ماذا تريد؟ اكتب بحرية وسيجيبك الخبير المناسب. مثلاً: "اكتب إجراء دخول للموقع"، "ما مخاطر العمل على ارتفاع هذا الأسبوع"، "رسالة لمقاول حول عيب لم يُصلَح"، "لخّص لي اجتماع السلامة"، "ساعدني أقرّر بين مقاولَي باطن".',
 saveFailFull:'⚠️ لم يُحفظ — الذاكرة ممتلئة. احذف صوراً/تقارير قديمة وحاول ثانية',
 searchPlaceholder:'🔍 بحث (وصف، طابق، مقاول…)',loadMore:'تحميل المزيد',noSearchResults:'لا توجد نتائج',
+exportSection:'تصدير البيانات (Excel/CSV)',exportDefects:'⬇️ العيوب',exportJournals:'⬇️ اليوميات',exportEmpty:'لا توجد بيانات للتصدير',
 syncedToast:'☁️ تمت المزامنة',legalTitle:'شروط الاستخدام والخصوصية',legalLink:'شروط الاستخدام والخصوصية',
 onbTipTitle:'👋 أهلاً بك في دقيقة',onbTipBody:'3 خطوات للبدء:\n1. افتح 📋 اليومية ووثّق اليوم — صوت أو كتابة.\n2. صوّرت عيباً؟ 📸 العيوب → أرسل للمقاول بضغطة.\n3. كل صباح راجع 🦺 السلامة ووقّع.\nكل شيء محفوظ على الجهاز ومنسوخ للسحابة.',onbTipBtn:'فهمت، لنبدأ',
 expThinking:'⏳ يفكّر…',expRouted:'خبير',expSoon:'محرك الذكاء الاصطناعي غير موصول بعد على هذا الجهاز — لكنني حدّدت الخبير المناسب وبنيت له التعليمات الكاملة. عند توصيل النموذج، ستظهر الإجابة الكاملة هنا.',expCtxNote:'سياق موقعك يُضاف تلقائياً',
@@ -2775,6 +2784,30 @@ function sendExpert(){
   });
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// ייצוא CSV (נפתח באקסל) — UTF-8 BOM לעברית, ציטוט בטוח
+function _csvCell(v){v=(v==null?'':String(v));return '"'+v.replace(/"/g,'""')+'"';}
+function dkExportCSV(type){
+  var rows=[],fname='';
+  if(type==='defects'){
+    var ds=loadJSON('sb_defects',[]);if(!ds.length){toast(T('exportEmpty'));return;}
+    rows.push(['תאריך','תיאור','קומה','אגף','קבלן','חומרה','סטטוס','יעד','תוקן ע"י','זמן תיקון']);
+    ds.forEach(function(d){rows.push([new Date(d.date||d.ts).toLocaleDateString('he-IL'),d.desc||'',d.floor||'',d.area||'',d.contractor||'',d.severity||'',d.status||'',d.deadline||'',(d.fix&&d.fix.by)||'',(d.fix&&d.fix.when)?new Date(d.fix.when).toLocaleString('he-IL'):'']);});
+    fname='defects';
+  } else {
+    var js=loadJSON('sb_journals',[]);if(!js.length){toast(T('exportEmpty'));return;}
+    rows.push(['תאריך','מס׳ יומן','סה"כ עובדים','מזג אוויר','תיאור','עיכובים','משימות למחר','אישור פיקוח']);
+    js.forEach(function(j){var tw=0;if(j.workers)j.workers.forEach(function(w){tw+=(w.qty||0);});rows.push([new Date(j.date).toLocaleDateString('he-IL'),j.serial||'',tw,(j.weather>=0?T('wl'+j.weather):''),j.text||'',j.delays||'',j.tasks||'',j.supervisorApproval?'מאושר':'ממתין']);});
+    fname='journals';
+  }
+  var csv='﻿'+rows.map(function(r){return r.map(_csvCell).join(',');}).join('\r\n');
+  try{
+    var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    var url=URL.createObjectURL(blob);var a=document.createElement('a');
+    a.href=url;a.download='daka_'+fname+'_'+isoDate()+'.csv';document.body.appendChild(a);a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+    toast('⬇️ '+rows.length-1+' '+(APP.lang==='ar'?'سجل':'רשומות'));
+  }catch(e){toast(T('exportEmpty'));}
+}
 function getGPS(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(function(p){APP.gps=p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5);},function(){},{timeout:10000});}
 // ===================== SAFETY FIX =====================
 var _sfReportId=null,_sfQuestionKey=null,_sfPhoto=null;
