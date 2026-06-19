@@ -299,6 +299,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <div class="stat-card" onclick="showScreen('s-defects')"><div class="stat-num" id="stat-defects">0</div><div class="stat-label" data-t="statOpen"></div></div>
       <div class="stat-card" onclick="showScreen('s-safety-history')"><div class="stat-num" id="stat-safety">0</div><div class="stat-label" data-t="statSafety"></div></div>
     </div>
+    <button id="home-digest-btn" onclick="sendDailyDigest()" style="width:100%;margin:0 0 14px;padding:13px;border:1.5px solid var(--accent);border-radius:10px;background:var(--container);color:var(--accent);font-weight:800;font-size:15px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;" data-t="digestBtn"></button>
     <button id="home-mod-journal" class="home-btn" style="background:linear-gradient(135deg,#1f9d57,#157a42);" onclick="showScreen('s-journal')">
       <span class="home-btn-icon">📋</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn1Title"></span><span class="home-btn-desc" data-t="btn1Desc"></span></span>
@@ -1012,7 +1013,7 @@ remTitle:'תזכורות ומשימות',remSmartTitle:'התראות אוטומ�
 helpLink:'❓ עזרה ופנייה למשרד',helpTitle:'עזרה ופנייה',
 copyYesterday:'📋 המשך מאתמול',noLastJournal:'אין יומן קודם להעתקה',draftRestored:'💾 שוחזרה טיוטה שלא נשמרה',copiedYesterday:'הועתק מהיומן האחרון — עדכן ושמור',
 moreDetails:'פרטים נוספים (מיקום, יעד, חומרה)',dupDefect:'⧉ שכפל',btnCall:'📞 חייג',dlTomorrow:'מחר',dl3days:'3 ימים',dlWeek:'שבוע',
-doneToday:'✓ בוצע היום',sameCrew:'👥 אותו צוות כמו אתמול',noPrevCrew:'אין רשימת נוכחות קודמת',presInTime:'שעת כניסה',
+doneToday:'✓ בוצע היום',digestBtn:'📤 שלח סיכום יום למשרד',digestEmpty:'אין עדיין נתונים להיום',sameCrew:'👥 אותו צוות כמו אתמול',noPrevCrew:'אין רשימת נוכחות קודמת',presInTime:'שעת כניסה',
 btnExpTitle:'עוזר חכם',btnExpDesc:'נהלים, סיכונים, מכתבים, החלטות',expTitle:'🧠 עוזר חכם',expPlaceholder:'כתוב מה צריך — נוהל בטיחות, מכתב לקבלן, סיכום פגישה, מה הסיכונים…',
 expIntro:'מה תרצה? כתוב חופשי והעוזר המתאים יענה. למשל: "תכתוב נוהל כניסה לאתר", "מה הסיכונים בעבודה בגובה השבוע", "מכתב לקבלן על ליקוי שלא תוקן", "סכם לי את פגישת הבטיחות", "תעזור לי להחליט בין שני קבלני משנה".',
 saveFailFull:'⚠️ לא נשמר — הזיכרון מלא. מחק תמונות/דוחות ישנים ונסה שוב',
@@ -1148,7 +1149,7 @@ remTitle:'تذكيرات ومهام',remSmartTitle:'تنبيهات تلقائي�
 helpLink:'❓ مساعدة وتواصل مع المكتب',helpTitle:'مساعدة وتواصل',
 copyYesterday:'📋 متابعة من الأمس',noLastJournal:'لا توجد يومية سابقة للنسخ',draftRestored:'💾 استُعيدت مسودة غير محفوظة',copiedYesterday:'نُسخ من آخر يومية — حدّث واحفظ',
 moreDetails:'تفاصيل إضافية (موقع، موعد، أهمية)',dupDefect:'⧉ تكرار',btnCall:'📞 اتصل',dlTomorrow:'غداً',dl3days:'3 أيام',dlWeek:'أسبوع',
-doneToday:'✓ تم اليوم',sameCrew:'👥 نفس طاقم الأمس',noPrevCrew:'لا توجد قائمة حضور سابقة',presInTime:'وقت الدخول',
+doneToday:'✓ تم اليوم',digestBtn:'📤 أرسل ملخص اليوم للمكتب',digestEmpty:'لا توجد بيانات لليوم بعد',sameCrew:'👥 نفس طاقم الأمس',noPrevCrew:'لا توجد قائمة حضور سابقة',presInTime:'وقت الدخول',
 btnExpTitle:'مساعد ذكي',btnExpDesc:'إجراءات، مخاطر، رسائل، قرارات',expTitle:'🧠 مساعد ذكي',expPlaceholder:'اكتب ما تحتاجه — إجراء سلامة، رسالة لمقاول، تلخيص اجتماع، ما المخاطر…',
 expIntro:'ماذا تريد؟ اكتب بحرية وسيجيبك الخبير المناسب. مثلاً: "اكتب إجراء دخول للموقع"، "ما مخاطر العمل على ارتفاع هذا الأسبوع"، "رسالة لمقاول حول عيب لم يُصلَح"، "لخّص لي اجتماع السلامة"، "ساعدني أقرّر بين مقاولَي باطن".',
 saveFailFull:'⚠️ لم يُحفظ — الذاكرة ممتلئة. احذف صوراً/تقارير قديمة وحاول ثانية',
@@ -2174,6 +2175,46 @@ function shareReportWA(){
     if(e.gps)msg+='📍 '+e.gps+'\n';
   }
   msg+='\n_'+(APP.lang==='ar'?'أُرسل عبر تطبيق דקה':'נשלח מאפליקציית דקה')+'_';
+  openOfficeWA(msg);
+}
+// סיכום יום למשרד — לחיצה אחת בסוף יום אוספת את כל מה שקרה היום להודעת וואטסאפ אחת
+function sendDailyDigest(){
+  var s=APP.settings,ar=APP.lang==='ar',today=isoDate(),line='━━━━━━━━━━━━━━━',any=false;
+  var todayHuman=new Date().toLocaleDateString(ar?'ar-IL':'he-IL',{weekday:'long',day:'numeric',month:'long'});
+  var msg='📤 *'+(ar?'ملخص يومي':'סיכום יום')+'*\n'+line+'\n';
+  msg+='🏗️ *'+(s.projectName||'')+'*\n📅 '+todayHuman+'\n';
+  msg+='👷 '+(ar?'مدير العمل':'מנהל עבודה')+': '+(s.managerName||'')+'\n'+line+'\n';
+  // נוכחות עובדים
+  var pres=getPresenceToday();
+  if(pres.length){any=true;var present=pres.filter(function(p){return !p.outTs;}).length;
+    msg+='👥 *'+(ar?'الحضور':'נוכחות')+':* '+pres.length+' '+(ar?'عامل':'עובדים')+' ('+(ar?'في الموقع':'באתר')+': '+present+')\n';}
+  // יומן עבודה
+  var jToday=loadJSON('sb_journals',[]).filter(function(j){return (j.date||'').slice(0,10)===today;});
+  if(jToday.length){any=true;var j=jToday[0],tot=0;if(j.workers)j.workers.forEach(function(w){tot+=w.qty;});
+    msg+='📋 *'+(ar?'يومية عمل':'יומן עבודה')+':* '+(ar?'تم التوثيق':'תועד')+(tot?' · '+tot+' '+(ar?'عامل':'עובדים'):'')+'\n';
+    if(j.delays)msg+='   ⚠️ '+(ar?'تأخيرات':'עיכובים')+': '+j.delays+'\n';
+  } else { msg+='📋 *'+(ar?'يومية عمل':'יומן עבודה')+':* '+(ar?'لم تُسجَّل بعد ⚠️':'טרם נרשם ⚠️')+'\n'; }
+  // בטיחות
+  var sToday=loadJSON('sb_safety',[]).filter(function(r){return (r.date||'').slice(0,10)===today;});
+  if(sToday.length){any=true;var r=sToday[0],fails=0;for(var k in r.answers){if(r.answers[k]==='fail')fails++;}
+    msg+='🦺 *'+(ar?'فحص السلامة':'בדיקת בטיחות')+':* '+(fails?('🔴 '+fails+' '+(ar?'ليقوي':'ליקויים')):('🟢 '+(ar?'سليم':'תקין')))+'\n';
+  } else { msg+='🦺 *'+(ar?'فحص السلامة':'בדיקת בטיחות')+':* '+(ar?'لم يُجرَ بعد ⚠️':'טרם בוצעה ⚠️')+'\n'; }
+  // ליקויים
+  var defects=loadJSON('sb_defects',[]);
+  var openDef=defects.filter(function(d){return d.status!=='done';});
+  var newToday=defects.filter(function(d){return (d.date||'').slice(0,10)===today;}).length;
+  var fixedToday=defects.filter(function(d){return d.status==='done'&&d.fix&&d.fix.when===today;}).length;
+  msg+='📸 *'+(ar?'العيوب':'ליקויים')+':* '+(ar?'مفتوح':'פתוחים')+' '+openDef.length;
+  if(newToday)msg+=' · '+(ar?'جديد اليوم':'חדשים היום')+' '+newToday;
+  if(fixedToday)msg+=' · '+(ar?'عولج اليوم':'טופלו היום')+' '+fixedToday;
+  msg+='\n';
+  if(openDef.length||newToday)any=true;
+  var urgent=openDef.filter(function(d){return d.severity==='urgent';});
+  if(urgent.length){msg+='   🔴 '+(ar?'عاجل':'דחוף')+':\n';
+    urgent.slice(0,5).forEach(function(d){msg+='   • '+(d.desc||'')+(d.floor?' ('+d.floor+')':'')+'\n';});
+    if(urgent.length>5)msg+='   • +'+(urgent.length-5)+'\n';}
+  msg+=line+'\n_'+(ar?'أُرسل عبر تطبيق דקה':'נשלח מאפליקציית דקה')+'_';
+  if(!any){toast(T('digestEmpty'),3500);return;}
   openOfficeWA(msg);
 }
 function renderJournalHistory(){

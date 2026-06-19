@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "SiteBoss",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve@14", "-p", "3456", "--no-clipboard", "--no-etag", "."],
+      "port": 3456
+    }
+  ]
+}
