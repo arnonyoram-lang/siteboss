@@ -576,7 +576,7 @@ function renderRep(){
   var arr=_repData[_repTab]||[];var b=document.getElementById('rep-body');
   if(!arr.length){b.innerHTML='<div class="empty">אין רשומות בקטגוריה זו</div>';return;}
   var h='';
-  function photos(r){if(!r.photoUrls||!r.photoUrls.length)return '';var x='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">';for(var i=0;i<r.photoUrls.length;i++)x+='<a href="'+r.photoUrls[i]+'" target="_blank"><img src="'+r.photoUrls[i]+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border);"></a>';return x+'</div>';}
+  function photos(r){if(!r.photoUrls||!r.photoUrls.length)return '';var x='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">';for(var i=0;i<r.photoUrls.length;i++){var u=String(r.photoUrls[i]||'');if(!/^(https?:|data:image\/)/.test(u))continue;u=esc(u);x+='<a href="'+u+'" target="_blank" rel="noopener noreferrer"><img src="'+u+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border);"></a>';}return x+'</div>';}
   arr.forEach(function(r){
     var d=r.date?new Date(r.date).toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'}):'';
     if(_repTab==='journals'){

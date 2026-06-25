@@ -1251,7 +1251,8 @@ function _freeSpace(){
   var colls=['sb_journals','sb_defects','sb_safety','dk_incidents'];var freed=false;
   colls.forEach(function(kk){try{
     var list=JSON.parse(localStorage.getItem(kk)||'[]');var ch=false;
-    for(var i=0;i<list.length;i++){var r=list[i];if(r&&r.photos&&r.photos.length){r.photos=[];r._photosOffloaded=true;ch=true;freed=true;}}
+    // רוקן base64 רק מרשומות שכבר עלו לענן (photoUrls) — אחרת זו המחיקה היחידה והראיה תאבד
+    for(var i=0;i<list.length;i++){var r=list[i];if(r&&r.photos&&r.photos.length&&r.photoUrls&&r.photoUrls.length){r.photos=[];r._photosOffloaded=true;ch=true;freed=true;}}
     if(ch)localStorage.setItem(kk,JSON.stringify(list));
   }catch(e){}});
   return freed;
@@ -1457,8 +1458,8 @@ function refreshHome(){
   document.getElementById('stat-safety').textContent=safety.filter(function(r){return r.ts>weekAgo;}).length;
   // ✓ בוצע היום — מבט אחד והמנהל יודע מה נשאר
   var today=isoDate();
-  setHomeBadge('home-mod-journal',journals.some(function(j){return (j.date||'').slice(0,10)===today;})?T('doneToday'):'','done');
-  setHomeBadge('home-mod-safety',safety.some(function(r){return (r.date||'').slice(0,10)===today;})?T('doneToday'):'','done');
+  setHomeBadge('home-mod-journal',journals.some(function(j){return dkLocalDay(j.date)===today;})?T('doneToday'):'','done');
+  setHomeBadge('home-mod-safety',safety.some(function(r){return dkLocalDay(r.date)===today;})?T('doneToday'):'','done');
   // מונה ליקויים פתוחים על כפתור הליקויים
   setHomeBadge('home-mod-defects',openDef>0?String(openDef):'','count');
   sortHomeButtons();
@@ -1518,7 +1519,7 @@ function renderMessages(){
       h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:11px;color:var(--blue);font-weight:700;">📢 '+T('msgFrom')+'</span>'+(isNew?'<span style="background:var(--blue);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;">'+T('msgNewBadge')+'</span>':'')+'</div>';
       if(m.title)h+='<div style="font-weight:800;font-size:16px;margin-bottom:4px;">'+esc(m.title)+'</div>';
       if(m.body)h+='<div style="font-size:14px;line-height:1.6;white-space:pre-wrap;color:var(--text);">'+esc(m.body)+'</div>';
-      if(m.link)h+='<a href="'+esc(m.link)+'" target="_blank" style="display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;font-size:14px;text-decoration:none;">'+T('msgOpenLink')+'</a>';
+      var _ml=m.link?safeUrl(m.link):'';if(_ml)h+='<a href="'+esc(_ml)+'" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;font-size:14px;text-decoration:none;">'+T('msgOpenLink')+'</a>';
       h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">';
       h+='<span style="font-size:11px;color:var(--sub);">'+when+'</span>';
       h+='<button onclick="replyToMessage('+i+')" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;color:var(--blue);cursor:pointer;font-family:inherit;">'+T('msgReply')+'</button>';
@@ -1584,9 +1585,10 @@ function editPresTime(id){
 }
 function presOut(id){
   var list=getPresenceToday();for(var i=0;i<list.length;i++)if(list[i].id===id){list[i].outTs=list[i].outTs?null:Date.now();break;}
-  saveJSON(presKey(),list);cloudSavePresence();renderPresence();
+  if(!saveJSON(presKey(),list)){toast(T('saveFailFull'),6000);return;}
+  cloudSavePresence();renderPresence();
 }
-function delPresence(id){var list=getPresenceToday().filter(function(p){return p.id!==id;});saveJSON(presKey(),list);cloudSavePresence();renderPresence();}
+function delPresence(id){var all=getPresenceToday();var p=all.find(function(x){return x.id===id;});if(!p)return;if(!confirm((APP.lang==='ar'?'حذف ':'למחוק את ')+(p.name||'')+'?'))return;var list=all.filter(function(x){return x.id!==id;});if(!saveJSON(presKey(),list)){toast(T('saveFailFull'),6000);return;}cloudSavePresence();renderPresence();toast(T('deleted'));}
 function fmtTime(ts){return ts?new Date(ts).toLocaleTimeString(APP.lang==='ar'?'ar-IL':'he-IL',{hour:'2-digit',minute:'2-digit'}):'';}
 function renderPresence(){
   var list=getPresenceToday();var present=list.filter(function(p){return !p.outTs;}).length;
@@ -1712,7 +1714,9 @@ function saveIncident(){
   showScreen('s-incidents-history');
 }
 function incTypeLabel(k){var m={accident:T('incTypeAccident'),nearmiss:T('incTypeNear'),hazard:T('incTypeHazard')};return m[k]||k;}
+function shareIncidentById(id){var e=getIncidents().find(function(x){return x.id===id;});if(e)shareIncidentWA(e);}
 function shareIncidentWA(e){
+  if(!e)return;
   var s=APP.settings||{};
   var msg='🚨 *'+T('incTitle')+'*\n━━━━━━━━━━━\n'+incTypeLabel(e.type)+'\n🏗️ *'+(s.projectName||'')+'*\n📅 '+new Date(e.ts).toLocaleString('he-IL')+'\n👷 '+(e.reporter||'')+'\n\n*'+T('incDescTitle')+':*\n'+e.desc+'\n';
   if(e.location)msg+='📍 '+e.location+'\n';
@@ -1731,7 +1735,7 @@ function renderIncidentsHistory(){
       +(e.location?'<div style="font-size:13px;color:var(--sub);margin-top:4px;">📍 '+esc(e.location)+'</div>':'')
       +(e.injured?'<div style="font-size:13px;color:var(--red);margin-top:4px;">🩹 '+esc(e.injured)+'</div>':'')
       +(function(){var ph=dkPhotosOf(e);return ph.length?'<div class="photos-grid" style="margin-top:8px;">'+ph.map(function(p){return '<div class="photo-thumb"><img src="'+p+'"></div>';}).join('')+'</div>':'';})()
-      +'<button class="btn btn-gray btn-sm" style="margin-top:8px;" onclick="shareIncidentWA(getIncidents().find(function(x){return x.id==='+e.id+';}))">📲 שלח שוב</button>'
+      +'<button class="btn btn-gray btn-sm" style="margin-top:8px;" onclick="shareIncidentById('+e.id+')">📲 שלח שוב</button>'
       +'</div>';
   });
   if(shown<list.length)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.incPage=(APP.incPage||1)+1;renderIncidentsHistory();">'+T('loadMore')+' ('+(list.length-shown)+')</button>';
@@ -2102,16 +2106,19 @@ function getWorkers(){
   });
   return d;
 }
-function nextJournalSerial(){var n=loadJSON('dk_journal_serial',0);n=(parseInt(n)||0)+1;saveJSON('dk_journal_serial',n);return n;}
 function fmtSerial(n){var s=''+(n||0);while(s.length<3)s='0'+s;return s;}
 function saveJournal(){
   var txt=document.getElementById('jnl-text').value.trim();
   if(!txt){toast(APP.lang==='ar'?'أدخل وصف اليوم':'יש להזין תיאור יום העבודה');return;}
   if(!jnlSignPad||jnlSignPad.isEmpty()){toast(T('signRequired'));var sc=document.getElementById('jnl-sign-canvas');if(sc)sc.scrollIntoView({behavior:'smooth',block:'center'});return;}
-  var entry={id:Date.now(),serial:nextJournalSerial(),date:new Date().toISOString(),ts:Date.now(),text:txt,workers:getWorkers(),weather:currentWeather,delays:document.getElementById('jnl-delays').value.trim(),tasks:document.getElementById('jnl-tasks').value.trim(),photos:APP.jnlPhotos.slice(),managerSign:jnlSignPad.dataURL(),manager:APP.settings.managerName||'',locked:true,supervisorApproval:null,lang:APP.lang};
+  if(!dkOnce('jnl'))return; // מנע יומן כפול בלחיצה כפולה (גם שני סידורים)
+  // קבילות משפטית: הקצאת מספר רץ רק אחרי שמירה מוצלחת — ללא דילוגים אם הזיכרון מלא
+  var nextSerial=(parseInt(loadJSON('dk_journal_serial',0))||0)+1;
+  var entry={id:Date.now(),serial:nextSerial,date:new Date().toISOString(),ts:Date.now(),text:txt,workers:getWorkers(),weather:currentWeather,delays:document.getElementById('jnl-delays').value.trim(),tasks:document.getElementById('jnl-tasks').value.trim(),photos:APP.jnlPhotos.slice(),managerSign:jnlSignPad.dataURL(),manager:APP.settings.managerName||'',locked:true,supervisorApproval:null,lang:APP.lang};
   var journals=loadJSON('sb_journals',[]);journals.unshift(entry);
   // קבילות משפטית: אם השמירה נכשלה (זיכרון מלא) — אל תציג "נשמר" ואל תמחק טיוטה, כדי שלא יאבד יומן
   if(!saveJSON('sb_journals',journals)){toast(APP.lang==='ar'?'⚠️ لم تُحفظ اليومية — الذاكرة ممتلئة. احذف صوراً/تقارير قديمة وحاول ثانية':'⚠️ היומן לא נשמר — הזיכרון מלא. מחק תמונות/דוחות ישנים ונסה שוב',6000);return;}
+  saveJSON('dk_journal_serial',nextSerial); // קדם את המונה רק אחרי שהיומן נשמר בפועל
   cloudSave('journals',entry);
   try{localStorage.removeItem('dk_jnl_draft');}catch(e){}
   toast(T('saved'));showJournalReport(entry);
@@ -2189,21 +2196,21 @@ function sendDailyDigest(){
   if(pres.length){any=true;var present=pres.filter(function(p){return !p.outTs;}).length;
     msg+='👥 *'+(ar?'الحضور':'נוכחות')+':* '+pres.length+' '+(ar?'عامل':'עובדים')+' ('+(ar?'في الموقع':'באתר')+': '+present+')\n';}
   // יומן עבודה
-  var jToday=loadJSON('sb_journals',[]).filter(function(j){return (j.date||'').slice(0,10)===today;});
+  var jToday=loadJSON('sb_journals',[]).filter(function(j){return dkLocalDay(j.date)===today;});
   if(jToday.length){any=true;var j=jToday[0],tot=0;if(j.workers)j.workers.forEach(function(w){tot+=w.qty;});
     msg+='📋 *'+(ar?'يومية عمل':'יומן עבודה')+':* '+(ar?'تم التوثيق':'תועד')+(tot?' · '+tot+' '+(ar?'عامل':'עובדים'):'')+'\n';
     if(j.delays)msg+='   ⚠️ '+(ar?'تأخيرات':'עיכובים')+': '+j.delays+'\n';
   } else { msg+='📋 *'+(ar?'يومية عمل':'יומן עבודה')+':* '+(ar?'لم تُسجَّل بعد ⚠️':'טרם נרשם ⚠️')+'\n'; }
   // בטיחות
-  var sToday=loadJSON('sb_safety',[]).filter(function(r){return (r.date||'').slice(0,10)===today;});
+  var sToday=loadJSON('sb_safety',[]).filter(function(r){return dkLocalDay(r.date)===today;});
   if(sToday.length){any=true;var r=sToday[0],fails=0;for(var k in r.answers){if(r.answers[k]==='fail')fails++;}
     msg+='🦺 *'+(ar?'فحص السلامة':'בדיקת בטיחות')+':* '+(fails?('🔴 '+fails+' '+(ar?'ليقوي':'ליקויים')):('🟢 '+(ar?'سليم':'תקין')))+'\n';
   } else { msg+='🦺 *'+(ar?'فحص السلامة':'בדיקת בטיחות')+':* '+(ar?'لم يُجرَ بعد ⚠️':'טרם בוצעה ⚠️')+'\n'; }
   // ליקויים
   var defects=loadJSON('sb_defects',[]);
   var openDef=defects.filter(function(d){return d.status!=='done';});
-  var newToday=defects.filter(function(d){return (d.date||'').slice(0,10)===today;}).length;
-  var fixedToday=defects.filter(function(d){return d.status==='done'&&d.fix&&d.fix.when===today;}).length;
+  var newToday=defects.filter(function(d){return dkLocalDay(d.date)===today;}).length;
+  var fixedToday=defects.filter(function(d){return d.status==='done'&&d.fix&&(d.fix.when||'').slice(0,10)===today;}).length;
   msg+='📸 *'+(ar?'العيوب':'ליקויים')+':* '+(ar?'مفتوح':'פתוחים')+' '+openDef.length;
   if(newToday)msg+=' · '+(ar?'جديد اليوم':'חדשים היום')+' '+newToday;
   if(fixedToday)msg+=' · '+(ar?'عولج اليوم':'טופלו היום')+' '+fixedToday;
@@ -2255,7 +2262,7 @@ function showJournalReport(entryOrStr){
   document.getElementById('report-topbar-title').textContent=T('reportJournalTitle')+ds;
   var h='<div class="report-logo"><div class="report-logo-title">דקה</div><div class="report-logo-sub">'+T('appTagline')+'</div></div>';
   h+='<div class="report-header"><p><strong>'+T('reportProject')+'</strong>'+(s.projectName||'—')+'</p><p><strong>'+T('reportManager')+'</strong>'+(entry.manager||s.managerName||'—')+'</p><p><strong>'+T('reportDate')+'</strong>'+ds+'</p>'+(serialStr?'<p><strong>'+serialStr+'</strong></p>':'')+'</div>';
-  h+='<div class="report-section-title">'+T('reportWorkDesc')+'</div><p>'+(entry.text||'').replace(/\n/g,'<br>')+'</p>';
+  h+='<div class="report-section-title">'+T('reportWorkDesc')+'</div><p>'+esc(entry.text||'').replace(/\n/g,'<br>')+'</p>';
   if(entry.workers&&entry.workers.length){
     h+='<div class="report-section-title">'+T('reportManpower')+'</div><table style="width:100%;border-collapse:collapse;font-size:13px;"><tr><th style="text-align:right;padding:6px;border-bottom:1px solid #dce3e9;">'+T('tradeCol')+'</th><th style="text-align:center;padding:6px;border-bottom:1px solid #dce3e9;">'+T('qtyCol')+'</th></tr>';
     var tw=0;for(var i=0;i<entry.workers.length;i++){h+='<tr><td style="padding:5px 6px;">'+entry.workers[i].trade+'</td><td style="text-align:center;">'+entry.workers[i].qty+'</td></tr>';tw+=entry.workers[i].qty;}
@@ -2435,12 +2442,13 @@ function saveDefect(){
   var desc=document.getElementById('def-desc').value.trim();if(!desc){toast(T('defDescPlaceholder'));return;}
   var defects=loadJSON('sb_defects',[]);
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),desc:desc,floor:document.getElementById('def-floor').value.trim(),area:document.getElementById('def-area').value.trim(),contractor:document.getElementById('def-contractor').value,deadline:document.getElementById('def-deadline').value,severity:APP.selectedSev,status:'open',photos:APP.defectPhotos.slice()};
+  if(!dkOnce('def'))return; // מנע ליקוי כפול בלחיצה כפולה
   defects.unshift(entry);
   if(!saveJSON('sb_defects',defects)){toast(T('saveFailFull'),6000);return;} // אל תסגור מודל / תציג ✅ אם השמירה נכשלה
   cloudSave('defects',entry);closeModal('modal-defect');toast(T('saved'));renderDefects();
   if(entry.contractor){var cs=APP.settings.contractors||[];var c=cs.find(function(x){return x.name===entry.contractor;});if(c&&c.phone)sendDefWADirect(entry,c.phone);}
 }
-function setDefStatus(id,status){var ds=loadJSON('sb_defects',[]);var ent=null;for(var i=0;i<ds.length;i++){if(ds[i].id===id){ds[i].status=status;ent=ds[i];break;}}saveJSON('sb_defects',ds);if(ent)cloudSave('defects',ent);renderDefects();}
+function setDefStatus(id,status){var ds=loadJSON('sb_defects',[]);var ent=null;for(var i=0;i<ds.length;i++){if(ds[i].id===id){ds[i].status=status;ent=ds[i];break;}}if(!saveJSON('sb_defects',ds)){toast(T('saveFailFull'),6000);return;}if(ent)cloudSave('defects',ent);renderDefects();}
 
 var _fixDefectId=null;
 var _fixPhoto=null;
@@ -2474,6 +2482,7 @@ function saveFix(){
   var when=document.getElementById('fix-when').value;
   var notes=document.getElementById('fix-notes').value.trim();
   if(!by){toast(APP.lang==='ar'?'يرجى إدخال اسم المُصلِح':'יש להזין מי ביצע את התיקון');return;}
+  if(!dkOnce('fix'))return; // מנע תיקון כפול בלחיצה כפולה
   var ds=loadJSON('sb_defects',[]);var ent=null;
   for(var i=0;i<ds.length;i++){
     if(ds[i].id===_fixDefectId){
@@ -2482,7 +2491,7 @@ function saveFix(){
       ent=ds[i];break;
     }
   }
-  saveJSON('sb_defects',ds);
+  if(!saveJSON('sb_defects',ds)){toast(T('saveFailFull'),6000);return;} // אל תציג "טופל" אם לא נשמר
   if(ent)cloudSave('defects',ent);
   closeModal('modal-fix');
   toast(T('fixedLabel')+' ✅');
@@ -2589,6 +2598,7 @@ function confirmSafety(){
   var stages=(APP.activeStages||[]).slice();
   var stageLabel=stages.length?stages.map(wtLabel).join(', '):wtLabel('general');
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),stages:stages,stageLabel:stageLabel,answers:Object.assign({},APP.safetyAnswers),questions:qs,signature:signData,lang:APP.lang,gps:APP.gps};
+  if(!dkOnce('saf'))return; // מנע דוח בטיחות כפול בלחיצה כפולה
   var safety=loadJSON('sb_safety',[]);safety.unshift(entry);
   if(!saveJSON('sb_safety',safety)){toast(T('saveFailFull'),6000);return;}
   cloudSave('safety',entry);
@@ -2850,6 +2860,12 @@ function sendExpert(){
   });
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// URL בטוח לקישור: רק http/https — חוסם javascript:/data: שהוזרקו דרך הודעת משרד
+function safeUrl(u){try{var x=new URL(u,location.href);return (x.protocol==='http:'||x.protocol==='https:')?x.href:'';}catch(e){return '';}}
+// יום מקומי (YYYY-MM-DD) מתוך תאריך ISO/UTC — למניעת off-by-one סביב חצות בסינון "היום"
+function dkLocalDay(v){if(!v)return '';try{var d=new Date(v);return isNaN(d.getTime())?'':isoDate(d);}catch(e){return '';}}
+// מנעול דקלוק כפול: מחזיר false אם הפעולה כבר רצה ב-700ms האחרונים
+function dkOnce(key){if(APP['_b_'+key])return false;APP['_b_'+key]=true;setTimeout(function(){APP['_b_'+key]=false;},700);return true;}
 // === אימות SMS (Phone Auth) — אופציונלי, מבודד. נשען על window._dkSendSmsCode/_dkVerifySmsCode מהמודול. ===
 function _phoneE164(p){p=(p||'').replace(/\D/g,'');if(p.indexOf('972')===0)return '+'+p;if(p.charAt(0)==='0')return '+972'+p.slice(1);return '+'+p;}
 function reflectPhoneVerified(){
@@ -2883,7 +2899,7 @@ function phoneConfirmCode(){
   }).catch(function(){toast(T('phoneBadCode'),4000);});
 }
 // ייצוא CSV (נפתח באקסל) — UTF-8 BOM לעברית, ציטוט בטוח
-function _csvCell(v){v=(v==null?'':String(v));return '"'+v.replace(/"/g,'""')+'"';}
+function _csvCell(v){v=(v==null?'':String(v));if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"';}
 function dkExportCSV(type){
   var rows=[],fname='';
   if(type==='defects'){
