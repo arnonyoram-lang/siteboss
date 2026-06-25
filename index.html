@@ -112,7 +112,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 .sev-badge.normal{background:#fef3e7;color:var(--orange);}
 .sev-badge.low{background:#eafaf1;color:var(--green);}
 .defect-meta{font-size:12px;color:var(--sub);margin-bottom:10px;}
-.defect-meta span{margin-left:10px;}
+.defect-meta span{margin-inline-end:10px;}
 .defect-actions{display:flex;gap:6px;flex-wrap:wrap;}
 .fix-panel{background:#eafaf1;border:1.5px solid #a9dfbf;border-radius:10px;padding:12px 14px;margin:10px 0 6px;}
 .fix-panel-title{font-size:14px;font-weight:800;color:var(--green);margin-bottom:8px;}
@@ -1265,7 +1265,12 @@ function saveJSON(k,v){
     return false;
   }
 }
-function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){
+  // אוסף פגום ב-localStorage: גבה את הגלם לפני שפעולה הבאה תדרוס אותו, והתרע — שלא ייעלם בשקט
+  try{var raw=localStorage.getItem(k);if(raw&&!localStorage.getItem(k+'_corrupt'))localStorage.setItem(k+'_corrupt',raw);}catch(_){}
+  try{toast(APP.lang==='ar'?'⚠️ بيانات تالفة — تم حفظ نسخة احتياطية':'⚠️ נתונים פגומים — נשמר גיבוי',6000);}catch(_){}
+  return d;
+}}
 // מראה רשומה ל-Firebase (ללא תמונות כבדות — אלו יעברו ל-Storage בהמשך). חתימות נשמרות.
 // מיפוי שם-אוסף-ענן → מפתח localStorage (כדי לעדכן את הרשומה המקומית עם כתובות הענן)
 var DK_COLL_KEY={journals:'sb_journals',defects:'sb_defects',safety:'sb_safety',incidents:'dk_incidents',onboard:'dk_onboard',permits:'dk_permits'};
@@ -1281,17 +1286,29 @@ function _dkEnqueueSync(coll,id){
 }
 function _dkFlushSync(){
   if(navigator.onLine===false||!window._dkSaveDoc)return;
-  var q;try{q=loadJSON('dk_sync_queue',[]);}catch(e){return;}
-  if(!q||!q.length)return;
-  var remaining=[],sent=0;
-  q.forEach(function(item){
-    try{
-      var key=DK_COLL_KEY[item.coll];var rec=loadJSON(key,[]).find(function(r){return r&&r.id===item.id;});
-      if(rec){cloudSave(item.coll,rec);sent++;} // נשלח (cloudSave כבר מקוון כעת)
-    }catch(e){remaining.push(item);}
+  if(APP._dkFlushing)return;APP._dkFlushing=true;            // מנע flush מקבילים (אירוע online כפול) → כתיבות כפולות
+  var q;try{q=loadJSON('dk_sync_queue',[]);}catch(e){APP._dkFlushing=false;return;}
+  if(!q||!q.length){APP._dkFlushing=false;return;}
+  var inflight=q.slice();
+  var jobs=inflight.map(function(item){
+    var key=DK_COLL_KEY[item.coll];
+    var rec=key?loadJSON(key,[]).find(function(r){return r&&r.id===item.id;}):null;
+    if(!rec)return Promise.resolve(true);                    // נמחק מקומית → הסר מהתור
+    return cloudSave(item.coll,rec).then(function(r){return r!==false;},function(){return false;});
   });
-  saveJSON('dk_sync_queue',remaining);
-  if(sent)try{toast(T('syncedToast'),2500);}catch(e){}
+  Promise.all(jobs).then(function(oks){
+    var failed=[],sent=0;
+    inflight.forEach(function(item,i){if(oks[i])sent++;else failed.push(item);}); // השאר בתור רק מה שנכשל (כולל כשל העלאת תמונות)
+    var merged=failed.slice();                               // מזג פריטים חדשים שנכנסו לתור בזמן ה-flush
+    try{loadJSON('dk_sync_queue',[]).forEach(function(x){
+      var wasInflight=inflight.some(function(y){return y.coll===x.coll&&y.id===x.id;});
+      var already=merged.some(function(y){return y.coll===x.coll&&y.id===x.id;});
+      if(!wasInflight&&!already)merged.push(x);
+    });}catch(e){}
+    saveJSON('dk_sync_queue',merged);
+    APP._dkFlushing=false;
+    if(sent)try{toast(T('syncedToast'),2500);}catch(e){}
+  },function(){APP._dkFlushing=false;});
 }
 function cloudSave(coll,entry){
   if(!entry)return Promise.resolve(false);
@@ -1571,17 +1588,24 @@ function copyYesterdayCrew(){
     if(list.some(function(x){return x.name===p.name;}))return; // לא לשכפל מי שכבר נכנס
     list.push({id:Date.now()+idx,name:p.name,trade:p.trade||'',inTs:baseTs,outTs:null});added++;
   });
-  saveJSON(presKey(),list);cloudSavePresence();renderPresence();
+  if(!saveJSON(presKey(),list)){toast(T('saveFailFull'),6000);return;}
+  cloudSavePresence();renderPresence();
   toast('👥 +'+added,2000);
 }
 // עריכה מהירה של שעת כניסה — הקשה על השעה ברשימה
 function editPresTime(id){
   var list=getPresenceToday();var p=list.find(function(x){return x.id===id;});if(!p)return;
-  var cur=fmtTime(p.inTs);
-  var nv=prompt(T('presInTime'),cur);if(!nv)return;
-  var m=nv.match(/^(\d{1,2}):?(\d{2})$/);if(!m){toast('07:30 ←');return;}
-  var d=new Date(p.inTs);d.setHours(parseInt(m[1]),parseInt(m[2]),0,0);p.inTs=d.getTime();
-  saveJSON(presKey(),list);cloudSavePresence();renderPresence();
+  function apply(h,mi){var d=new Date(p.inTs);d.setHours(h,mi,0,0);p.inTs=d.getTime();if(!saveJSON(presKey(),list)){toast(T('saveFailFull'),6000);return;}cloudSavePresence();renderPresence();}
+  var d0=new Date(p.inTs);var cur=('0'+d0.getHours()).slice(-2)+':'+('0'+d0.getMinutes()).slice(-2);
+  // בורר שעה נייטיב (נוח בשטח); נפילה ל-prompt בדפדפנים ישנים
+  var inp=document.createElement('input');inp.type='time';
+  if(inp.type==='time'&&typeof inp.showPicker==='function'){
+    inp.value=cur;inp.style.cssText='position:fixed;left:-9999px;opacity:0;';document.body.appendChild(inp);
+    inp.onchange=function(){var m=(inp.value||'').match(/^(\d{1,2}):(\d{2})$/);if(m)apply(parseInt(m[1]),parseInt(m[2]));try{document.body.removeChild(inp);}catch(e){}};
+    try{inp.showPicker();}catch(e){try{document.body.removeChild(inp);}catch(_){} var nv=prompt(T('presInTime'),cur);var mm=nv&&nv.match(/^(\d{1,2}):?(\d{2})$/);if(mm)apply(parseInt(mm[1]),parseInt(mm[2]));}
+  } else {
+    var nv=prompt(T('presInTime'),cur);if(!nv)return;var m=nv.match(/^(\d{1,2}):?(\d{2})$/);if(!m){toast('07:30 ←');return;}apply(parseInt(m[1]),parseInt(m[2]));
+  }
 }
 function presOut(id){
   var list=getPresenceToday();for(var i=0;i<list.length;i++)if(list[i].id===id){list[i].outTs=list[i].outTs?null:Date.now();break;}
@@ -1601,7 +1625,7 @@ function renderPresence(){
       +'<span style="width:10px;height:10px;border-radius:50%;background:'+(out?'var(--sub)':'var(--green)')+';flex-shrink:0;"></span>'
       +'<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:16px;">'+esc(p.name)+'</div><div style="font-size:13px;color:var(--sub);">'+(p.trade?esc(p.trade)+' · ':'')+T('presIn')+' <span onclick="editPresTime('+p.id+')" style="color:var(--blue);font-weight:700;text-decoration:underline;cursor:pointer;">'+fmtTime(p.inTs)+'</span>'+(out?' · '+T('presOut')+' '+fmtTime(p.outTs):'')+'</div></div>'
       +'<button class="btn-sm" onclick="presOut('+p.id+')" style="border:1.5px solid var(--border);border-radius:8px;background:white;padding:6px 12px;font-weight:700;cursor:pointer;color:'+(out?'var(--green)':'var(--orange)')+';">'+(out?'↩':T('presCheckout'))+'</button>'
-      +'<button onclick="delPresence('+p.id+')" style="background:none;border:none;color:#ccc;font-size:16px;cursor:pointer;">✕</button>'
+      +'<button onclick="delPresence('+p.id+')" style="background:none;border:none;color:#bbb;font-size:20px;cursor:pointer;padding:6px 8px;line-height:1;">✕</button>'
       +'</div>';
   }
   el.innerHTML=h;
@@ -1653,20 +1677,20 @@ function renderReminders(){
       h+='<div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);'+(r.done?'opacity:.5;':'')+'">'
         +'<input type="checkbox" '+(r.done?'checked':'')+' onchange="toggleReminder('+r.id+')" style="width:22px;height:22px;">'
         +'<div style="flex:1;'+(r.done?'text-decoration:line-through;':'')+'"><div style="font-weight:600;">'+esc(r.text)+'</div>'+(r.date?'<div style="font-size:12px;color:var(--sub);">'+T('remDate')+r.date+'</div>':'')+'</div>'
-        +'<button onclick="delReminder('+r.id+')" style="background:none;border:none;color:#ccc;font-size:16px;cursor:pointer;">✕</button></div>';
+        +'<button onclick="delReminder('+r.id+')" style="background:none;border:none;color:#bbb;font-size:20px;cursor:pointer;padding:6px 8px;line-height:1;">✕</button></div>';
     });
     el.innerHTML=h;
   }
 }
 function addReminder(){
-  var text=document.getElementById('rem-text').value.trim();if(!text)return;
+  var text=document.getElementById('rem-text').value.trim();if(!text){toast(APP.lang==='ar'?'اكتب التذكير أولاً':'כתוב תזכורת תחילה');return;}
   var rem=getReminders();rem.unshift({id:Date.now(),text:text,date:document.getElementById('rem-date').value||'',done:false});
   if(!saveJSON('dk_reminders',rem)){toast(T('saveFailFull'),6000);return;}
   document.getElementById('rem-text').value='';document.getElementById('rem-date').value='';
   renderReminders();updateReminderBadge();
 }
-function toggleReminder(id){var rem=getReminders();for(var i=0;i<rem.length;i++)if(rem[i].id===id){rem[i].done=!rem[i].done;break;}saveJSON('dk_reminders',rem);renderReminders();updateReminderBadge();}
-function delReminder(id){saveJSON('dk_reminders',getReminders().filter(function(r){return r.id!==id;}));renderReminders();updateReminderBadge();}
+function toggleReminder(id){var rem=getReminders();for(var i=0;i<rem.length;i++)if(rem[i].id===id){rem[i].done=!rem[i].done;break;}if(!saveJSON('dk_reminders',rem)){toast(T('saveFailFull'),6000);return;}renderReminders();updateReminderBadge();}
+function delReminder(id){var rem=getReminders();var r=rem.find(function(x){return x.id===id;});if(!r)return;if(!confirm((APP.lang==='ar'?'حذف التذكير؟':'למחוק את התזכורת?')))return;if(!saveJSON('dk_reminders',rem.filter(function(x){return x.id!==id;}))){toast(T('saveFailFull'),6000);return;}renderReminders();updateReminderBadge();toast(T('deleted'));}
 function updateReminderBadge(){
   var b=document.getElementById('rem-home-badge');if(!b)return;
   if(!isFeatureOn('modReminders')){b.style.display='none';return;}
@@ -1806,13 +1830,14 @@ function obLangLabel(k){for(var i=0;i<OB_LANGS.length;i++)if(OB_LANGS[i].k===k)r
 function renderOnboardList(){
   var el=document.getElementById('ob-list');var list=getOnboarded();
   if(!list.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--sub);">'+T('obEmpty')+'</div>';return;}
-  var h='';list.forEach(function(e){
+  var PAGE=20;var shown=Math.min((APP.obPage||1)*PAGE,list.length);var h='';list.slice(0,shown).forEach(function(e){
     h+='<div style="display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--border);">'
       +'<span style="font-size:22px;">🪪</span>'
       +'<div style="flex:1;"><div style="font-weight:700;">'+esc(e.name)+'</div><div style="font-size:12px;color:var(--sub);">'+T('obLangLabel')+obLangLabel(e.lang)+(e.permit?' · '+esc(e.permit):'')+' · '+new Date(e.ts).toLocaleDateString('he-IL')+'</div></div>'
       +(e.signature?'<img src="'+e.signature+'" style="height:34px;border:1px solid var(--border);border-radius:6px;background:#fff;">':'')
       +'</div>';
   });
+  if(shown<list.length)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.obPage=(APP.obPage||1)+1;renderOnboardList();">'+T('loadMore')+' ('+(list.length-shown)+')</button>';
   el.innerHTML=h;
 }
 
@@ -1900,8 +1925,8 @@ function permLabel(k){return T(permTypeObj(k).l);}
 function renderPermitsHistory(){
   var el=document.getElementById('perm-history-list');var list=getPermits();
   if(!list.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--sub);">'+T('permHistEmpty')+'</div>';return;}
-  var now=Date.now();var h='';
-  list.forEach(function(e){
+  var now=Date.now();var PAGE=20;var shown=Math.min((APP.permPage||1)*PAGE,list.length);var h='';
+  list.slice(0,shown).forEach(function(e){
     var active=e.validUntil&&new Date(e.validUntil).getTime()>now;
     h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:800;">'+permLabel(e.type)+'</span><span class="'+(active?'':'')+'" style="font-size:12px;font-weight:700;color:'+(active?'var(--green)':'var(--red)')+';">'+(active?T('permActive'):T('permExpired'))+'</span></div>'
       +'<div style="font-size:14px;">👷 '+esc(e.worker)+(e.location?' · 📍 '+esc(e.location):'')+'</div>'
@@ -1909,6 +1934,7 @@ function renderPermitsHistory(){
       +(e.signature?'<img src="'+e.signature+'" style="height:36px;margin-top:8px;border:1px solid var(--border);border-radius:6px;background:#fff;">':'')
       +'</div>';
   });
+  if(shown<list.length)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.permPage=(APP.permPage||1)+1;renderPermitsHistory();">'+T('loadMore')+' ('+(list.length-shown)+')</button>';
   el.innerHTML=h;
 }
 
@@ -2261,11 +2287,11 @@ function showJournalReport(entryOrStr){
   var serialStr=entry.serial?(T('journalSerial')+' '+fmtSerial(entry.serial)):'';
   document.getElementById('report-topbar-title').textContent=T('reportJournalTitle')+ds;
   var h='<div class="report-logo"><div class="report-logo-title">דקה</div><div class="report-logo-sub">'+T('appTagline')+'</div></div>';
-  h+='<div class="report-header"><p><strong>'+T('reportProject')+'</strong>'+(s.projectName||'—')+'</p><p><strong>'+T('reportManager')+'</strong>'+(entry.manager||s.managerName||'—')+'</p><p><strong>'+T('reportDate')+'</strong>'+ds+'</p>'+(serialStr?'<p><strong>'+serialStr+'</strong></p>':'')+'</div>';
+  h+='<div class="report-header"><p><strong>'+T('reportProject')+'</strong>'+esc(s.projectName||'—')+'</p><p><strong>'+T('reportManager')+'</strong>'+esc(entry.manager||s.managerName||'—')+'</p><p><strong>'+T('reportDate')+'</strong>'+ds+'</p>'+(serialStr?'<p><strong>'+serialStr+'</strong></p>':'')+'</div>';
   h+='<div class="report-section-title">'+T('reportWorkDesc')+'</div><p>'+esc(entry.text||'').replace(/\n/g,'<br>')+'</p>';
   if(entry.workers&&entry.workers.length){
     h+='<div class="report-section-title">'+T('reportManpower')+'</div><table style="width:100%;border-collapse:collapse;font-size:13px;"><tr><th style="text-align:right;padding:6px;border-bottom:1px solid #dce3e9;">'+T('tradeCol')+'</th><th style="text-align:center;padding:6px;border-bottom:1px solid #dce3e9;">'+T('qtyCol')+'</th></tr>';
-    var tw=0;for(var i=0;i<entry.workers.length;i++){h+='<tr><td style="padding:5px 6px;">'+entry.workers[i].trade+'</td><td style="text-align:center;">'+entry.workers[i].qty+'</td></tr>';tw+=entry.workers[i].qty;}
+    var tw=0;for(var i=0;i<entry.workers.length;i++){h+='<tr><td style="padding:5px 6px;">'+esc(entry.workers[i].trade)+'</td><td style="text-align:center;">'+(parseInt(entry.workers[i].qty)||0)+'</td></tr>';tw+=entry.workers[i].qty;}
     h+='<tr style="font-weight:700;"><td style="padding:5px 6px;">'+T('totalWorkers')+'</td><td style="text-align:center;">'+tw+'</td></tr></table>';
   }
   if(entry.weather>=0||entry.delays||entry.tasks){
@@ -2634,8 +2660,8 @@ function showSafetyReport(entryOrStr){
   var d=new Date(entry.date);var ds=d.toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'});
   document.getElementById('report-topbar-title').textContent=T('reportSafetyTitle');
   var h='<div class="report-logo"><div class="report-logo-title">דקה</div><div class="report-logo-sub">'+T('appTagline')+'</div></div>';
-  h+='<div class="report-header"><p><strong>'+T('reportProject')+'</strong>'+(s.projectName||'—')+'</p><p><strong>'+T('reportManager')+'</strong>'+(s.managerName||'—')+'</p><p><strong>'+T('reportDate')+'</strong>'+ds+'</p>';
-  if(entry.gps)h+='<p><strong>GPS: </strong>'+entry.gps+'</p>';
+  h+='<div class="report-header"><p><strong>'+T('reportProject')+'</strong>'+esc(s.projectName||'—')+'</p><p><strong>'+T('reportManager')+'</strong>'+esc(s.managerName||'—')+'</p><p><strong>'+T('reportDate')+'</strong>'+ds+'</p>';
+  if(entry.gps)h+='<p><strong>GPS: </strong>'+esc(entry.gps)+'</p>';
   h+='</div><div class="report-section-title">'+T('reportSafetyCheck')+'</div>';
   var qs=entry.questions||getSafetyQs(entry.workType||'general');var fails=0;
   for(var i=0;i<qs.length;i++){

@@ -93,6 +93,25 @@ match /{coll}/{id} {
 ```
 (הרעיון: התאמת 9 הספרות האחרונות של הטלפון המאומת מול owner, ללא תלות בקידומת +972/0. נאמת בבדיקה.)
 
+## ⚠️ סטטוס נכון להיום (בדיקה מקיפה 25.06.2026)
+שלב B **פעיל** (טלפונים+הודעות מוגנים). אבל **שלב A טרם בוצע**, ולכן עדיין קיימת החשיפה הקריטית: נתוני השטח בענן (יומנים, ליקויים, נוכחות+GPS, אירועים, פרטי עובדים זרים) **פתוחים לקריאה/כתיבה/מחיקה לכל אנונימי** — האפליקציה מתחברת `signInAnonymously` והכלל בשורה 62 מתיר כל `auth!=null`. **זה חוסם חיבור לקוח אמיתי עם PII.** לסגירה: שלב A (Phone Auth) + החלפת `signInAnonymously`→טלפון בקוד + כללי Storage למטה. נסגור יחד כשתדליק Phone.
+> הערה לטיוטת שלב A (שורה 86): ב-`create` אין `resource.data` (רק `request.resource.data`). לפני פרסום נפצל ל-`allow read,update,delete` מול `resource.data.owner` ו-`allow create` מול `request.resource.data.owner` — נסגור יחד בבדיקה.
+
+## כללי Storage (חסרים — להוסיף; אחרת תמונות/חתימות/ת"ז עלולות להיות ציבוריות)
+Build → Storage → Rules → הדבק → Publish. כרגע (בלי Phone Auth) לפחות דורש התחברות וחוסם הצגה/כתיבה ציבורית:
+```
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /photos/{owner}/{allPaths=**} {
+      allow read, write: if request.auth != null;   // ביניים: כל מאומת. בשלב A → נצמיד owner לטלפון
+    }
+    match /{allPaths=**} { allow read, write: if false; }  // חסום כל השאר
+  }
+}
+```
+> בשלב A נחליף את שורת ה-photos ל-`request.auth.token.phone_number` שמסתיים ב-9 ספרות של `{owner}` (כמו ב-Firestore), לנעילה אמיתית פר-בעלים.
+
 ## חיבור העוזר החכם (Gemini) — קוד מוכן, דורש הפעלה
 ✅ `runModel` כבר מחובר ל-Firebase AI Logic (commit `f86d5f8`), מבודד ובטוח (fallback ל"לא מחובר" אם כבוי).
 **מה שתעשה:** Firebase Console → **Build → AI Logic** (או "Firebase AI Logic"/"Vertex AI in Firebase") → **Get started / Enable**, בחר את **Gemini Developer API**. זהו — העוזר יתחיל לכתוב תשובות אמיתיות. (עלות לפי שימוש; יש Blaze.)
