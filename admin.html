@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>דקה — לוח ניהול</title>
+<title>SiteBoss — לוח ניהול</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -123,7 +123,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
 </head>
 <body>
 <div class="topbar">
-  <h1>🦺 דקה <span>· לוח ניהול</span></h1>
+  <h1>🦺 SiteBoss <span>· לוח ניהול</span></h1>
   <div style="display:flex;gap:10px;align-items:center;">
     <button class="nav-btn active" id="nav-dash" onclick="showView('dash')">📊 ניהול</button>
     <button class="nav-btn" id="nav-messages" onclick="showView('messages')">📢 הודעות</button>
@@ -224,7 +224,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.6;}
 <!-- ROADMAP VIEW -->
 <div class="wrap" id="view-road" style="display:none;">
   <div class="road-hero">
-    <h2>🗺️ מפת הדרכים של "דקה"</h2>
+    <h2>🗺️ מפת הדרכים של "SiteBoss"</h2>
     <p>כל מה שכבר עובד — ומה שבדרך. הכלי שמלווה את מנהל העבודה כל היום.</p>
   </div>
 
@@ -346,7 +346,7 @@ function ensureAdminLogin(auth){
       ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#0A1A2F;display:flex;align-items:center;justify-content:center;padding:20px;';
       ov.innerHTML='<div style="background:#fff;border-radius:16px;padding:26px 22px;max-width:360px;width:100%;box-shadow:0 14px 40px rgba(0,0,0,.3);">'
         +'<div style="font-size:34px;text-align:center;margin-bottom:6px;">🦺</div>'
-        +'<div style="font-size:20px;font-weight:900;text-align:center;margin-bottom:4px;">כניסת בעלים — דקה</div>'
+        +'<div style="font-size:20px;font-weight:900;text-align:center;margin-bottom:4px;">כניסת בעלים — SiteBoss</div>'
         +'<div style="font-size:13px;color:#67788a;text-align:center;margin-bottom:18px;">עמוד הניהול מוגן. התחבר עם חשבון הבעלים.</div>'
         +'<input id="al-email" type="email" autocomplete="username" placeholder="אימייל" style="width:100%;box-sizing:border-box;padding:13px;font-size:16px;border:1.5px solid #d7dee6;border-radius:10px;margin-bottom:10px;">'
         +'<input id="al-pass" type="password" autocomplete="current-password" placeholder="סיסמה" style="width:100%;box-sizing:border-box;padding:13px;font-size:16px;border:1.5px solid #d7dee6;border-radius:10px;margin-bottom:14px;">'
@@ -676,7 +676,7 @@ window.showView = function(v){
 var APP_LINK='https://arnonyoram-lang.github.io/siteboss/';
 function inviteDefault(){
   return 'שלום 👋\n'
-    +'מצרף אותך לאפליקציית *"דקה"* — יומן עבודה, ליקויים ובטיחות, הכל מהטלפון בעברית/ערבית.\n\n'
+    +'מצרף אותך לאפליקציית *"SiteBoss"* — יומן עבודה, ליקויים ובטיחות, הכל מהטלפון בעברית/ערבית.\n\n'
     +'✅ דבר דקה אחת ← יומן חוקי מסודר\n'
     +'📸 צלם ליקוי ← שלח לקבלן\n'
     +'🦺 בדיקת בטיחות יומית חתומה\n\n'
@@ -881,7 +881,7 @@ window.editStr=function(k,lang,val){
 window.copyChanges=function(){
   var keys=Object.keys(_changed);
   if(!keys.length){ _toast('לא שינית כלום עדיין'); return; }
-  var out='שינויי ניסוח לאפליקציית דקה:\n\n';
+  var out='שינויי ניסוח לאפליקציית SiteBoss:\n\n';
   keys.forEach(function(k){
     var c=_changed[k];
     out+='• '+k+'\n';
