@@ -3287,9 +3287,18 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
     const fsMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
     const app = appMod.initializeApp(FIREBASE_CONFIG);
     const db = fsMod.getFirestore(app);
-    // הזדהות אנונימית — חובה לפני קריאה/כתיבה (כללי האבטחה דורשים auth).
-    // ממתינים לסיום ההזדהות לפני הקמת מאזין ההודעות, אחרת המאזין נכשל בשקט.
-    try{const authMod=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");const auth=authMod.getAuth(app);await new Promise(function(res){authMod.signInAnonymously(auth).then(function(){res();}).catch(function(){res();});authMod.onAuthStateChanged(auth,function(u){if(u)res();});setTimeout(res,4000);});}catch(e){}
+    // הזדהות לפני קריאה/כתיבה (כללי האבטחה דורשים auth).
+    // עדיפות לסשן קיים (טלפון מאומת שנשמר ע"י Firebase) — ורק אם אין משתמש כלל, נופלים להזדהות אנונימית.
+    // כך: כל עוד Phone provider כבוי ההתנהגות זהה (אנונימי); ברגע שהמשתמש מאמת SMS פעם אחת — נשאר מאומת-טלפון בכל הפעלה.
+    try{const authMod=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");const auth=authMod.getAuth(app);window.__dkAuth=auth;
+      await new Promise(function(res){var done=false;function fin(){if(!done){done=true;res();}}
+        authMod.onAuthStateChanged(auth,function(u){
+          if(u){fin();}                                              // יש משתמש (טלפון מאומת שמור, או אנונימי קודם)
+          else{authMod.signInAnonymously(auth).catch(function(){});} // אין משתמש → אנונימי כ-fallback
+        });
+        setTimeout(fin,4000);
+      });
+    }catch(e){}
     const { doc, setDoc, deleteDoc, collection, query, orderBy, onSnapshot, getDocs, getDoc } = fsMod;
 
     // רישום / עדכון מנהל (id = טלפון מנוקה)

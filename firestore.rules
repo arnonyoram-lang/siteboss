@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== עזרי הרשאה =====
+    // הבעלים (אתה) — לפי UID. החלף OWNER_UID_HERE ב-UID של משתמש הבעלים (Authentication → Users).
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == 'OWNER_UID_HERE';
+    }
+    // 9 הספרות האחרונות של הטלפון המאומת (מתעלם מקידומת +972 / 0)
+    function myPhone9() {
+      return request.auth != null && request.auth.token.phone_number is string
+        ? request.auth.token.phone_number[(request.auth.token.phone_number.size() - 9) :]
+        : 'none';
+    }
+    // בעלות: שדה owner ברשומה (טלפון מנוקה) תואם ל-9 הספרות של הטלפון המאומת
+    function owns(data) {
+      return data.owner is string
+        && data.owner.size() >= 9
+        && data.owner[(data.owner.size() - 9) :] == myPhone9();
+    }
+    // האם זה אוסף של נתוני שטח (כדי שכלל ה-owner הכללי לא יחול על managers/messages/feedback/config)
+    function isFieldColl(c) {
+      return c in ['journals','defects','safety','presence','incidents','onboard','permits'];
+    }
+
+    // ===== מנהלים: כל מנהל את הפרופיל שלו; רק הבעלים מקבל את כל הרשימה =====
+    // 'features' (גייט המודולים שהבעלים מדליק פר-מנהל) — לכתיבת בעלים בלבד; מנהל לא יכול להעניק לעצמו.
+    match /managers/{id} {
+      allow get:    if request.auth != null;           // (טרייד-אוף: שחזור-לפי-טלפון. אפשר להקשיח לבעלים/טלפון-עצמי)
+      allow list:   if isAdmin();                       // חוסם סקרייפינג המוני של טלפונים
+      allow create: if isAdmin() || (request.auth != null && !('features' in request.resource.data));
+      allow update: if isAdmin()
+        || ( request.auth != null
+             && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['features']) );
+      allow delete: if isAdmin();
+    }
+
+    // ===== הודעות מהמשרד: מנהלים קוראים; רק הבעלים שולח =====
+    match /messages/{id} {
+      allow read:  if request.auth != null;
+      allow write: if isAdmin();                       // חוסם התחזות למשרד
+    }
+
+    // ===== פניות מהמנהלים: מנהל יוצר; רק הבעלים קורא =====
+    match /feedback/{id} {
+      allow create:               if request.auth != null;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ===== תוכן/תדריכים מהמשרד: מנהלים קוראים; רק הבעלים כותב =====
+    match /config/{id} {
+      allow read:  if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // ===== נתוני שטח — כל מנהל רק את שלו (לפי טלפון מאומת ↔ owner). הבעלים רואה הכל. =====
+    match /{coll}/{id} {
+      allow read, delete: if isFieldColl(coll) && (isAdmin() || owns(resource.data));
+      allow create:       if isFieldColl(coll) && (isAdmin() || owns(request.resource.data));
+      allow update:       if isFieldColl(coll) && (isAdmin() || (owns(resource.data) && owns(request.resource.data)));
+    }
+  }
+}

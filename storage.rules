@@ -1,0 +1,27 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // הבעלים לפי UID (אותו UID כמו ב-firestore.rules)
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == 'OWNER_UID_HERE';
+    }
+    // בעלות לפי 9 ספרות הטלפון המאומת מול שם תיקיית ה-owner בנתיב
+    function isOwner(owner) {
+      return request.auth != null
+        && request.auth.token.phone_number is string
+        && owner is string && owner.size() >= 9
+        && request.auth.token.phone_number[(request.auth.token.phone_number.size() - 9) :] == owner[(owner.size() - 9) :];
+    }
+
+    // תמונות/חתימות: photos/{owner}/{coll}/{id}/{n}.jpg — כל מנהל רק את התיקייה שלו; הבעלים הכל
+    match /photos/{owner}/{allPaths=**} {
+      allow read, write: if isAdmin() || isOwner(owner);
+    }
+
+    // כל שאר הנתיבים — חסומים לחלוטין
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
