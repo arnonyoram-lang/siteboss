@@ -12,14 +12,15 @@ service cloud.firestore {
     // 9 הספרות האחרונות של הטלפון המאומת (מתעלם מקידומת +972 / 0)
     function myPhone9() {
       return request.auth != null && request.auth.token.phone_number is string
-        ? request.auth.token.phone_number[(request.auth.token.phone_number.size() - 9) :]
+          && request.auth.token.phone_number.size() >= 9
+        ? request.auth.token.phone_number[(request.auth.token.phone_number.size() - 9) : request.auth.token.phone_number.size()]
         : 'none';
     }
     // בעלות: שדה owner ברשומה (טלפון מנוקה) תואם ל-9 הספרות של הטלפון המאומת
     function owns(data) {
       return data.owner is string
         && data.owner.size() >= 9
-        && data.owner[(data.owner.size() - 9) :] == myPhone9();
+        && data.owner[(data.owner.size() - 9) : data.owner.size()] == myPhone9();
     }
     // האם זה אוסף של נתוני שטח (כדי שכלל ה-owner הכללי לא יחול על managers/messages/feedback/config)
     function isFieldColl(c) {

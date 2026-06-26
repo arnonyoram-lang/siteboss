@@ -10,8 +10,9 @@ service firebase.storage {
     function isOwner(owner) {
       return request.auth != null
         && request.auth.token.phone_number is string
+        && request.auth.token.phone_number.size() >= 9
         && owner is string && owner.size() >= 9
-        && request.auth.token.phone_number[(request.auth.token.phone_number.size() - 9) :] == owner[(owner.size() - 9) :];
+        && request.auth.token.phone_number[(request.auth.token.phone_number.size() - 9) : request.auth.token.phone_number.size()] == owner[(owner.size() - 9) : owner.size()];
     }
 
     // תמונות/חתימות: photos/{owner}/{coll}/{id}/{n}.jpg — כל מנהל רק את התיקייה שלו; הבעלים הכל
