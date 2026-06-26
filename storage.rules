@@ -2,9 +2,9 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // הבעלים לפי UID (אותו UID כמו ב-firestore.rules)
+    // הבעלים לפי אימייל חשבון הניהול (כמו ב-firestore.rules). אם שונה — החלף כאן בלבד.
     function isAdmin() {
-      return request.auth != null && request.auth.uid == 'OWNER_UID_HERE';
+      return request.auth != null && request.auth.token.email == 'arnon.yoram@gmail.com';
     }
     // בעלות לפי 9 ספרות הטלפון המאומת מול שם תיקיית ה-owner בנתיב
     function isOwner(owner) {

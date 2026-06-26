@@ -3,9 +3,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ===== עזרי הרשאה =====
-    // הבעלים (אתה) — לפי UID. החלף OWNER_UID_HERE ב-UID של משתמש הבעלים (Authentication → Users).
+    // הבעלים (אתה) — מזוהה לפי אימייל חשבון הניהול (admin.html מתחבר ב-Email/Password).
+    // בטוח: האימייל כבר רשום על שמך, חסום לכפילות ומוגן בסיסמה — אף אחד אחר לא יכול להחזיק בו.
+    // אם אימייל הניהול שונה — החלף כאן את הכתובת בלבד.
     function isAdmin() {
-      return request.auth != null && request.auth.uid == 'OWNER_UID_HERE';
+      return request.auth != null && request.auth.token.email == 'arnon.yoram@gmail.com';
     }
     // 9 הספרות האחרונות של הטלפון המאומת (מתעלם מקידומת +972 / 0)
     function myPhone9() {
