@@ -1721,16 +1721,21 @@ function getSmartAlerts(){
   if(isFeatureOn('modSafety')&&!hasToday)alerts.push({icon:'🦺',text:T('remSafetyToday')});
   var journals=loadJSON('sb_journals',[]);
   if(journals[0]&&journals[0].tasks)alerts.push({icon:'📋',text:T('remTasksTomorrow')+journals[0].tasks.slice(0,50)});
-  // תפוגת רישיון/ביטוח של כלים — פג או פג בקרוב (≤30 יום)
+  // תפוגת תאריכים — התראה דו-שלבית (חודש לפני, ושוב כשבועיים לפני אם לא טופל) בכל מקום שיש תאריך סיום:
+  // כלים (רישיון כלי/נהג/ביטוח), אישור עבודה בגובה בקליטת עובד, והיתרי עבודה.
   if(isFeatureOn('modEquipment')){
     getEquipment().forEach(function(e){
       var nm=eqDisplayType(e)+(e.name?' ('+e.name+')':'');
       [['toolLicenseExp','eqToolLic'],['driverLicenseExp','eqDriverLic'],['insuranceExp','eqInsurance']].forEach(function(p){
-        var st=eqExpStatus(e[p[0]]);
-        if(st==='expired')alerts.push({icon:'🚜',text:T('eqAlertExpired')+nm+' — '+T(p[1])});
-        else if(st==='soon')alerts.push({icon:'🚜',text:T('eqAlertSoon')+nm+' — '+T(p[1])+' ('+e[p[0]]+')'});
+        var a=expAlert(nm+' — '+T(p[1]),e[p[0]]);if(a)alerts.push(a);
       });
     });
+  }
+  if(isFeatureOn('modOnboard')){
+    getOnboarded().forEach(function(o){if(o.heightExp){var a=expAlert((o.name||'')+' — '+T('obHeightShort'),o.heightExp);if(a)alerts.push(a);}});
+  }
+  if(isFeatureOn('modPermits')){
+    getPermits().forEach(function(pm){if(pm.validUntil){var a=expAlert(permLabel(pm.type)+(pm.worker?' ('+pm.worker+')':''),pm.validUntil);if(a)alerts.push(a);}});
   }
   return alerts;
 }
@@ -2023,13 +2028,20 @@ function getEquipment(){return loadJSON('dk_equipment',[]);}
 function eqTypeLabel(k){for(var i=0;i<EQ_TYPES.length;i++)if(EQ_TYPES[i].k===k)return T(EQ_TYPES[i].l);return k;}
 function eqDisplayType(e){return e.typeKey==='other'?(e.typeOther||T('eqTOther')):eqTypeLabel(e.typeKey);}
 // סטטוס תפוגה: none/ok/soon(≤30 יום)/expired — לפי תאריך מקומי
-function eqExpStatus(dateStr){
-  if(!dateStr)return 'none';
-  var today=isoDate();
-  if(dateStr<today)return 'expired';
-  var d=new Date(dateStr+'T00:00:00');var in30=new Date();in30.setHours(0,0,0,0);in30.setDate(in30.getDate()+30);
-  return d<=in30?'soon':'ok';
+// ===== תאריכי תפוגה — מנגנון התראה דו-שלבי משותף (רישיון/היתר/ביטוח) =====
+// ימים שנותרו עד התפוגה (תומך ב-YYYY-MM-DD וב-datetime-local YYYY-MM-DDTHH:mm)
+function expDaysLeft(dateStr){if(!dateStr)return null;try{var t=new Date();t.setHours(0,0,0,0);var d=new Date((''+dateStr).slice(0,10)+'T00:00:00');if(isNaN(d.getTime()))return null;return Math.round((d.getTime()-t.getTime())/86400000);}catch(e){return null;}}
+// שלב התראה: none/ok / alert1 (≤חודש) / alert2 (≤שבועיים — "התראה שנייה") / expired
+function expStage(dateStr){var n=expDaysLeft(dateStr);if(n===null)return 'none';if(n<0)return 'expired';if(n<=14)return 'alert2';if(n<=30)return 'alert1';return 'ok';}
+// בונה הודעת התראה דו-לשונית: חודש לפני (🔔), שוב בשבועיים האחרונים אם לא טופל (⚠️), ופג (🔴). null אם רחוק/אין תאריך.
+function expAlert(label,dateStr){
+  var st=expStage(dateStr);if(st==='none'||st==='ok')return null;
+  var n=expDaysLeft(dateStr),ar=APP.lang==='ar',d=(''+dateStr).slice(0,10);
+  if(st==='expired')return {icon:'🔴',text:(ar?'انتهت الصلاحية: ':'פג תוקף: ')+label+' ('+d+')'};
+  if(st==='alert2')return {icon:'⚠️',text:label+' — '+(ar?('تذكير ثانٍ: تنتهي خلال '+n+' يوم ولم تُعالَج بعد'):('תזכורת שנייה: פג בעוד '+n+' ימים וטרם טופל'))+' ('+d+')'};
+  return {icon:'🔔',text:label+' — '+(ar?'تنتهي خلال شهر تقريباً':'פג בעוד כחודש')+' ('+d+')'};
 }
+function eqExpStatus(dateStr){var s=expStage(dateStr);return (s==='alert1'||s==='alert2')?'soon':s;}
 function eqWorstStatus(e){var a=[eqExpStatus(e.toolLicenseExp),eqExpStatus(e.driverLicenseExp),eqExpStatus(e.insuranceExp)];if(a.indexOf('expired')>=0)return 'expired';if(a.indexOf('soon')>=0)return 'soon';return 'ok';}
 function renderEqTypes(){
   var g=document.getElementById('eq-type-grid');if(!g)return;var h='';
