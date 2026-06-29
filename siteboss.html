@@ -82,8 +82,6 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 .stat-num{font-family:'Space Grotesk','Heebo',sans-serif;font-size:30px;font-weight:700;color:var(--accent);line-height:1;}
 #stat-defects{color:var(--navy);}#stat-safety{color:var(--navy);}
 .stat-label{font-size:12px;color:var(--sub);font-weight:500;margin-top:6px;}
-.voice-btn{width:80px;height:80px;border-radius:50%;border:none;background:var(--accent);color:white;font-size:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 4px 12px rgba(97,97,255,.28);transition:all .2s;}
-.voice-btn.recording{background:var(--red);animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 .workers-table{width:100%;border-collapse:collapse;font-size:14px;}
 .workers-table th{background:var(--bg);padding:8px 10px;text-align:right;font-size:12px;font-weight:700;color:var(--sub);border-bottom:1px solid var(--border);}
@@ -502,10 +500,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     </div>
     <div class="card">
       <div class="card-title" data-t="incDescTitle"></div>
-      <div style="text-align:center;padding:6px 0;">
-        <button class="voice-btn" id="inc-voice-btn" onclick="toggleVoice('inc-desc','inc-voice-btn')" style="width:64px;height:64px;font-size:26px;">🎙️</button>
-      </div>
-      <textarea id="inc-desc" data-tp="incDescPh" rows="3"></textarea>
+      <textarea id="inc-desc" data-tp="incDescPh" rows="4"></textarea>
     </div>
     <div class="card"><div class="card-title" data-t="incLocation"></div><input id="inc-location" type="text" data-tp="incLocationPh"></div>
     <div class="card"><div class="card-title" data-t="incInjured"></div><input id="inc-injured" type="text" data-tp="incInjuredPh"></div>
@@ -688,13 +683,8 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
   <div class="screen-body">
     <button class="btn btn-outline" style="margin-bottom:12px;min-height:46px;" onclick="copyLastJournal()"><span data-t="copyYesterday"></span></button>
     <div class="card">
-      <div class="card-title" data-t="voiceSectionTitle"></div>
-      <div style="text-align:center;padding:10px 0 6px;">
-        <button class="voice-btn" id="voice-btn" onclick="toggleVoice('jnl-text','voice-btn')">🎙️</button>
-        <div style="font-size:12px;color:var(--sub);" data-t="voiceHint"></div>
-      </div>
-      <div style="text-align:center;font-size:12px;color:var(--sub);margin:8px 0;" data-t="voiceOrType"></div>
-      <textarea id="jnl-text" data-tp="journalPlaceholder" rows="5" oninput="saveJnlDraft()"></textarea>
+      <div class="card-title" data-t="journalDescTitle"></div>
+      <textarea id="jnl-text" data-tp="journalPlaceholder" rows="6" oninput="saveJnlDraft()"></textarea>
     </div>
     <div class="card">
       <div class="card-title" data-t="workersTitle"></div>
@@ -1075,13 +1065,13 @@ searchPlaceholder:'🔍 חיפוש (תיאור, קומה, קבלן…)',loadMore
 exportSection:'ייצוא נתונים (Excel/CSV)',exportDefects:'⬇️ ליקויים',exportJournals:'⬇️ יומנים',exportEmpty:'אין נתונים לייצוא',
 phoneSecSection:'אבטחת חשבון',phoneSecBtn:'🔒 אבטח את החשבון בקוד SMS',phoneSecDone:'✅ החשבון מאומת',phoneSecTitle:'אימות חשבון ב-SMS',phoneSecBody:'נשלח קוד בן 6 ספרות לטלפון שלך. האימות מבטיח שרק אתה ניגש לנתונים שלך.',phoneSendCode:'שלח קוד',phoneCodeSent:'📩 קוד נשלח',phoneEnterCode:'הזן את הקוד שקיבלת',phoneVerifyBtn:'אמת',phoneVerifiedOk:'✅ החשבון אומת בהצלחה',phoneSvcOff:'שירות האימות עדיין לא הופעל (Phone Auth בקונסול)',phoneBadCode:'קוד שגוי, נסה שוב',
 syncedToast:'☁️ סונכרן לענן',legalTitle:'תנאי שימוש ופרטיות',legalLink:'תנאי שימוש ופרטיות',
-onbTipTitle:'👋 ברוכים הבאים ל-SiteBoss',onbTipBody:'3 צעדים להתחלה:\n1. פתח 📋 יומן ותעד את היום — קול או הקלדה.\n2. צילמת ליקוי? 📸 ליקויים → שלח לקבלן בלחיצה.\n3. כל בוקר עבור על 🦺 בטיחות וחתום.\nהכול נשמר במכשיר ומגובה לענן.',onbTipBtn:'הבנתי, בוא נתחיל',
+onbTipTitle:'👋 ברוכים הבאים ל-SiteBoss',onbTipBody:'3 צעדים להתחלה:\n1. פתח 📋 יומן ותעד את היום.\n2. צילמת ליקוי? 📸 ליקויים → שלח לקבלן בלחיצה.\n3. כל בוקר עבור על 🦺 בטיחות וחתום.\nהכול נשמר במכשיר ומגובה לענן.',onbTipBtn:'הבנתי, בוא נתחיל',
 expThinking:'⏳ חושב…',expRouted:'מומחה',expSoon:'מנוע ה-AI עוד לא מחובר במכשיר הזה — אבל זיהיתי בדיוק לאיזה מומחה לפנות ובניתי לו את ההנחיה המלאה. כשנחבר את המודל, התשובה המלאה תופיע כאן.',expCtxNote:'הקשר האתר שלך מוזרק אוטומטית',
 faqTitle:'שאלות נפוצות',
 feedbackTitle:'שליחת פנייה למשרד',feedbackType:'סוג הפנייה',fbBug:'תקלה',fbIdea:'הצעה',fbQuestion:'שאלה',
 feedbackText:'פרט את הפנייה',feedbackPlaceholder:'כתוב כאן את הבעיה / ההצעה / השאלה...',feedbackSend:'📨 שלח פנייה',
 feedbackThanks:'✅ הפנייה נשלחה — נטפל בהקדם',feedbackEmpty:'יש לכתוב את תוכן הפנייה',feedbackRefTo:'בהקשר להודעה: ',
-faq1q:'ההקלטה לא עובדת?',faq1a:'ודא שאישרת לאפליקציה גישה למיקרופון בהגדרות הדפדפן. מומלץ Chrome באנדרואיד.',
+faq1q:'אפשר לעבוד בלי אינטרנט?',faq1a:'כן — הכל נשמר בטלפון ועובד גם בלי קליטה. כשהרשת חוזרת, הנתונים מסתנכרנים לענן אוטומטית.',
 faq2q:'איך מוסיפים את האפליקציה למסך הבית?',faq2a:'אנדרואיד: תפריט 3 הנקודות ← "הוספה למסך הבית". אייפון: כפתור השיתוף ⬆️ ב-Safari ← "הוספה למסך הבית".',
 faq3q:'איך שולחים דוח למשרד?',faq3a:'בסיום יומן/בטיחות לוחצים על "📲 שלח למשרד בוואטסאפ" בדוח. הדוח נשלח כהודעה מסודרת.',
 faq4q:'הנתונים נשמרים? מה אם אחליף טלפון?',faq4a:'כן — הנתונים נשמרים בטלפון וגם בענן. בהחלפת טלפון תתחבר עם אותו מספר והכל יחזור.',
@@ -1089,10 +1079,10 @@ faq5q:'חובה לחתום על היומן?',faq5a:'כן, חתימת מנהל ה
 installBannerText:'הוסף את SiteBoss למסך הבית',installHow:'איך?',installBtn:'התקן',gotIt:'הבנתי 👍',installTitle:'הוספה למסך הבית 📲',
 installAndroid:'1|לחץ על תפריט 3 הנקודות (⋮) — למעלה או למטה, תלוי בדפדפן|2|בחר "הוספה למסך הבית" (או "התקנת אפליקציה")|3|לחץ "הוסף" / "התקן"|4|האייקון יופיע במסך הבית ✅',
 installIos:'1|ודא שאתה ב-Safari (לא Chrome)|2|לחץ על כפתור השיתוף ⬆️ בתחתית|3|גלול ובחר "הוספה למסך הבית"|4|לחץ "הוסף" למעלה ✅',
-btn1Title:'יומן עבודה יומי',btn1Desc:'דבר דקה אחת ← יומן חוקי מסודר ישלח לוואטסאפ',
+btn1Title:'יומן עבודה יומי',btn1Desc:'תעד את היום ← יומן חוקי מסודר ישלח לוואטסאפ',
 btn2Title:'ליקויים ומשימות',btn2Desc:'צלם ← הקצה לקבלן ← עקוב אחרי סטטוס',
 btn3Title:'בטיחות יומית',btn3Desc:'12 שאלות בטיחות ← דוח חתום עם GPS ← הגנה משפטית',
-journalTitle:'יומן עבודה יומי',voiceSectionTitle:'הקלטת קול (מדבר ← מתמלל)',voiceHint:'לחץ לדבר בחופשיות על מה שהיה היום',voiceOrType:'או הקלד ידנית',
+journalTitle:'יומן עבודה יומי',journalDescTitle:'תיאור העבודה היום',
 journalPlaceholder:'מה קרה היום באתר? מי עבד, מה בוצע, מה עוכב...',workersTitle:'כוח אדם היום',weatherTitle:'מזג אוויר',
 delaysTitle:'עיכובים / חריגים',delaysPlaceholder:'האם היו עיכובים? חוסר חומרים? השאר ריק אם הכל רץ חלק',
 tasksTitle:'משימות למחר',tasksPlaceholder:'מה מתוכנן למחר?',photosTitle:'תמונות מהיום',
@@ -1129,7 +1119,6 @@ offlineNote:'כל הנתונים שמורים בטלפון שלך בלבד · ע
 emptyJournal:'עדיין אין יומנים שמורים.\nצור את הראשון!',emptySafety:'עדיין אין דוחות בטיחות.\nבצע את הבדיקה הראשונה!',
 emptyDefects:'אין ליקויים פתוחים!\nלחץ + להוסיף',emptyDefectsFilter:'אין ליקויים בסטטוס זה',
 deleteConfirm:'למחוק?',deleted:'נמחק',saved:'✅ נשמר בהצלחה!',
-voiceNotSupported:'הקלטת קול לא נתמכת — נסה Chrome באנדרואיד',voiceDenied:'אנא אפשר גישה למיקרופון בהגדרות הדפדפן',voiceError:'שגיאת הקלטה — נסה שוב',
 reportJournalTitle:'יומן עבודה — ',reportSafetyTitle:'דוח בטיחות יומי',
 reportProject:'פרויקט: ',reportManager:'מנהל עבודה: ',reportDate:'תאריך: ',reportGenerated:'הופק: ',
 reportWorkDesc:'תיאור יום העבודה',reportManpower:'כוח אדם',reportConditions:'תנאים ועיכובים',
@@ -1212,13 +1201,13 @@ searchPlaceholder:'🔍 بحث (وصف، طابق، مقاول…)',loadMore:'ت
 exportSection:'تصدير البيانات (Excel/CSV)',exportDefects:'⬇️ العيوب',exportJournals:'⬇️ اليوميات',exportEmpty:'لا توجد بيانات للتصدير',
 phoneSecSection:'تأمين الحساب',phoneSecBtn:'🔒 أمّن حسابك برمز SMS',phoneSecDone:'✅ الحساب موثّق',phoneSecTitle:'توثيق الحساب عبر SMS',phoneSecBody:'سيُرسَل رمز من 6 أرقام إلى هاتفك. التوثيق يضمن وصولك أنت فقط لبياناتك.',phoneSendCode:'إرسال الرمز',phoneCodeSent:'📩 تم إرسال الرمز',phoneEnterCode:'أدخل الرمز الذي وصلك',phoneVerifyBtn:'تحقّق',phoneVerifiedOk:'✅ تم توثيق الحساب',phoneSvcOff:'خدمة التوثيق غير مفعّلة بعد (Phone Auth في الكونسول)',phoneBadCode:'رمز خاطئ، حاول ثانية',
 syncedToast:'☁️ تمت المزامنة',legalTitle:'شروط الاستخدام والخصوصية',legalLink:'شروط الاستخدام والخصوصية',
-onbTipTitle:'👋 أهلاً بك في SiteBoss',onbTipBody:'3 خطوات للبدء:\n1. افتح 📋 اليومية ووثّق اليوم — صوت أو كتابة.\n2. صوّرت عيباً؟ 📸 العيوب → أرسل للمقاول بضغطة.\n3. كل صباح راجع 🦺 السلامة ووقّع.\nكل شيء محفوظ على الجهاز ومنسوخ للسحابة.',onbTipBtn:'فهمت، لنبدأ',
+onbTipTitle:'👋 أهلاً بك في SiteBoss',onbTipBody:'3 خطوات للبدء:\n1. افتح 📋 اليومية ووثّق اليوم.\n2. صوّرت عيباً؟ 📸 العيوب → أرسل للمقاول بضغطة.\n3. كل صباح راجع 🦺 السلامة ووقّع.\nكل شيء محفوظ على الجهاز ومنسوخ للسحابة.',onbTipBtn:'فهمت، لنبدأ',
 expThinking:'⏳ يفكّر…',expRouted:'خبير',expSoon:'محرك الذكاء الاصطناعي غير موصول بعد على هذا الجهاز — لكنني حدّدت الخبير المناسب وبنيت له التعليمات الكاملة. عند توصيل النموذج، ستظهر الإجابة الكاملة هنا.',expCtxNote:'سياق موقعك يُضاف تلقائياً',
 faqTitle:'أسئلة شائعة',
 feedbackTitle:'إرسال رسالة للمكتب',feedbackType:'نوع الرسالة',fbBug:'عطل',fbIdea:'اقتراح',fbQuestion:'سؤال',
 feedbackText:'تفاصيل الرسالة',feedbackPlaceholder:'اكتب هنا المشكلة / الاقتراح / السؤال...',feedbackSend:'📨 إرسال',
 feedbackThanks:'✅ تم إرسال الرسالة — سنعالجها قريباً',feedbackEmpty:'يرجى كتابة محتوى الرسالة',feedbackRefTo:'بخصوص الرسالة: ',
-faq1q:'التسجيل الصوتي لا يعمل؟',faq1a:'تأكد من السماح للتطبيق بالوصول إلى الميكروفون في إعدادات المتصفح. يُفضّل Chrome على أندرويد.',
+faq1q:'هل يمكن العمل بدون إنترنت؟',faq1a:'نعم — كل شيء محفوظ على الهاتف ويعمل بدون شبكة. عند عودة الإنترنت تتم المزامنة مع السحابة تلقائياً.',
 faq2q:'كيف أضيف التطبيق إلى الشاشة الرئيسية؟',faq2a:'أندرويد: قائمة النقاط الثلاث ← "إضافة إلى الشاشة الرئيسية". آيفون: زر المشاركة ⬆️ في Safari ← "إضافة إلى الشاشة الرئيسية".',
 faq3q:'كيف أرسل تقريراً للمكتب؟',faq3a:'في نهاية اليومية/السلامة اضغط "📲 أرسل للمكتب عبر واتساب" في التقرير.',
 faq4q:'هل تُحفظ البيانات؟ ماذا لو غيّرت الهاتف؟',faq4a:'نعم — تُحفظ في الهاتف وفي السحابة. عند تغيير الهاتف ادخل بنفس الرقم وسيعود كل شيء.',
@@ -1226,10 +1215,10 @@ faq5q:'هل التوقيع على اليومية إلزامي؟',faq5a:'نعم،
 installBannerText:'أضف تطبيق SiteBoss إلى الشاشة الرئيسية',installHow:'كيف؟',installBtn:'تثبيت',gotIt:'فهمت 👍',installTitle:'الإضافة إلى الشاشة الرئيسية 📲',
 installAndroid:'1|اضغط قائمة النقاط الثلاث (⋮) — في الأعلى أو الأسفل حسب المتصفح|2|اختر "إضافة إلى الشاشة الرئيسية" (أو "تثبيت التطبيق")|3|اضغط "إضافة" / "تثبيت"|4|ستظهر الأيقونة على الشاشة الرئيسية ✅',
 installIos:'1|تأكد أنك في Safari (وليس Chrome)|2|اضغط زر المشاركة ⬆️ في الأسفل|3|مرّر واختر "إضافة إلى الشاشة الرئيسية"|4|اضغط "إضافة" في الأعلى ✅',
-btn1Title:'يومية العمل اليومية',btn1Desc:'تكلم دقيقة ← يومية قانونية تُرسل للواتساب',
+btn1Title:'يومية العمل اليومية',btn1Desc:'وثّق اليوم ← يومية قانونية تُرسل للواتساب',
 btn2Title:'العيوب والمهام',btn2Desc:'التقط صورة ← أسند للمقاول ← تابع الحالة',
 btn3Title:'السلامة اليومية',btn3Desc:'12 سؤال أمان ← تقرير موقّع بـGPS ← حماية قانونية',
-journalTitle:'يومية العمل اليومية',voiceSectionTitle:'تسجيل الصوت (تكلم ← تفريغ)',voiceHint:'انقر للتحدث بحرية عن يوم العمل',voiceOrType:'أو اكتب يدوياً',
+journalTitle:'يومية العمل اليومية',journalDescTitle:'وصف العمل اليوم',
 journalPlaceholder:'ماذا حدث في الموقع اليوم؟ من عمل، ماذا أُنجز، ماذا تأخر...',workersTitle:'القوى العاملة اليوم',weatherTitle:'الطقس',
 delaysTitle:'التأخيرات / الانحرافات',delaysPlaceholder:'هل كانت هناك تأخيرات؟ نقص في المواد؟ اتركه فارغاً إن سار كل شيء بسلاسة',
 tasksTitle:'مهام الغد',tasksPlaceholder:'ما المخطط ليوم الغد؟',photosTitle:'صور اليوم',
@@ -1266,7 +1255,6 @@ offlineNote:'جميع البيانات محفوظة في هاتفك فقط · ي
 emptyJournal:'لا توجد يوميات بعد.\nأنشئ الأولى!',emptySafety:'لا توجد تقارير سلامة بعد.\nأجرِ الفحص الأول!',
 emptyDefects:'لا توجد عيوب مفتوحة!\nانقر + للإضافة',emptyDefectsFilter:'لا توجد عيوب بهذه الحالة',
 deleteConfirm:'حذف؟',deleted:'تم الحذف',saved:'✅ تم الحفظ بنجاح!',
-voiceNotSupported:'التسجيل الصوتي غير مدعوم — جرّب Chrome على أندرويد',voiceDenied:'يرجى السماح بالوصول إلى الميكروفون في إعدادات المتصفح',voiceError:'خطأ في التسجيل — حاول مجدداً',
 reportJournalTitle:'يومية العمل — ',reportSafetyTitle:'تقرير السلامة اليومي',
 reportProject:'المشروع: ',reportManager:'مدير العمل: ',reportDate:'التاريخ: ',reportGenerated:'أُنشئ: ',
 reportWorkDesc:'وصف يوم العمل',reportManpower:'القوى العاملة',reportConditions:'الأحوال والتأخيرات',
@@ -2151,30 +2139,6 @@ function submitFeedback(){
   document.getElementById('feedback-ref').style.display='none';
   toast(T('feedbackThanks'),3500);
   showScreen('s-home');
-}
-var _recog=null,_voiceTarget=null,_voiceActive=false,_voiceFinal='',_voiceBtn=null;
-function _voiceStopUI(){_voiceActive=false;if(_voiceBtn){_voiceBtn.innerHTML='🎙️';_voiceBtn.classList.remove('recording');}}
-function toggleVoice(target,btnId){
-  var b=document.getElementById(btnId);
-  if(_voiceActive){_voiceActive=false;try{if(_recog)_recog.stop();}catch(e){}_voiceStopUI();return;}
-  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){toast(T('voiceNotSupported'));return;}
-  // נקה מופע קודם אם נשאר
-  if(_recog){try{_recog.onend=null;_recog.onresult=null;_recog.abort();}catch(e){}_recog=null;}
-  _voiceTarget=target;_voiceBtn=b;
-  var el0=document.getElementById(target);
-  _voiceFinal=el0&&el0.value?(el0.value.replace(/\s+$/,'')+' '):'';  // המשך מטקסט קיים
-  _recog=new SR();_recog.lang=APP.lang==='ar'?'ar-IL':'he-IL';_recog.continuous=true;_recog.interimResults=true;
-  _recog.onresult=function(e){
-    // בנייה-מחדש מלאה מכל התוצאות בכל אירוע — מונע כפילות (אין צבירה)
-    var txt='';
-    for(var i=0;i<e.results.length;i++){ txt+=e.results[i][0].transcript+' '; }
-    var el=document.getElementById(_voiceTarget);if(el)el.value=(_voiceFinal+txt).replace(/[ \t]+/g,' ').replace(/^\s+/,'');
-  };
-  _recog.onerror=function(err){if(err.error==='not-allowed')toast(T('voiceDenied'));else if(err.error!=='aborted'&&err.error!=='no-speech')toast(T('voiceError'));};
-  // ללא הפעלה-מחדש אוטומטית (גרמה לכפילות). בסיום — הכפתור חוזר למצב מוכן, הטקסט נשמר.
-  _recog.onend=function(){_voiceStopUI();};
-  try{_recog.start();_voiceActive=true;if(b){b.innerHTML='⏹️';b.classList.add('recording');}}catch(e){toast(T('voiceError'));}
 }
 var WKEYS=['w1','w2','w3','w4','w5'];
 var currentWeather=-1;
