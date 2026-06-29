@@ -432,21 +432,24 @@ async function boot(cfg){
 }
 
 // ---------- users ----------
-async function loadUsers(tries){
-  tries=tries||0;
-  try {
-    const snap = await getDocs(collection(db,'managers'));
-    USERS = [];
-    snap.forEach(function(d){ USERS.push(Object.assign({id:d.id}, d.data())); });
-  } catch(e){ console.error(e); if(tries<5){ setTimeout(function(){loadUsers(tries+1);},1500); return; } }
-  document.getElementById('st-users').textContent = USERS.length;
-  var weekAgo = Date.now() - 7*864e5;
-  var active = USERS.filter(function(u){
-    var t = u.lastSeen ? new Date(u.lastSeen).getTime() : (u.registeredAt ? new Date(u.registeredAt).getTime() : 0);
-    return t >= weekAgo;
-  }).length;
-  document.getElementById('st-active').textContent = active;
-  renderUsers();
+// האזנה בזמן אמת — מנהל שנרשם מופיע מיד, בלי לרענן את העמוד
+var _usersUnsub=null;
+function loadUsers(){
+  if(_usersUnsub)return;                 // מאזין כבר פעיל
+  try{
+    _usersUnsub = onSnapshot(collection(db,'managers'), function(snap){
+      USERS=[];
+      snap.forEach(function(d){ USERS.push(Object.assign({id:d.id}, d.data())); });
+      document.getElementById('st-users').textContent = USERS.length;
+      var weekAgo = Date.now() - 7*864e5;
+      var active = USERS.filter(function(u){
+        var t = u.lastSeen ? new Date(u.lastSeen).getTime() : (u.registeredAt ? new Date(u.registeredAt).getTime() : 0);
+        return t >= weekAgo;
+      }).length;
+      document.getElementById('st-active').textContent = active;
+      renderUsers();
+    }, function(e){ console.error('users listener', e); });
+  }catch(e){ console.error(e); }
 }
 
 window.renderUsers = function(){

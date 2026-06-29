@@ -24,7 +24,7 @@ service cloud.firestore {
     }
     // האם זה אוסף של נתוני שטח (כדי שכלל ה-owner הכללי לא יחול על managers/messages/feedback/config)
     function isFieldColl(c) {
-      return c in ['journals','defects','safety','presence','incidents','onboard','permits'];
+      return c in ['journals','defects','safety','presence','incidents','onboard','permits','equipment'];
     }
 
     // ===== מנהלים: כל מנהל את הפרופיל שלו; רק הבעלים מקבל את כל הרשימה =====

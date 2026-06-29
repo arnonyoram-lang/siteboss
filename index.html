@@ -336,6 +336,10 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <span class="home-btn-icon">📋</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btn9Title"></span><span class="home-btn-desc" data-t="btn9Desc"></span></span>
     </button>
+    <button id="home-mod-equipment" class="home-btn" style="display:none;background:linear-gradient(135deg,#0e7490,#0b5563);" onclick="showScreen('s-equipment')">
+      <span class="home-btn-icon">🚜</span>
+      <span class="home-btn-texts"><span class="home-btn-title" data-t="btnEqTitle"></span><span class="home-btn-desc" data-t="btnEqDesc"></span></span>
+    </button>
     <button id="home-mod-expert" class="home-btn" style="background:linear-gradient(135deg,#5b3fb0,#3d2880);" onclick="showScreen('s-expert')">
       <span class="home-btn-icon">🧠</span>
       <span class="home-btn-texts"><span class="home-btn-title" data-t="btnExpTitle"></span><span class="home-btn-desc" data-t="btnExpDesc"></span></span>
@@ -620,6 +624,55 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     <div style="width:40px"></div>
   </div>
   <div class="screen-body"><div id="perm-history-list"></div></div>
+</div>
+
+<!-- EQUIPMENT (כלים וציוד) -->
+<div class="screen" id="s-equipment">
+  <div class="topbar">
+    <button class="back-btn" onclick="showScreen('s-home')">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="eqTitle"></div></div>
+    <button class="icon-btn" aria-label="הוסף כלי / إضافة آلية" onclick="newEquipment()">➕</button>
+  </div>
+  <div class="screen-body"><div id="eq-list"></div></div>
+</div>
+
+<!-- EQUIPMENT — ADD/EDIT FORM -->
+<div class="screen" id="s-equipment-new">
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">→ <span data-t="backLabel"></span></button>
+    <div class="topbar-center"><div class="topbar-title" data-t="eqNewTitle"></div></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="screen-body">
+    <div class="card">
+      <div class="card-title" data-t="eqType"></div>
+      <div class="work-type-grid" id="eq-type-grid"></div>
+      <input id="eq-type-other" type="text" data-tp="eqTypeOtherPh" style="margin-top:8px;display:none;">
+    </div>
+    <div class="card"><div class="card-title" data-t="eqName"></div><input id="eq-name" type="text" data-tp="eqNamePh"></div>
+    <div class="card"><div class="card-title" data-t="eqOperator"></div><input id="eq-operator" type="text" data-tp="eqOperatorPh"></div>
+    <div class="card"><div class="card-title" data-t="eqPhoto"></div><div id="eq-photo-slot"></div></div>
+    <div class="card">
+      <div class="card-title">🪪 <span data-t="eqToolLic"></span></div>
+      <div id="eq-toollic-slot"></div>
+      <label class="card-title" style="font-size:13px;margin-top:8px;color:var(--sub);" data-t="eqExpiry"></label>
+      <input id="eq-toollic-exp" type="date">
+    </div>
+    <div class="card">
+      <div class="card-title">🚗 <span data-t="eqDriverLic"></span></div>
+      <div id="eq-driverlic-slot"></div>
+      <label class="card-title" style="font-size:13px;margin-top:8px;color:var(--sub);" data-t="eqExpiry"></label>
+      <input id="eq-driverlic-exp" type="date">
+    </div>
+    <div class="card">
+      <div class="card-title">🛡️ <span data-t="eqInsurance"></span></div>
+      <div id="eq-insurance-slot"></div>
+      <label class="card-title" style="font-size:13px;margin-top:8px;color:var(--sub);" data-t="eqExpiry"></label>
+      <input id="eq-insurance-exp" type="date">
+    </div>
+    <div class="card"><div class="card-title" data-t="eqNotes"></div><textarea id="eq-notes" rows="2"></textarea></div>
+    <button class="btn btn-orange" onclick="saveEquipment()"><span data-t="eqSave"></span></button>
+  </div>
 </div>
 
 <!-- JOURNAL -->
@@ -1015,6 +1068,7 @@ copyYesterday:'📋 המשך מאתמול',noLastJournal:'אין יומן קוד
 moreDetails:'פרטים נוספים (מיקום, יעד, חומרה)',dupDefect:'⧉ שכפל',btnCall:'📞 חייג',dlTomorrow:'מחר',dl3days:'3 ימים',dlWeek:'שבוע',
 doneToday:'✓ בוצע היום',digestBtn:'📤 שלח סיכום יום למשרד',digestEmpty:'אין עדיין נתונים להיום',sameCrew:'👥 אותו צוות כמו אתמול',noPrevCrew:'אין רשימת נוכחות קודמת',presInTime:'שעת כניסה',
 btnExpTitle:'עוזר חכם',btnExpDesc:'נהלים, סיכונים, מכתבים, החלטות',expTitle:'🧠 עוזר חכם',expPlaceholder:'כתוב מה צריך — נוהל בטיחות, מכתב לקבלן, סיכום פגישה, מה הסיכונים…',
+btnEqTitle:'כלים וציוד',btnEqDesc:'רישיונות וביטוח ← התראה לפני שפג',eqTitle:'🚜 כלים וציוד',eqNewTitle:'כלי חדש',eqEmpty:'אין כלים רשומים\nלחץ ➕ להוספת כלי',eqType:'סוג הכלי',eqTypeOtherPh:'כתוב סוג כלי…',eqName:'שם / מספר (אופציונלי)',eqNamePh:'לדוגמה: מס׳ רישוי, מק״ט',eqOperator:'מפעיל / נהג (אופציונלי)',eqOperatorPh:'שם המפעיל',eqPhoto:'📷 צילום הכלי',eqAddPhoto:'הוסף צילום',eqToolLic:'רישיון כלי',eqDriverLic:'רישיון נהג / מפעיל',eqInsurance:'ביטוח',eqExpiry:'תאריך תפוגה',eqNotes:'הערות',eqSave:'💾 שמור כלי',eqNoType:'בחר או כתוב סוג כלי',eqValid:'תקף',eqSoon:'פג בקרוב',eqExpired:'פג!',eqMissing:'חסר',eqEditBtn:'ערוך',eqAlertExpired:'פג תוקף: ',eqAlertSoon:'פג בקרוב: ',eqTExcavator:'מחפרון',eqTLoader:'מעמיס / שופל',eqTCrane:'מנוף',eqTLift:'במה מתרוממת',eqTTruck:'משאית',eqTForklift:'מלגזה',eqTRoller:'מכבש',eqTOther:'אחר',
 expIntro:'מה תרצה? כתוב חופשי והעוזר המתאים יענה. למשל: "תכתוב נוהל כניסה לאתר", "מה הסיכונים בעבודה בגובה השבוע", "מכתב לקבלן על ליקוי שלא תוקן", "סכם לי את פגישת הבטיחות", "תעזור לי להחליט בין שני קבלני משנה".',
 saveFailFull:'⚠️ לא נשמר — הזיכרון מלא. מחק תמונות/דוחות ישנים ונסה שוב',
 searchPlaceholder:'🔍 חיפוש (תיאור, קומה, קבלן…)',loadMore:'טען עוד',noSearchResults:'לא נמצאו תוצאות',
@@ -1151,6 +1205,7 @@ copyYesterday:'📋 متابعة من الأمس',noLastJournal:'لا توجد �
 moreDetails:'تفاصيل إضافية (موقع، موعد، أهمية)',dupDefect:'⧉ تكرار',btnCall:'📞 اتصل',dlTomorrow:'غداً',dl3days:'3 أيام',dlWeek:'أسبوع',
 doneToday:'✓ تم اليوم',digestBtn:'📤 أرسل ملخص اليوم للمكتب',digestEmpty:'لا توجد بيانات لليوم بعد',sameCrew:'👥 نفس طاقم الأمس',noPrevCrew:'لا توجد قائمة حضور سابقة',presInTime:'وقت الدخول',
 btnExpTitle:'مساعد ذكي',btnExpDesc:'إجراءات، مخاطر، رسائل، قرارات',expTitle:'🧠 مساعد ذكي',expPlaceholder:'اكتب ما تحتاجه — إجراء سلامة، رسالة لمقاول، تلخيص اجتماع، ما المخاطر…',
+btnEqTitle:'المعدات والآليات',btnEqDesc:'رخص وتأمين ← تنبيه قبل الانتهاء',eqTitle:'🚜 المعدات والآليات',eqNewTitle:'آلية جديدة',eqEmpty:'لا توجد آليات مسجلة\nاضغط ➕ لإضافة آلية',eqType:'نوع الآلية',eqTypeOtherPh:'اكتب نوع الآلية…',eqName:'اسم / رقم (اختياري)',eqNamePh:'مثال: رقم الترخيص، رقم الصنف',eqOperator:'المشغّل / السائق (اختياري)',eqOperatorPh:'اسم المشغّل',eqPhoto:'📷 صورة الآلية',eqAddPhoto:'أضف صورة',eqToolLic:'رخصة الآلية',eqDriverLic:'رخصة السائق / المشغّل',eqInsurance:'التأمين',eqExpiry:'تاريخ الانتهاء',eqNotes:'ملاحظات',eqSave:'💾 احفظ الآلية',eqNoType:'اختر أو اكتب نوع الآلية',eqValid:'سارية',eqSoon:'تنتهي قريباً',eqExpired:'منتهية!',eqMissing:'ناقص',eqEditBtn:'تعديل',eqAlertExpired:'انتهت صلاحية: ',eqAlertSoon:'تنتهي قريباً: ',eqTExcavator:'حفّارة',eqTLoader:'لودر / شيول',eqTCrane:'رافعة',eqTLift:'منصة رافعة',eqTTruck:'شاحنة',eqTForklift:'رافعة شوكية',eqTRoller:'مدحلة',eqTOther:'أخرى',
 expIntro:'ماذا تريد؟ اكتب بحرية وسيجيبك الخبير المناسب. مثلاً: "اكتب إجراء دخول للموقع"، "ما مخاطر العمل على ارتفاع هذا الأسبوع"، "رسالة لمقاول حول عيب لم يُصلَح"، "لخّص لي اجتماع السلامة"، "ساعدني أقرّر بين مقاولَي باطن".',
 saveFailFull:'⚠️ لم يُحفظ — الذاكرة ممتلئة. احذف صوراً/تقارير قديمة وحاول ثانية',
 searchPlaceholder:'🔍 بحث (وصف، طابق، مقاول…)',loadMore:'تحميل المزيد',noSearchResults:'لا توجد نتائج',
@@ -1317,7 +1372,8 @@ function cloudSave(coll,entry){
   if(!window._dkSaveDoc)return Promise.resolve(false);
   var s=APP.settings||{};var owner=(s.managerPhone||'').replace(/\D/g,'');
   var docId=(owner||'x')+'_'+entry.id;
-  var copy={};for(var k in entry){if(k==='photos')continue;copy[k]=entry[k];}
+  // השמט שדות base64 כבדים מהמסמך בענן (מגבלת 1MB ל-doc): מערך photos, וכן שדות photo/*Photo (כלים)
+  var copy={};for(var k in entry){if(k==='photos'||k==='photo'||/Photo$/.test(k))continue;copy[k]=entry[k];}
   if(entry.photos)copy.photoCount=entry.photos.length;
   copy.owner=owner;copy.ownerName=s.managerName||'';copy.project=s.projectName||'';
   copy.cloudAt=new Date().toISOString();
@@ -1396,6 +1452,8 @@ function setLang(lang){
     's-contractors':renderContractorScores,
     's-permits':function(){renderPermTypes();renderPermChecks();},
     's-permits-history':renderPermitsHistory,
+    's-equipment':renderEquipment,
+    's-equipment-new':function(){renderEqTypes();},
     's-incidents':function(){renderIncTypes();},
     's-incidents-history':renderIncidentsHistory,
     's-onboard':renderOnboardList,
@@ -1447,6 +1505,7 @@ function onScreenEnter(id){
   if(id==='s-contractors')renderContractorScores();
   if(id==='s-permits')initPermit();
   if(id==='s-permits-history')renderPermitsHistory();
+  if(id==='s-equipment'){APP.eqPage=1;renderEquipment();}
   if((id==='s-home'||id==='s-messages')&&window._dkFetchMessages){try{window._dkFetchMessages();}catch(e){}}
   updateBottomBack(id);
 }
@@ -1479,6 +1538,8 @@ function refreshHome(){
   setHomeBadge('home-mod-safety',safety.some(function(r){return dkLocalDay(r.date)===today;})?T('doneToday'):'','done');
   // מונה ליקויים פתוחים על כפתור הליקויים
   setHomeBadge('home-mod-defects',openDef>0?String(openDef):'','count');
+  // מונה כלים עם רישיון/ביטוח שפג או פג בקרוב
+  if(isFeatureOn('modEquipment')){var eqWarn=getEquipment().filter(function(e){var w=eqWorstStatus(e);return w==='expired'||w==='soon';}).length;setHomeBadge('home-mod-equipment',eqWarn>0?String(eqWarn):'','count');}
   sortHomeButtons();
   updateMsgBanner();
 }
@@ -1493,7 +1554,7 @@ function setHomeBadge(btnId,text,kind){
 }
 // מיון כפתורי הבית לפי תדירות שימוש — מה שבשימוש יומי עולה למעלה
 function bumpUsage(screenId){
-  var map={'s-journal':'modJournal','s-defects':'modDefects','s-safety':'modSafety','s-presence':'modPresence','s-reminders':'modReminders','s-incidents':'modIncidents','s-onboard':'modOnboard','s-contractors':'modContractors','s-permits':'modPermits','s-expert':'modExpert'};
+  var map={'s-journal':'modJournal','s-defects':'modDefects','s-safety':'modSafety','s-presence':'modPresence','s-reminders':'modReminders','s-incidents':'modIncidents','s-onboard':'modOnboard','s-contractors':'modContractors','s-permits':'modPermits','s-equipment':'modEquipment','s-expert':'modExpert'};
   var k=map[screenId];if(!k)return;
   var u=loadJSON('dk_usage',{});u[k]=(u[k]||0)+1;saveJSON('dk_usage',u);
 }
@@ -1502,7 +1563,7 @@ function sortHomeButtons(){
   var btns=Array.prototype.slice.call(document.querySelectorAll('#s-home .home-btn'));
   if(btns.length<2)return;
   var parent=btns[0].parentNode;
-  var idMap={'home-mod-journal':'modJournal','home-mod-defects':'modDefects','home-mod-safety':'modSafety','home-mod-presence':'modPresence','home-mod-reminders':'modReminders','home-mod-incidents':'modIncidents','home-mod-onboard':'modOnboard','home-mod-contractors':'modContractors','home-mod-permits':'modPermits','home-mod-expert':'modExpert'};
+  var idMap={'home-mod-journal':'modJournal','home-mod-defects':'modDefects','home-mod-safety':'modSafety','home-mod-presence':'modPresence','home-mod-reminders':'modReminders','home-mod-incidents':'modIncidents','home-mod-onboard':'modOnboard','home-mod-contractors':'modContractors','home-mod-permits':'modPermits','home-mod-equipment':'modEquipment','home-mod-expert':'modExpert'};
   btns.sort(function(a,b){return (u[idMap[b.id]]||0)-(u[idMap[a.id]]||0);});
   btns.forEach(function(b){parent.appendChild(b);});
 }
@@ -1664,6 +1725,17 @@ function getSmartAlerts(){
   if(isFeatureOn('modSafety')&&!hasToday)alerts.push({icon:'🦺',text:T('remSafetyToday')});
   var journals=loadJSON('sb_journals',[]);
   if(journals[0]&&journals[0].tasks)alerts.push({icon:'📋',text:T('remTasksTomorrow')+journals[0].tasks.slice(0,50)});
+  // תפוגת רישיון/ביטוח של כלים — פג או פג בקרוב (≤30 יום)
+  if(isFeatureOn('modEquipment')){
+    getEquipment().forEach(function(e){
+      var nm=eqDisplayType(e)+(e.name?' ('+e.name+')':'');
+      [['toolLicenseExp','eqToolLic'],['driverLicenseExp','eqDriverLic'],['insuranceExp','eqInsurance']].forEach(function(p){
+        var st=eqExpStatus(e[p[0]]);
+        if(st==='expired')alerts.push({icon:'🚜',text:T('eqAlertExpired')+nm+' — '+T(p[1])});
+        else if(st==='soon')alerts.push({icon:'🚜',text:T('eqAlertSoon')+nm+' — '+T(p[1])+' ('+e[p[0]]+')'});
+      });
+    });
+  }
   return alerts;
 }
 function renderReminders(){
@@ -1935,6 +2007,105 @@ function renderPermitsHistory(){
       +'</div>';
   });
   if(shown<list.length)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.permPage=(APP.permPage||1)+1;renderPermitsHistory();">'+T('loadMore')+' ('+(list.length-shown)+')</button>';
+  el.innerHTML=h;
+}
+
+// ===================== כלים וציוד (#18) — רישיונות+ביטוח עם התראת תפוגה =====================
+var EQ_TYPES=[{k:'excavator',l:'eqTExcavator'},{k:'loader',l:'eqTLoader'},{k:'crane',l:'eqTCrane'},{k:'lift',l:'eqTLift'},{k:'truck',l:'eqTTruck'},{k:'forklift',l:'eqTForklift'},{k:'roller',l:'eqTRoller'},{k:'other',l:'eqTOther'}];
+function getEquipment(){return loadJSON('dk_equipment',[]);}
+function eqTypeLabel(k){for(var i=0;i<EQ_TYPES.length;i++)if(EQ_TYPES[i].k===k)return T(EQ_TYPES[i].l);return k;}
+function eqDisplayType(e){return e.typeKey==='other'?(e.typeOther||T('eqTOther')):eqTypeLabel(e.typeKey);}
+// סטטוס תפוגה: none/ok/soon(≤30 יום)/expired — לפי תאריך מקומי
+function eqExpStatus(dateStr){
+  if(!dateStr)return 'none';
+  var today=isoDate();
+  if(dateStr<today)return 'expired';
+  var d=new Date(dateStr+'T00:00:00');var in30=new Date();in30.setHours(0,0,0,0);in30.setDate(in30.getDate()+30);
+  return d<=in30?'soon':'ok';
+}
+function eqWorstStatus(e){var a=[eqExpStatus(e.toolLicenseExp),eqExpStatus(e.driverLicenseExp),eqExpStatus(e.insuranceExp)];if(a.indexOf('expired')>=0)return 'expired';if(a.indexOf('soon')>=0)return 'soon';return 'ok';}
+function renderEqTypes(){
+  var g=document.getElementById('eq-type-grid');if(!g)return;var h='';
+  EQ_TYPES.forEach(function(t){h+='<div class="work-type-btn'+(APP.eqType===t.k?' active':'')+'" onclick="selEqType(\''+t.k+'\')"><span class="work-type-label">'+T(t.l)+'</span></div>';});
+  g.innerHTML=h;
+  var ot=document.getElementById('eq-type-other');if(ot)ot.style.display=(APP.eqType==='other')?'':'none';
+}
+function selEqType(k){APP.eqType=k;renderEqTypes();}
+// סלוט תצלום בודד (כלי/רישיון/ביטוח) — מצלם או בוחר, base64 ל-APP.eqDraft
+function eqRenderSlot(slotId,field){
+  var el=document.getElementById(slotId);if(!el)return;var url=(APP.eqDraft||{})[field];
+  if(url){el.innerHTML='<div style="position:relative;display:inline-block;width:100%;"><img src="'+url+'" style="width:100%;max-height:150px;object-fit:cover;border-radius:8px;"><button onclick="eqClearPhoto(\''+field+'\',\''+slotId+'\')" style="position:absolute;top:6px;'+(APP.lang==='ar'?'right':'left')+':6px;background:rgba(231,76,60,.9);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;">✕</button></div>';}
+  else{el.innerHTML='<label class="btn btn-gray" style="min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;margin:0;"><span>📷 '+T('eqAddPhoto')+'</span><input type="file" accept="image/*" capture="environment" style="display:none;" onchange="eqOnPhoto(this,\''+field+'\',\''+slotId+'\')"></label>';}
+}
+function eqOnPhoto(input,field,slotId){var f=input.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){if(!APP.eqDraft)APP.eqDraft={};APP.eqDraft[field]=e.target.result;eqRenderSlot(slotId,field);};r.readAsDataURL(f);input.value='';}
+function eqClearPhoto(field,slotId){if(APP.eqDraft)APP.eqDraft[field]=null;eqRenderSlot(slotId,field);}
+function eqResetForm(){
+  APP.eqType='excavator';APP.eqDraft={};APP._eqEditId=null;
+  ['eq-name','eq-operator','eq-type-other','eq-notes','eq-toollic-exp','eq-driverlic-exp','eq-insurance-exp'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  renderEqTypes();
+  eqRenderSlot('eq-photo-slot','photo');eqRenderSlot('eq-toollic-slot','toolLicensePhoto');eqRenderSlot('eq-driverlic-slot','driverLicensePhoto');eqRenderSlot('eq-insurance-slot','insurancePhoto');
+}
+function newEquipment(){eqResetForm();showScreen('s-equipment-new');}
+function saveEquipment(){
+  var other=(document.getElementById('eq-type-other').value||'').trim();
+  if(APP.eqType==='other'&&!other){toast(T('eqNoType'));return;}
+  if(!dkOnce('eq'))return;
+  var d=APP.eqDraft||{};var s=APP.settings||{};
+  var entry={id:APP._eqEditId||Date.now(),ts:Date.now(),date:new Date().toISOString(),
+    typeKey:APP.eqType,typeOther:(APP.eqType==='other'?other:''),
+    name:document.getElementById('eq-name').value.trim(),operator:document.getElementById('eq-operator').value.trim(),
+    photo:d.photo||null,
+    toolLicensePhoto:d.toolLicensePhoto||null,toolLicenseExp:document.getElementById('eq-toollic-exp').value||'',
+    driverLicensePhoto:d.driverLicensePhoto||null,driverLicenseExp:document.getElementById('eq-driverlic-exp').value||'',
+    insurancePhoto:d.insurancePhoto||null,insuranceExp:document.getElementById('eq-insurance-exp').value||'',
+    notes:document.getElementById('eq-notes').value.trim(),by:s.managerName||'',project:s.projectName||''};
+  var list=getEquipment();
+  if(APP._eqEditId){var f=false;for(var i=0;i<list.length;i++){if(list[i].id===APP._eqEditId){list[i]=entry;f=true;break;}}if(!f)list.unshift(entry);}
+  else list.unshift(entry);
+  if(!saveJSON('dk_equipment',list)){toast(T('saveFailFull'),6000);return;}
+  cloudSave('equipment',entry);
+  toast(T('saved'));showScreen('s-equipment');
+}
+function editEquipment(id){
+  var e=getEquipment().find(function(x){return x.id===id;});if(!e)return;
+  showScreen('s-equipment-new');
+  APP._eqEditId=id;APP.eqType=e.typeKey||'other';
+  APP.eqDraft={photo:e.photo,toolLicensePhoto:e.toolLicensePhoto,driverLicensePhoto:e.driverLicensePhoto,insurancePhoto:e.insurancePhoto};
+  renderEqTypes();
+  document.getElementById('eq-type-other').value=e.typeOther||'';
+  document.getElementById('eq-name').value=e.name||'';
+  document.getElementById('eq-operator').value=e.operator||'';
+  document.getElementById('eq-notes').value=e.notes||'';
+  document.getElementById('eq-toollic-exp').value=e.toolLicenseExp||'';
+  document.getElementById('eq-driverlic-exp').value=e.driverLicenseExp||'';
+  document.getElementById('eq-insurance-exp').value=e.insuranceExp||'';
+  eqRenderSlot('eq-photo-slot','photo');eqRenderSlot('eq-toollic-slot','toolLicensePhoto');eqRenderSlot('eq-driverlic-slot','driverLicensePhoto');eqRenderSlot('eq-insurance-slot','insurancePhoto');
+}
+function delEquipment(id){var list=getEquipment();var e=list.find(function(x){return x.id===id;});if(!e)return;if(!confirm((APP.lang==='ar'?'حذف الآلية؟':'למחוק את הכלי?')+' '+eqDisplayType(e)))return;list=list.filter(function(x){return x.id!==id;});if(!saveJSON('dk_equipment',list)){toast(T('saveFailFull'),6000);return;}var ent={id:id};cloudDelete('equipment',ent);renderEquipment();toast(T('deleted'));}
+function eqDocBadge(labelKey,dateStr){
+  var st=eqExpStatus(dateStr);
+  var color=st==='expired'?'var(--red)':st==='soon'?'var(--orange)':st==='ok'?'var(--green)':'var(--sub)';
+  var txt=st==='expired'?T('eqExpired'):st==='soon'?T('eqSoon'):st==='ok'?T('eqValid'):T('eqMissing');
+  return '<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;"><span style="color:var(--sub);">'+T(labelKey)+(dateStr?' · '+esc(dateStr):'')+'</span><span style="color:'+color+';font-weight:800;">'+txt+'</span></div>';
+}
+function renderEquipment(){
+  var el=document.getElementById('eq-list');if(!el)return;var list=getEquipment();
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--sub);white-space:pre-line;">'+T('eqEmpty')+'</div>';return;}
+  var PAGE=20;var shown=Math.min((APP.eqPage||1)*PAGE,list.length);var h='';
+  list.slice(0,shown).forEach(function(e){
+    var worst=eqWorstStatus(e);var bar=worst==='expired'?'var(--red)':worst==='soon'?'var(--orange)':'var(--green)';
+    h+='<div class="card" style="border-'+(APP.lang==='ar'?'left':'right')+':4px solid '+bar+';">'
+      +'<div style="display:flex;gap:10px;align-items:center;">'
+      +(e.photo?'<img src="'+e.photo+'" style="width:54px;height:54px;object-fit:cover;border-radius:8px;flex-shrink:0;">':'<div style="width:54px;height:54px;border-radius:8px;background:var(--container);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🚜</div>')
+      +'<div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:16px;">'+esc(eqDisplayType(e))+(e.name?' · '+esc(e.name):'')+'</div>'+(e.operator?'<div style="font-size:13px;color:var(--sub);">👷 '+esc(e.operator)+'</div>':'')+'</div>'
+      +'</div>'
+      +'<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px;">'+eqDocBadge('eqToolLic',e.toolLicenseExp)+eqDocBadge('eqDriverLic',e.driverLicenseExp)+eqDocBadge('eqInsurance',e.insuranceExp)+'</div>'
+      +'<div style="display:flex;gap:8px;margin-top:8px;">'
+      +'<button onclick="editEquipment('+e.id+')" style="flex:1;border:1.5px solid var(--border);border-radius:8px;background:#fff;padding:8px;font-weight:700;cursor:pointer;color:var(--blue);font-family:inherit;">✏️ '+T('eqEditBtn')+'</button>'
+      +'<button onclick="delEquipment('+e.id+')" style="border:1.5px solid var(--border);border-radius:8px;background:#fff;padding:8px 14px;cursor:pointer;color:var(--red);font-family:inherit;">🗑️</button>'
+      +'</div></div>';
+  });
+  if(shown<list.length)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.eqPage=(APP.eqPage||1)+1;renderEquipment();">'+T('loadMore')+' ('+(list.length-shown)+')</button>';
   el.innerHTML=h;
 }
 
@@ -3081,6 +3252,7 @@ var ALL_FEATURES=[
   {k:'modOnboard',he:'קליטת עובדים זרים',ar:'استقبال العمال الأجانب',def:false},
   {k:'modContractors',he:'קבלני משנה',ar:'مقاولو الباطن',def:false},
   {k:'modPermits',he:'היתרי עבודה',ar:'تصاريح العمل',def:false},
+  {k:'modEquipment',he:'כלים וציוד',ar:'المعدات والآليات',def:false},
   {k:'messages',he:'הודעות מהמשרד',ar:'رسائل المكتب',def:true},
   {k:'supervisorApproval',he:'אישור פיקוח ביומן',ar:'مصادقة المشرف',def:false},
   {k:'safetyStages',he:'שאלות בטיחות לפי שלב',ar:'أسئلة سلامة حسب المرحلة',def:false},
@@ -3103,6 +3275,7 @@ function applyFeatures(){
   var ho=document.getElementById('home-mod-onboard');if(ho)ho.style.display=isFeatureOn('modOnboard')?'':'none';
   var hc=document.getElementById('home-mod-contractors');if(hc)hc.style.display=isFeatureOn('modContractors')?'':'none';
   var hpm=document.getElementById('home-mod-permits');if(hpm)hpm.style.display=isFeatureOn('modPermits')?'':'none';
+  var heq=document.getElementById('home-mod-equipment');if(heq)heq.style.display=isFeatureOn('modEquipment')?'':'none';
   if(typeof updateReminderBadge==='function')updateReminderBadge();
   updateMsgBanner();
   var act=document.querySelector('.screen.active');
