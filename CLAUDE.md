@@ -93,7 +93,8 @@
 - 9 מומחים (`DK_SKILLS`): documents(כולל SOP), risk, summary(כולל meeting→actions), premortem, decision, contract, negotiation, hr(כולל hiring-kit), collection.
 - ניתוב לפי כוונה: `pickExpertDK(text)` (ניקוד מילות-מפתח, מילה שלמה×3). צ'יפים לבחירה ידנית (`expChip`).
 - הזרקת הקשר אתר: `dkBusinessContext()` (חברה/פרויקט/מנהל/ליקויים פתוחים) → `dkBuildSystemPrompt(exp)`.
-- **המודל מחובר (קוד) ל-Firebase AI Logic/Gemini**: `runModel` מאציל ל-`window._dkRunModel` (אינסטנס AI מבודד 11.x, lazy, מודל `gemini-2.0-flash`), בועת "חושב…", fallback בטוח. **דורש הפעלת AI Logic בקונסול** כדי לפעול חי (אחרת מציג "לא מחובר"). נבדק: ניתוב, הזרקת הקשר, האצלה/תשובה/fallback/throw-safe.
+- **המודל מחובר ופועל חי (28-29.06.2026):** `runModel`→`window._dkRunModel` (אינסטנס AI מבודד `dkAI`, lazy). **תוקן:** הגרסה הייתה `11.3.0` שבה `firebase-ai.js` לא קיים → הייבוא נכשל תמיד ("לא מחובר") → שונה ל-**`11.10.0`**. ה-backend שונה מ-`GoogleAIBackend` (Gemini Developer API — דרש קרדיט מראש, 429 בישראל) ל-**`VertexAIBackend`** (חיוב דרך Blaze). הדגם שונה מ-`gemini-2.0-flash` (404 לא זמין ב-Vertex) ל-**`gemini-2.5-flash`**. יורם הפעיל Vertex AI API בקונסול. נבדק חי: תשובה אמיתית מלאה. fallback בטוח ל"לא מחובר" אם נכשל.
+- **התראות תפוגה דו-שלביות (29.06.2026):** `expStage`/`expDaysLeft`/`expAlert` — לכל תאריך סיום: 🔔 חודש לפני, ⚠️ "תזכורת שנייה...טרם טופל" ב≤14 יום, 🔴 פג. חל ב-`getSmartAlerts` על כלים (3 תאריכים), אישור-גובה בקליטת עובד (`heightExp`), והיתרי עבודה (`validUntil`). poll-based (מופיע בתזכורות+תג בית בכניסה לאפליקציה — לא push אמיתי). `eqExpStatus` מאציל ל-`expStage`.
 - **Phone Auth (אופציונלי, מבודד)**: כפתור בהגדרות `openPhoneSecure` → `_dkSendSmsCode`/`_dkVerifySmsCode` (RecaptchaVerifier בלתי-נראה). דורש הפעלת Phone provider. graceful אם כבוי.
 - **ייצוא CSV**: `dkExportCSV('defects'|'journals')` — BOM לאקסל-עברית. **ניקוי base64**: `_dkTrimPhotos` (שומר 15 אחרונות, מסיר ישנות שכבר בענן).
 
