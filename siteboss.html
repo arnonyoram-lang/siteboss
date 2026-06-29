@@ -3508,7 +3508,7 @@ if (FIREBASE_CONFIG && FIREBASE_CONFIG.projectId) {
           const aiMod = await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-ai.js");
           var aiApp; try{ aiApp = appMod11.getApp('dkAI'); }catch(e){ aiApp = appMod11.initializeApp(FIREBASE_CONFIG, 'dkAI'); }
           const ai = aiMod.getAI(aiApp, { backend: new aiMod.VertexAIBackend() });
-          return aiMod.getGenerativeModel(ai, { model: 'gemini-2.0-flash' });
+          return aiMod.getGenerativeModel(ai, { model: 'gemini-2.5-flash' });
         })();
       }
       return window.__dkAIModelP
