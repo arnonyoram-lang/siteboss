@@ -553,6 +553,14 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
       <input type="file" id="ob-photo-input" accept="image/*" capture="environment" style="display:none" onchange="handleObPhoto(event)">
     </div>
     <div class="card">
+      <div class="card-title">🪜 <span data-t="obHeightTitle"></span></div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:8px;" data-t="obHeightHint"></div>
+      <div class="photos-grid" id="ob-height-grid" style="grid-template-columns:1fr;"></div>
+      <input type="file" id="ob-height-input" accept="image/*" style="display:none" onchange="handleObHeightPhoto(event)">
+      <label class="card-title" style="font-size:13px;margin-top:10px;color:var(--sub);" data-t="obHeightExp"></label>
+      <input id="ob-height-exp" type="date">
+    </div>
+    <div class="card">
       <div class="card-title" data-t="obLang"></div>
       <div class="stage-chips" id="ob-lang-chips"></div>
     </div>
@@ -1039,7 +1047,7 @@ incHistTitle:'אירועים שדווחו',incHistEmpty:'לא דווחו איר�
 btn7Title:'קליטת עובד זר',btn7Desc:'אישור עבודה ← תדריך בטיחות בשפת האם ← חתימה',
 obTitle:'קליטת עובדים זרים',obAddBtn:'➕ קלוט עובד חדש',obListTitle:'עובדים שנקלטו',obEmpty:'עדיין לא נקלטו עובדים',
 obNewTitle:'קליטת עובד חדש',obName:'שם העובד',obNamePh:'שם מלא',obPermit:'מספר אישור עבודה / דרכון',obPermitPh:'מספר מסמך',
-obPermitPhoto:'צילום האישור / דרכון',obLang:'שפת האם של העובד',obBriefTitle:'תדריך בטיחות — הצג לעובד בשפתו',
+obPermitPhoto:'צילום האישור / דרכון',obHeightTitle:'אישור עבודה בגובה',obHeightHint:'צלם את האישור או הוסף מסמך קיים (תמונה)',obHeightExp:'תוקף עד (אופציונלי)',obHeightShort:'אישור גובה',obLang:'שפת האם של העובד',obBriefTitle:'תדריך בטיחות — הצג לעובד בשפתו',
 obSignTitle:'חתימת העובד — הבנתי את הוראות הבטיחות',obSignHint:'העובד חותם לאישור שהבין את התדריך',
 obSave:'✅ סיים קליטה ושמור',obSaved:'✅ העובד נקלט בהצלחה',obNeedName:'יש להזין שם עובד',obNeedSign:'העובד צריך לחתום',
 obSignedOn:'נקלט: ',obLangLabel:'שפה: ',
@@ -1175,7 +1183,7 @@ incHistTitle:'الأحداث المبلّغ عنها',incHistEmpty:'لم يتم 
 btn7Title:'استقبال عامل أجنبي',btn7Desc:'تصريح عمل ← تعليمات سلامة بلغته ← توقيع',
 obTitle:'استقبال العمال الأجانب',obAddBtn:'➕ استقبل عاملاً جديداً',obListTitle:'العمال المستقبَلون',obEmpty:'لم يتم استقبال عمال بعد',
 obNewTitle:'استقبال عامل جديد',obName:'اسم العامل',obNamePh:'الاسم الكامل',obPermit:'رقم تصريح العمل / جواز السفر',obPermitPh:'رقم المستند',
-obPermitPhoto:'صورة التصريح / الجواز',obLang:'اللغة الأم للعامل',obBriefTitle:'تعليمات السلامة — اعرضها على العامل بلغته',
+obPermitPhoto:'صورة التصريح / الجواز',obHeightTitle:'تصريح العمل على ارتفاع',obHeightHint:'صوّر التصريح أو أضف مستنداً موجوداً (صورة)',obHeightExp:'صالح حتى (اختياري)',obHeightShort:'تصريح ارتفاع',obLang:'اللغة الأم للعامل',obBriefTitle:'تعليمات السلامة — اعرضها على العامل بلغته',
 obSignTitle:'توقيع العامل — فهمت تعليمات السلامة',obSignHint:'يوقّع العامل لتأكيد فهمه التعليمات',
 obSave:'✅ أنهِ الاستقبال واحفظ',obSaved:'✅ تم استقبال العامل بنجاح',obNeedName:'يرجى إدخال اسم العامل',obNeedSign:'يجب أن يوقّع العامل',
 obSignedOn:'استُقبل: ',obLangLabel:'اللغة: ',
@@ -1841,12 +1849,13 @@ var SAFETY_BRIEF={
   th:'คำแนะนำความปลอดภัยในไซต์:\n• สวมหมวกนิรภัยและรองเท้านิรภัยเสมอ\n• ใช้เข็มขัดนิรภัยเมื่อทำงานสูงเกิน 2 เมตร\n• ห้ามแตะไฟฟ้า/เครื่องจักรโดยไม่ได้รับอนุญาต\n• แจ้งอันตรายหรือการบาดเจ็บทันที\n• ปฏิบัติตามคำสั่งของผู้จัดการไซต์',
   tr:'Şantiye güvenlik talimatları:\n• Baret ve güvenlik ayakkabısı her zaman zorunlu\n• 2 m üzeri yükseklikte emniyet kemeri\n• İzinsiz elektrik/makineye dokunmayın\n• Her tehlike veya yaralanmayı derhal bildirin\n• Şantiye şefinin talimatlarına uyun'
 };
-var _obLang='ar',_obPhoto=null,obSignPad=null;
+var _obLang='ar',_obPhoto=null,_obHeightPhoto=null,obSignPad=null;
 function initOnboard(){
-  _obLang='ar';_obPhoto=null;
+  _obLang='ar';_obPhoto=null;_obHeightPhoto=null;
   document.getElementById('ob-name').value='';document.getElementById('ob-permit').value='';
+  var he=document.getElementById('ob-height-exp');if(he)he.value='';
   document.getElementById('ob-sign-hint').textContent=T('obSignHint');
-  renderObLangs();renderObPhoto();renderObBrief();
+  renderObLangs();renderObPhoto();renderObHeightPhoto();renderObBrief();
   obSignPad=attachSignPad(document.getElementById('ob-sign-canvas'));
 }
 function renderObLangs(){
@@ -1871,6 +1880,13 @@ function renderObPhoto(){
   if(_obPhoto)g.innerHTML='<div class="photo-thumb" style="aspect-ratio:16/10;"><img src="'+_obPhoto+'"><button class="photo-del" onclick="_obPhoto=null;renderObPhoto()">×</button></div>';
   else g.innerHTML='<div class="photo-add" style="aspect-ratio:16/6;" onclick="document.getElementById(\'ob-photo-input\').click()"><span class="photo-add-icon">📷</span><span>+</span></div>';
 }
+// אישור עבודה בגובה — צילום או הוספת מסמך קיים (accept=image/* ללא capture → מצלמה או בחירת קובץ)
+function handleObHeightPhoto(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){_obHeightPhoto=ev.target.result;renderObHeightPhoto();};r.readAsDataURL(f);e.target.value='';}
+function renderObHeightPhoto(){
+  var g=document.getElementById('ob-height-grid');if(!g)return;
+  if(_obHeightPhoto)g.innerHTML='<div class="photo-thumb" style="aspect-ratio:16/10;"><img src="'+_obHeightPhoto+'"><button class="photo-del" onclick="_obHeightPhoto=null;renderObHeightPhoto()">×</button></div>';
+  else g.innerHTML='<div class="photo-add" style="aspect-ratio:16/6;" onclick="document.getElementById(\'ob-height-input\').click()"><span class="photo-add-icon">📷</span><span>+</span></div>';
+}
 function clearObSign(){if(obSignPad)obSignPad.clear();}
 function getOnboarded(){return loadJSON('dk_onboard',[]);}
 function saveOnboard(){
@@ -1880,6 +1896,7 @@ function saveOnboard(){
   var s=APP.settings||{};
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),name:name,
     permit:document.getElementById('ob-permit').value.trim(),permitPhoto:_obPhoto||null,
+    heightPhoto:_obHeightPhoto||null,heightExp:document.getElementById('ob-height-exp').value||'',
     lang:_obLang,signature:obSignPad.dataURL(),project:s.projectName||'',by:s.managerName||''};
   var list=getOnboarded();list.unshift(entry);
   if(!saveJSON('dk_onboard',list)){toast(T('saveFailFull'),6000);return;}
@@ -1893,7 +1910,9 @@ function renderOnboardList(){
   var PAGE=20;var shown=Math.min((APP.obPage||1)*PAGE,list.length);var h='';list.slice(0,shown).forEach(function(e){
     h+='<div style="display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--border);">'
       +'<span style="font-size:22px;">🪪</span>'
-      +'<div style="flex:1;"><div style="font-weight:700;">'+esc(e.name)+'</div><div style="font-size:12px;color:var(--sub);">'+T('obLangLabel')+obLangLabel(e.lang)+(e.permit?' · '+esc(e.permit):'')+' · '+new Date(e.ts).toLocaleDateString('he-IL')+'</div></div>'
+      +'<div style="flex:1;"><div style="font-weight:700;">'+esc(e.name)+'</div><div style="font-size:12px;color:var(--sub);">'+T('obLangLabel')+obLangLabel(e.lang)+(e.permit?' · '+esc(e.permit):'')+' · '+new Date(e.ts).toLocaleDateString('he-IL')+'</div>'
+      +(e.heightPhoto?'<div style="font-size:12px;margin-top:3px;color:'+(function(st){return st==='expired'?'var(--red)':st==='soon'?'var(--orange)':'var(--green)';})(eqExpStatus(e.heightExp))+';font-weight:700;">🪜 '+T('obHeightShort')+(e.heightExp?' · '+esc(e.heightExp):'')+'</div>':'')
+      +'</div>'
       +(e.signature?'<img src="'+e.signature+'" style="height:34px;border:1px solid var(--border);border-radius:6px;background:#fff;">':'')
       +'</div>';
   });
