@@ -1719,6 +1719,15 @@ function cloudSavePresence(){
   var list=getPresenceToday();
   try{window._dkSaveDoc('presence',(owner||'x')+'_'+isoDate(),{owner:owner,ownerName:s.managerName||'',project:s.projectName||'',date:isoDate(),workers:list,present:list.filter(function(p){return !p.outTs;}).length,total:list.length,cloudAt:new Date().toISOString()});}catch(e){}
 }
+// גיבוי-לאחור לענן: דוחף את כל הנתונים המקומיים שנשמרו לפני אימות הטלפון (ולכן לא הגיעו לענן). נקרא אחרי אימות SMS מוצלח.
+function _dkResyncAll(){
+  if(!window._dkSaveDoc)return 0;
+  var map={journals:'sb_journals',defects:'sb_defects',safety:'sb_safety',incidents:'dk_incidents',onboard:'dk_onboard',permits:'dk_permits',equipment:'dk_equipment'};
+  var n=0;
+  for(var coll in map){try{var list=loadJSON(map[coll],[]);if(list&&list.length)list.forEach(function(rec){if(rec&&rec.id){cloudSave(coll,rec);n++;}});}catch(e){}}
+  try{if(getPresenceToday().length){cloudSavePresence();n++;}}catch(e){}
+  return n;
+}
 function sharePresenceWA(){
   var list=getPresenceToday();var s=APP.settings||{};
   var msg='👷 *'+T('presTitle')+'*\n━━━━━━━━━━━\n🏗️ *'+(s.projectName||'')+'*\n📅 '+new Date().toLocaleDateString('he-IL')+'\n\n';
@@ -3174,6 +3183,8 @@ function phoneConfirmCode(){
   window._dkVerifySmsCode(code).then(function(phoneNum){
     try{localStorage.setItem('dk_phone_verified',phoneNum||((APP.settings||{}).managerPhone||'1'));}catch(e){}
     closeModal('modal-phone');reflectPhoneVerified();toast(T('phoneVerifiedOk'),4000);
+    // ברגע שאומת — דחוף לענן את כל מה שכבר נשמר מקומית (לפני האימות זה נחסם). דיליי קטן לוודא שה-token פעיל.
+    setTimeout(function(){try{var n=_dkResyncAll();if(n)toast(APP.lang==='ar'?('☁️ تتم مزامنة بياناتك للسحابة ('+n+')'):('☁️ הנתונים שלך עולים לענן ('+n+')'),5000);}catch(e){}},1500);
   }).catch(function(){toast(T('phoneBadCode'),4000);});
 }
 // ייצוא CSV (נפתח באקסל) — UTF-8 BOM לעברית, ציטוט בטוח
