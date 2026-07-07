@@ -434,9 +434,9 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
     <button class="btn btn-outline" style="margin-bottom:12px;min-height:46px;" onclick="copyYesterdayCrew()"><span data-t="sameCrew"></span></button>
     <div class="card">
       <div class="card-title" data-t="presAddTitle"></div>
-      <div class="form-group"><input id="pres-name" type="text" data-tp="presNamePh"></div>
+      <div class="form-group"><input id="pres-name" type="text" data-tp="presNamePh" list="pres-name-suggest" oninput="presNameChanged()" autocomplete="off"><datalist id="pres-name-suggest"></datalist></div>
       <div style="display:grid;grid-template-columns:1fr 120px;gap:10px;">
-        <div class="form-group"><input id="pres-trade" type="text" data-tp="presTradePh"></div>
+        <div class="form-group"><input id="pres-trade" type="text" data-tp="presTradePh" list="pres-trade-suggest" autocomplete="off"><datalist id="pres-trade-suggest"></datalist></div>
         <div class="form-group"><input id="pres-time" type="time" value="07:00" title="שעת כניסה"></div>
       </div>
       <button class="btn btn-blue" onclick="addPresence()"><span data-t="presAddBtn"></span></button>
@@ -1633,8 +1633,19 @@ function getPresenceToday(){return loadJSON(presKey(),[]);}
 function initPresence(){
   document.getElementById('pres-date-sub').textContent=new Date().toLocaleDateString(APP.lang==='ar'?'ar-IL':'he-IL',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('pres-name').value='';document.getElementById('pres-trade').value='';
-  renderPresence();
+  buildPresSuggest();renderPresence();
 }
+// השלמה אוטומטית: אוסף שמות+מקצועות מ-60 הימים האחרונים ומהעובדים שנקלטו → מקפיץ שם קיים
+var _presKnown={};
+function buildPresSuggest(){
+  var names={},trades={};_presKnown={};
+  for(var i=0;i<60;i++){var d=new Date();d.setDate(d.getDate()-i);var l=loadJSON('pres_'+isoDate(d),null);if(l)l.forEach(function(p){if(p.name){names[p.name]=1;if(p.trade&&!_presKnown[p.name])_presKnown[p.name]=p.trade;}if(p.trade)trades[p.trade]=1;});}
+  try{getOnboarded().forEach(function(o){if(o.name)names[o.name]=1;});}catch(e){}
+  var nd=document.getElementById('pres-name-suggest');if(nd)nd.innerHTML=Object.keys(names).map(function(n){return '<option value="'+esc(n)+'"></option>';}).join('');
+  var td=document.getElementById('pres-trade-suggest');if(td)td.innerHTML=Object.keys(trades).map(function(t){return '<option value="'+esc(t)+'"></option>';}).join('');
+}
+// כשבוחרים שם קיים — משלים אוטומטית את המקצוע הידוע (אם השדה ריק)
+function presNameChanged(){var n=(document.getElementById('pres-name').value||'').trim();var tr=document.getElementById('pres-trade');if(tr&&!tr.value&&_presKnown[n])tr.value=_presKnown[n];}
 // שעת הכניסה מהשדה (ברירת מחדל 07:00) → timestamp של היום
 function presInTimestamp(){
   var t=(document.getElementById('pres-time')||{}).value||'07:00';
