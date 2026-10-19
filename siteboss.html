@@ -1333,6 +1333,75 @@ function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):
   try{toast(APP.lang==='ar'?'⚠️ بيانات تالفة — تم حفظ نسخة احتياطية':'⚠️ נתונים פגומים — נשמר גיבוי',6000);}catch(_){}
   return d;
 }}
+// ===== כספת תמונות (IndexedDB) — צילומי מסמכים של עובדים וכלים יוצאים מ-localStorage =====
+// localStorage מוגבל ל-~5MB לכל האפליקציה, וכל עובד נקלט עם 2 צילומי מסמכים (~250KB) → אחרי כמה עשרות עובדים
+// "הזיכרון מלא" ואי אפשר לקלוט עוד. כאן התמונות נשמרות ב-IndexedDB (מכסה גדולה פי מאות), ובאחסון המקומי נשאר
+// רק <שדה>Ref. המטמון בזיכרון (DKV.cache) שומר על הצגה סינכרונית: getOnboarded/getEquipment מחזירים רשומות מלאות.
+var DKV={cache:{},ok:false,db:null};
+DKV.ready=new Promise(function(res){
+  try{
+    if(!window.indexedDB){res(false);return;}
+    var rq=indexedDB.open('dk_vault',1);
+    rq.onupgradeneeded=function(){try{rq.result.createObjectStore('photos');}catch(e){}};
+    rq.onerror=function(){res(false);};
+    rq.onsuccess=function(){
+      DKV.db=rq.result;
+      DKV.db.onversionchange=function(){try{DKV.db.close();}catch(e){}DKV.ok=false;}; // לא לחסום טאב/גרסה חדשה
+      try{var cur=DKV.db.transaction('photos','readonly').objectStore('photos').openCursor();
+        cur.onsuccess=function(){var c=cur.result;if(c){DKV.cache[c.key]=c.value;c.continue();}else{DKV.ok=true;res(true);}};
+        cur.onerror=function(){res(false);};
+      }catch(e){res(false);}
+    };
+  }catch(e){res(false);}
+});
+function _dkvWrite(fn){return new Promise(function(res,rej){try{var tx=DKV.db.transaction('photos','readwrite');fn(tx.objectStore('photos'));tx.oncomplete=function(){res(true);};tx.onerror=tx.onabort=function(){rej(tx.error);};}catch(e){rej(e);}});}
+// שדות שעוברים לכספת: תמונה בודדת (photo / *Photo) וחתימה (signature) — כל אחד base64 כבד
+function _dkIsVaultField(k){return k==='photo'||k==='signature'||/Photo$/.test(k);}
+// רשומה מלאה → עותק רזה לאחסון המקומי: תמונה חדשה נכתבת לכספת ומוחלפת בהפניה. אם הכספת לא זמינה —
+// מחזיר את הרשומה כמו שהיא (base64 בתוכה, כמו קודם) כדי לא לאבד כלום.
+function dkVaultOut(coll,rec){
+  if(!rec||!DKV.ok)return Promise.resolve(rec);
+  var copy={},puts={},n=0,k;
+  for(k in rec)copy[k]=rec[k];
+  for(k in rec){
+    var v=rec[k];if(!_dkIsVaultField(k)||typeof v!=='string'||v.indexOf('data:')!==0)continue;
+    var ref=rec[k+'Ref'];
+    if(!(ref&&DKV.cache[ref]===v)){ref=coll+'_'+rec.id+'_'+k;puts[ref]=v;n++;}
+    copy[k]=null;copy[k+'Ref']=ref;
+  }
+  if(!n)return Promise.resolve(copy);
+  return _dkvWrite(function(st){for(var key in puts)st.put(puts[key],key);})
+    .then(function(){for(var key in puts)DKV.cache[key]=puts[key];return copy;},function(){return rec;});
+}
+// הפניות → תמונות (מהמטמון) להצגה
+function dkVaultIn(rec){
+  if(!rec)return rec;var out=null;
+  for(var k in rec){
+    if(!/Ref$/.test(k))continue;var f=k.slice(0,-3);
+    if(_dkIsVaultField(f)&&!rec[f]&&DKV.cache[rec[k]]){if(!out){out={};for(var j in rec)out[j]=rec[j];}out[f]=DKV.cache[rec[k]];}
+  }
+  return out||rec;
+}
+function _dkRefsOf(list){var s={};(list||[]).forEach(function(r){for(var k in r)if(/Ref$/.test(k)&&_dkIsVaultField(k.slice(0,-3))&&r[k])s[r[k]]=1;});return s;}
+// שמירת רשימה (עובדים/כלים): התמונות לכספת, לאחסון המקומי רק הפניות. מחזיר Promise<האם נשמר>.
+// אחרי שמירה מוצלחת — מוחק מהכספת תמונות שאף רשומה כבר לא מפנה אליהן (רשומה שנמחקה / תמונה שהוסרה בעריכה).
+function dkSaveVaulted(key,coll,list){
+  return Promise.all(list.map(function(r){return dkVaultOut(coll,r);})).then(function(lean){
+    var old=_dkRefsOf(loadJSON(key,[]));
+    if(!saveJSON(key,lean))return false;
+    var now=_dkRefsOf(lean),gone=Object.keys(old).filter(function(x){return !now[x];});
+    if(gone.length&&DKV.ok)_dkvWrite(function(st){gone.forEach(function(x){st.delete(x);});}).then(function(){gone.forEach(function(x){delete DKV.cache[x];});},function(){});
+    return true;
+  });
+}
+// מיגרציה בהפעלה: base64 ישן של עובדים/כלים → כספת. משחרר מיד מקום אצל מי שכבר נתקע ב"זיכרון מלא".
+function dkVaultMigrate(){
+  [['dk_onboard','onboard'],['dk_equipment','equipment']].forEach(function(p){
+    var list=loadJSON(p[0],null);if(!Array.isArray(list))return;
+    var need=list.some(function(r){for(var k in r)if(_dkIsVaultField(k)&&typeof r[k]==='string'&&r[k].indexOf('data:')===0)return true;return false;});
+    if(need)dkSaveVaulted(p[0],p[1],list.map(dkVaultIn));
+  });
+}
 // מראה רשומה ל-Firebase (ללא תמונות כבדות — אלו יעברו ל-Storage בהמשך). חתימות נשמרות.
 // מיפוי שם-אוסף-ענן → מפתח localStorage (כדי לעדכן את הרשומה המקומית עם כתובות הענן)
 var DK_COLL_KEY={journals:'sb_journals',defects:'sb_defects',safety:'sb_safety',incidents:'dk_incidents',onboard:'dk_onboard',permits:'dk_permits'};
@@ -1380,7 +1449,8 @@ function cloudSave(coll,entry){
   var s=APP.settings||{};var owner=(s.managerPhone||'').replace(/\D/g,'');
   var docId=(owner||'x')+'_'+entry.id;
   // השמט שדות base64 כבדים מהמסמך בענן (מגבלת 1MB ל-doc): מערך photos, וכן שדות photo/*Photo (כלים)
-  var copy={};for(var k in entry){if(k==='photos'||k==='photo'||/Photo$/.test(k))continue;copy[k]=entry[k];}
+  entry=dkVaultIn(entry);                                   // רשומה מהתור/מיגרציה מחזיקה הפניות לכספת → להחזיר את החתימה לפני שליחה
+  var copy={};for(var k in entry){if(k==='photos'||k==='photo'||/Photo$/.test(k)||(/Ref$/.test(k)&&_dkIsVaultField(k.slice(0,-3))))continue;copy[k]=entry[k];}
   if(entry.photos)copy.photoCount=entry.photos.length;
   copy.owner=owner;copy.ownerName=s.managerName||'';copy.project=s.projectName||'';
   copy.cloudAt=new Date().toISOString();
@@ -1949,20 +2019,23 @@ function renderObHeightPhoto(){
   else g.innerHTML='<div class="photo-add" style="aspect-ratio:16/6;" onclick="document.getElementById(\'ob-height-input\').click()"><span class="photo-add-icon">📷</span><span>+</span></div>';
 }
 function clearObSign(){if(obSignPad)obSignPad.clear();}
-function getOnboarded(){return loadJSON('dk_onboard',[]);}
+function getOnboarded(){return loadJSON('dk_onboard',[]).map(dkVaultIn);}
 function saveOnboard(){
   var name=document.getElementById('ob-name').value.trim();
   if(!name){toast(T('obNeedName'));return;}
   if(!obSignPad||obSignPad.isEmpty()){toast(T('obNeedSign'));return;}
+  if(!dkOnce('ob'))return;
   var s=APP.settings||{};
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),name:name,workerType:_obType,
     permit:document.getElementById('ob-permit').value.trim(),permitPhoto:_obPhoto||null,
     heightPhoto:_obHeightPhoto||null,heightExp:document.getElementById('ob-height-exp').value||'',
     lang:_obLang,signature:obSignPad.dataURL(),project:s.projectName||'',by:s.managerName||''};
   var list=getOnboarded();list.unshift(entry);
-  if(!saveJSON('dk_onboard',list)){toast(T('saveFailFull'),6000);return;}
-  cloudSave('onboard',entry);
-  toast(T('obSaved'),3000);showScreen('s-onboard');
+  dkSaveVaulted('dk_onboard','onboard',list).then(function(ok){
+    if(!ok){APP._b_ob=false;toast(T('saveFailFull'),6000);return;}
+    cloudSave('onboard',entry);
+    toast(T('obSaved'),3000);showScreen('s-onboard');
+  });
 }
 // כרטיס עובד מלא — נפתח בלחיצה על שורה ברשימה
 function viewOnboard(id){
@@ -1981,9 +2054,11 @@ function viewOnboard(id){
 function delOnboard(id){
   var list=getOnboarded();var e=list.find(function(x){return x.id===id;});if(!e)return;
   if(!confirm((APP.lang==='ar'?'حذف العامل ':'למחוק את העובד ')+(e.name||'')+'?'))return;
-  if(!saveJSON('dk_onboard',list.filter(function(x){return x.id!==id;}))){toast(T('saveFailFull'),6000);return;}
-  cloudDelete('onboard',{id:id});
-  showScreen('s-onboard');renderOnboardList();toast(T('deleted'));
+  dkSaveVaulted('dk_onboard','onboard',list.filter(function(x){return x.id!==id;})).then(function(ok){
+    if(!ok){toast(T('saveFailFull'),6000);return;}
+    cloudDelete('onboard',{id:id});
+    showScreen('s-onboard');renderOnboardList();toast(T('deleted'));
+  });
 }
 function obLangLabel(k){for(var i=0;i<OB_LANGS.length;i++)if(OB_LANGS[i].k===k)return (APP.lang==='ar'?OB_LANGS[i].l:OB_LANGS[i].he);return k;}
 function renderOnboardList(){
@@ -1994,7 +2069,7 @@ function renderOnboardList(){
     h+='<div onclick="viewOnboard('+e.id+')" style="display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--border);cursor:pointer;">'
       +'<span style="font-size:22px;">'+(e.workerType==='israeli'?'🇮🇱':'🌍')+'</span>'
       +'<div style="flex:1;min-width:0;"><div style="font-weight:700;">'+esc(e.name)+'</div><div style="font-size:12px;color:var(--sub);">'+meta+(e.permit?' · '+esc(e.permit):'')+' · '+new Date(e.ts).toLocaleDateString('he-IL')+'</div>'
-      +(e.heightPhoto?'<div style="font-size:12px;margin-top:3px;color:'+(function(st){return st==='expired'?'var(--red)':st==='soon'?'var(--orange)':'var(--green)';})(eqExpStatus(e.heightExp))+';font-weight:700;">🪜 '+T('obHeightShort')+(e.heightExp?' · '+esc(e.heightExp):'')+'</div>':'')
+      +((e.heightPhoto||e.heightPhotoRef)?'<div style="font-size:12px;margin-top:3px;color:'+(function(st){return st==='expired'?'var(--red)':st==='soon'?'var(--orange)':'var(--green)';})(eqExpStatus(e.heightExp))+';font-weight:700;">🪜 '+T('obHeightShort')+(e.heightExp?' · '+esc(e.heightExp):'')+'</div>':'')
       +'</div>'
       +'<span style="color:var(--sub);font-size:22px;flex-shrink:0;">'+(APP.lang==='ar'?'‹':'›')+'</span>'
       +'</div>';
@@ -2102,7 +2177,7 @@ function renderPermitsHistory(){
 
 // ===================== כלים וציוד (#18) — רישיונות+ביטוח עם התראת תפוגה =====================
 var EQ_TYPES=[{k:'excavator',l:'eqTExcavator'},{k:'loader',l:'eqTLoader'},{k:'crane',l:'eqTCrane'},{k:'lift',l:'eqTLift'},{k:'truck',l:'eqTTruck'},{k:'forklift',l:'eqTForklift'},{k:'roller',l:'eqTRoller'},{k:'other',l:'eqTOther'}];
-function getEquipment(){return loadJSON('dk_equipment',[]);}
+function getEquipment(){return loadJSON('dk_equipment',[]).map(dkVaultIn);}
 function eqTypeLabel(k){for(var i=0;i<EQ_TYPES.length;i++)if(EQ_TYPES[i].k===k)return T(EQ_TYPES[i].l);return k;}
 function eqDisplayType(e){return e.typeKey==='other'?(e.typeOther||T('eqTOther')):eqTypeLabel(e.typeKey);}
 // סטטוס תפוגה: none/ok/soon(≤30 יום)/expired — לפי תאריך מקומי
@@ -2159,9 +2234,11 @@ function saveEquipment(){
   var list=getEquipment();
   if(APP._eqEditId){var f=false;for(var i=0;i<list.length;i++){if(list[i].id===APP._eqEditId){list[i]=entry;f=true;break;}}if(!f)list.unshift(entry);}
   else list.unshift(entry);
-  if(!saveJSON('dk_equipment',list)){APP._b_eq=false;toast(T('saveFailFull'),6000);return;} // שחרר את מנעול הלחיצה-כפולה כדי לאפשר ניסיון חוזר מיידי
-  cloudSave('equipment',entry);
-  toast(T('saved'));showScreen('s-equipment');
+  dkSaveVaulted('dk_equipment','equipment',list).then(function(ok){
+    if(!ok){APP._b_eq=false;toast(T('saveFailFull'),6000);return;} // שחרר את מנעול הלחיצה-כפולה כדי לאפשר ניסיון חוזר מיידי
+    cloudSave('equipment',entry);
+    toast(T('saved'));showScreen('s-equipment');
+  });
 }
 function editEquipment(id){
   var e=getEquipment().find(function(x){return x.id===id;});if(!e)return;
@@ -2178,7 +2255,7 @@ function editEquipment(id){
   document.getElementById('eq-insurance-exp').value=e.insuranceExp||'';
   eqRenderSlot('eq-photo-slot','photo');eqRenderSlot('eq-toollic-slot','toolLicensePhoto');eqRenderSlot('eq-driverlic-slot','driverLicensePhoto');eqRenderSlot('eq-insurance-slot','insurancePhoto');
 }
-function delEquipment(id){var list=getEquipment();var e=list.find(function(x){return x.id===id;});if(!e)return;if(!confirm((APP.lang==='ar'?'حذف الآلية؟':'למחוק את הכלי?')+' '+eqDisplayType(e)))return;list=list.filter(function(x){return x.id!==id;});if(!saveJSON('dk_equipment',list)){toast(T('saveFailFull'),6000);return;}var ent={id:id};cloudDelete('equipment',ent);renderEquipment();toast(T('deleted'));}
+function delEquipment(id){var list=getEquipment();var e=list.find(function(x){return x.id===id;});if(!e)return;if(!confirm((APP.lang==='ar'?'حذف الآلية؟':'למחוק את הכלי?')+' '+eqDisplayType(e)))return;list=list.filter(function(x){return x.id!==id;});dkSaveVaulted('dk_equipment','equipment',list).then(function(ok){if(!ok){toast(T('saveFailFull'),6000);return;}cloudDelete('equipment',{id:id});renderEquipment();toast(T('deleted'));});}
 function eqDocBadge(labelKey,dateStr){
   var st=eqExpStatus(dateStr);
   var color=st==='expired'?'var(--red)':st==='soon'?'var(--orange)':st==='ok'?'var(--green)':'var(--sub)';
@@ -3412,6 +3489,15 @@ function init(){
     try{toast('שגיאה זמנית — נסה לרענן');}catch(_){}
   }
   try{ dkOfflineWatch(); }catch(_){}
+  // כספת התמונות מוכנה → העברת base64 ישן של עובדים/כלים + רענון מסך פתוח (שהתמונות יופיעו)
+  try{ DKV.ready.then(function(ok){
+    if(!ok)return;
+    try{ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist(); }catch(_){}
+    dkVaultMigrate();
+    var a=document.querySelector('.screen.active');if(!a)return;
+    if(a.id==='s-onboard')renderOnboardList();
+    if(a.id==='s-equipment')renderEquipment();
+  }); }catch(_){}
 }
 // תנאי שימוש ופרטיות — טקסט פשוט (תבנית; מומלץ אישור עו"ד לפני פרסום מסחרי)
 function renderLegal(){

@@ -8,7 +8,7 @@
 משתמש: יורם. בעל הריפו ב-GitHub: `arnonyoram-lang`.
 
 ## קבצים
-- `siteboss.html` — קובץ המקור (Single Page App: CSS+HTML+JS inline, ~1300 שורות)
+- `siteboss.html` — קובץ המקור (Single Page App: CSS+HTML+JS inline, ~3700 שורות)
 - `index.html` — **עותק זהה** ל-siteboss.html. **כלל ברזל: אחרי כל עריכה של siteboss.html יש להעתיק ל-index.html** (`cp siteboss.html index.html`) ואז commit+push לשניהם.
 - `admin.html` — עמוד ניהול אדמין נפרד (מוכן Firebase)
 - `manifest.json` — PWA
@@ -28,7 +28,13 @@
 - **אדמין בזמן אמת (יוני 2026):** `loadUsers` עבר מ-`getDocs` חד-פעמי ל-`onSnapshot` (`_usersUnsub`) — מנהל שנרשם מופיע מיד בלי רענון.
 - **סיכום יום למשרד (יוני 2026):** כפתור `home-digest-btn` בבית (אחרי שורת הסטטיסטיקות) → `sendDailyDigest()` אוסף בלחיצה אחת את נתוני **היום** (נוכחות+מי באתר, יומן עבודה+סה"כ עובדים+עיכובים, בטיחות תקין/מס' ליקויים, ליקויים פתוחים/חדשים-היום/טופלו-היום + פירוט עד 5 דחופים) להודעת וואטסאפ אחת למשרד (`openOfficeWA`). דו-לשוני (ternary inline). guard: יום ריק → toast `digestEmpty`, לא פותח וואטסאפ. severity דחוף=`'urgent'`, זיהוי תיקון-היום=`d.fix.when===today`.
 - שיפורי UX (יוני 2026): "המשך מאתמול" ביומן (`copyLastJournal`/`setWorkers`), טיוטה אוטומטית (`saveJnlDraft`), מודל ליקוי עם שדות מקופלים (`setDefMore`) + צ'יפי יעד (`setDeadlineDays`) + שכפול (`duplicateDefect`) + חיוג, ❌ בטיחות פותח מצלמה (answerSQ), תגי ✓/מונה בבית (`setHomeBadge`), מיון כפתורים לפי שימוש (`bumpUsage`/`sortHomeButtons`), צוות-מאתמול בנוכחות (`copyYesterdayCrew`) + שעת כניסה 07:00 + עריכת שעה (`editPresTime`), רטט ב-toast.
-- **תמונות נשמרות base64 ב-localStorage** — סיכון אמיתי: מגבלת ~5MB, ו-`saveJSON` עושה `catch(e){}` ששובל שגיאות → אובדן נתונים שקט. לתקן כשעוברים ל-Firebase Storage.
+- **תמונות נשמרות base64 ב-localStorage** — סיכון אמיתי: מגבלת ~5MB. `saveJSON` כבר fail-loud (toast "הזיכרון מלא"). עובדים וכלים עברו לכספת (למטה); יומנים/ליקויים/בטיחות/אירועים (`photos[]`) עדיין ב-localStorage (נפרקים לענן רק אצל מי שאימת SMS).
+- **כספת תמונות IndexedDB (`DKV`, 19.10.2026) — תיקון "אי אפשר להוסיף עוד עובדים":** משתמש דיווח שלא מצליח לקלוט עוד עובדים. הסיבה: כל עובד ב-`dk_onboard` נשמר עם 2 צילומי מסמך + חתימה כ-base64 (~100–250K תווים) → אחרי ~20–50 עובדים localStorage מתמלא, `saveJSON` נכשל, והעצה "מחק דוחות ישנים" לא אפשרית (יומנים נעולים). שוחזר בבדיקה עם סימולטור מכסה 5MB: הגרסה הישנה נתקעה בעובד 23/49.
+  - הפתרון: מסד IndexedDB `dk_vault` (store `photos`). שדות `photo` / `*Photo` / `signature` של `dk_onboard` ו-`dk_equipment` נשמרים בכספת; ברשומה המקומית נשאר `<שדה>Ref` (מפתח `coll_id_field`).
+  - `DKV.cache` טוען את כל הכספת לזיכרון בהפעלה → `getOnboarded()`/`getEquipment()` מחזירים רשומות מלאות (`dkVaultIn`) וההצגה נשארת סינכרונית. שמירה רק דרך `dkSaveVaulted(key,coll,list)` (async; כותב לכספת → `saveJSON` → מנקה מהכספת הפניות שנעלמו). **לא לשמור רשימות אלה ב-`saveJSON` ישירות** — זה יחזיר base64 ל-localStorage.
+  - מיגרציה אוטומטית בהפעלה (`dkVaultMigrate` ב-`init`) — משחררת מקום אצל מי שכבר תקוע. כספת לא זמינה → נפילה להתנהגות הישנה (base64 בתוך הרשומה), בלי אובדן.
+  - `cloudSave` מחזיר את החתימה לרשומה (`dkVaultIn`) ומשמיט `*Ref` ותמונות. תמונות העובדים/כלים עדיין **לא** עולות ל-Storage (רק מטא+חתימה בענן).
+  - נבדק: 48 עובדים תקועים → אחרי עדכון 72K תווים, +300 עובדים (348) בלי שגיאה, ~400 תווים לעובד; כרטיס עובד מציג 3 תמונות אחרי רענון; מחיקה/עריכת כלי מנקים את הכספת.
 
 ## מצב Firebase — ✅ מחובר ופועל (siteboss-b2dd2)
 - פרויקט: `siteboss-b2dd2`. Web config מוטמע ב-`siteboss.html` (בלוק `FIREBASE_CONFIG` בסוף, script type=module) וב-`admin.html` (`DEFAULT_CONFIG`).
