@@ -3120,7 +3120,12 @@ function renderSQ(q,num){
   h+='<div class="sq-btns"><button class="sq-btn'+(ans==='ok'?' ok':'')+'" onclick="answerSQ(\''+q.qKey+'\',\'ok\')">✅ '+T('reportOk')+'</button>';
   h+='<button class="sq-btn'+(ans==='fail'?' fail':'')+'" onclick="answerSQ(\''+q.qKey+'\',\'fail\')">❌ '+T('reportFail')+'</button></div>';
   h+='<div class="sq-alert">⚠️ '+T(q.aKey)+'</div>';
-  if(ans==='fail')h+='<div style="margin-top:8px;"><input type="file" id="sqp_'+q.qKey+'" accept="image/*" style="display:none" onchange="handleSQPhoto(event,\''+q.qKey+'\')"><button class="btn btn-gray btn-sm" onclick="document.getElementById(\'sqp_'+q.qKey+'\').click()">📷 '+(APP.lang==='ar'?'إضافة صورة':'הוסף תמונה')+'</button></div>';
+  if(ans==='fail'){
+    var sp=APP.safetyPhotos[q.qKey];
+    h+='<div style="margin-top:8px;display:flex;gap:8px;align-items:center;">';
+    if(sp)h+='<div class="photo-thumb" style="width:72px;height:72px;flex:0 0 72px;"><img src="'+sp+'"><button class="photo-del" onclick="removeSQPhoto(\''+q.qKey+'\')">×</button></div>';
+    h+='<input type="file" id="sqp_'+q.qKey+'" accept="image/*" style="display:none" onchange="handleSQPhoto(event,\''+q.qKey+'\')"><button class="btn btn-gray btn-sm" onclick="document.getElementById(\'sqp_'+q.qKey+'\').click()">📷 '+(sp?(APP.lang==='ar'?'تغيير الصورة':'החלף תמונה'):(APP.lang==='ar'?'إضافة صورة':'הוסף תמונה'))+'</button></div>';
+  }
   h+='</div>';
   return h;
 }
@@ -3150,7 +3155,13 @@ function answerSQ(key,ans){
     if(inp)try{inp.click();}catch(e){}
   }
 }
-function handleSQPhoto(e,key){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){APP.safetyPhotos[key]=ev.target.result;toast('📷 '+(APP.lang==='ar'?'تم إضافة الصورة':'תמונה נוספה'));};r.readAsDataURL(f);e.target.value='';}
+// צילום ליקוי בטיחות (❌) — נשמר עם הדוח (photos+photoKeys ב-confirmSafety), מוקטן כמו שאר צילומי התיעוד
+function handleSQPhoto(e,key){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){
+  var raw=APP.safetyPhotos[key]=ev.target.result;renderSafetyQuestions();
+  toast('📷 '+(APP.lang==='ar'?'تم إضافة الصورة':'תמונה נוספה'));
+  dkShrinkPhoto(raw).then(function(out){if(out!==raw&&APP.safetyPhotos[key]===raw){APP.safetyPhotos[key]=out;renderSafetyQuestions();}});
+};r.readAsDataURL(f);e.target.value='';}
+function removeSQPhoto(key){delete APP.safetyPhotos[key];renderSafetyQuestions();}
 var signCanvas,signCtx,signing=false;
 function initSignature(){
   signCanvas=document.getElementById('sign-canvas');if(!signCanvas)return;
@@ -3172,6 +3183,10 @@ function confirmSafety(){
   var stages=(APP.activeStages||[]).slice();
   var stageLabel=stages.length?stages.map(wtLabel).join(', '):wtLabel('general');
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),stages:stages,stageLabel:stageLabel,answers:Object.assign({},APP.safetyAnswers),questions:qs,signature:signData,lang:APP.lang,gps:APP.gps};
+  // צילומי ❌: רק של שאלות שעדיין מסומנות ליקוי. photos[i] שייך ל-photoKeys[i] — כך הם עוברים בדרך הרגילה
+  // של photos (כספת, העלאה ל-Storage, photoUrls, ניקוי ישנות) בלי קוד נוסף
+  var sqKeys=[],sqPhotos=[];qs.forEach(function(q){var p=APP.safetyPhotos[q.qKey];if(p&&APP.safetyAnswers[q.qKey]==='fail'){sqKeys.push(q.qKey);sqPhotos.push(p);}});
+  if(sqPhotos.length){entry.photos=sqPhotos;entry.photoKeys=sqKeys;}
   if(!dkOnce('saf'))return; // מנע דוח בטיחות כפול בלחיצה כפולה
   var safety=loadJSON('sb_safety',[]);safety.unshift(entry);
   if(!saveJSON('sb_safety',safety)){toast(T('saveFailFull'),6000);return;}
@@ -3195,6 +3210,12 @@ function renderSafetyHistory(){
   if(shown<safety.length)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.sfPage=(APP.sfPage||1)+1;renderSafetyHistory();">'+T('loadMore')+' ('+(safety.length-shown)+')</button>';
   list.innerHTML=h;
 }
+// צילום ה-❌ של שאלה בדוח בטיחות: מקומי (מהכספת) ואם נוקה — מהענן, כשהכתובות מיושרות לשאלות
+function sqPhotoOf(entry,qKey){
+  var keys=entry.photoKeys||[],i=keys.indexOf(qKey);if(i<0)return '';
+  var p=entry.photos&&entry.photos[i];if(p){var v=dkImg(p);if(v)return v;}
+  var u=entry.photoUrls||[];return (u.length===keys.length&&u[i])?u[i]:'';
+}
 function showSafetyReportById(id){
   var safety=loadJSON('sb_safety',[]);
   var entry=safety.find(function(r){return r.id===id;});
@@ -3217,6 +3238,8 @@ function showSafetyReport(entryOrStr){
     var okf=ans==='ok'?'<span class="report-ok">✅ '+T('reportOk')+'</span>':'<span class="report-fail">❌ '+T('reportFail')+'</span>';
     h+='<div class="report-sq-row"><span>'+(i+1)+'. '+T(q.qKey)+'</span>'+okf+'</div>';
     if(ans==='fail'){
+      var sqp=sqPhotoOf(entry,q.qKey);
+      if(sqp)h+='<div style="margin:4px 0 8px;"><img src="'+sqp+'" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;"></div>';
       var fix=entry.fixes&&entry.fixes[q.qKey];
       if(fix){
         var fdt=fix.when?new Date(fix.when).toLocaleString(APP.lang==='ar'?'ar-IL':'he-IL'):'';

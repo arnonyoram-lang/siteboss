@@ -47,7 +47,7 @@
   - **בטוח לשמירה מהירה:** הצילום המקורי נכנס לרשימה מיד, וההקטנה מחליפה אותו רק אם הוא עדיין שם (`indexOf`/`_fixPhoto===raw`). יומן שנשמר לפני סיום ההקטנה נשאר עם המקור — לא משתנה אחר כך.
   - עובדים/כלים — ללא שינוי (`dkCompressImage`, 1000px/0.6). רשומות קיימות לא נגעו.
   - נבדק (עותק בלי Firebase): "צילום מצלמה" 4000×3000 עם EXIF סיבוב 6 → 1200×1600 ישר, 5.4MB→327KB, ~0.4 שניות, EXIF תאריך+מכשיר נשמרו; יומן/ליקוי (MM)/אירוע (2 יחד)/תיקון ליקוי/תיקון בטיחות; שמירה לפני ההקטנה → המקור נשמר; קטנה/HEIC → ללא שינוי; אפס שגיאות.
-  - ⚠️ פתוח (תקלה ישנה): `APP.safetyPhotos` (צילום כש-❌ בבדיקת בטיחות, `handleSQPhoto`) **לא נשמר** ברשומת הבטיחות.
+- **צילומי ❌ בבדיקת בטיחות נשמרים (19.10.2026, המשך 3):** עד עכשיו `APP.safetyPhotos` נאסף ונזרק. היום: `renderSQ` מציג תמונה ממוזערת + ✕ (`removeSQPhoto`) + "החלף תמונה"; `handleSQPhoto` מקטין (`dkShrinkPhoto`, בטוח לשמירה מהירה). `confirmSafety` שומר רק לשאלות שעדיין ❌ — **`entry.photos[i]` שייך ל-`entry.photoKeys[i]`** (שדות נוספים רק כשיש תמונות). כך הם עוברים במסלול הרגיל של `photos` בלי קוד נוסף: כספת, `cloudSave` (המסמך בלי photos, עם photoKeys; העלאה ל-`photos/<owner>/safety/<id>/i.jpg` — מותר ב-storage.rules), `photoUrls`, `_dkTrimPhotos`/`_freeSpace`. בדוח: `sqPhotoOf(entry,qKey)` — מקומי דרך `dkImg`, ואם נוקה → `photoUrls[i]` (רק כשהאורכים מיושרים). `admin.html`: כרטיס בטיחות מציג `photos(r)`. נבדק: 2 צילומים, אחד הוחזר ל-✅ → נשמר רק הראשון; דוח אחרי רענון; ענן מדומה; נוקה→ענן; דוח ישן; ✕.
 
 ## מצב Firebase — ✅ מחובר ופועל (siteboss-b2dd2)
 - פרויקט: `siteboss-b2dd2`. Web config מוטמע ב-`siteboss.html` (בלוק `FIREBASE_CONFIG` בסוף, script type=module) וב-`admin.html` (`DEFAULT_CONFIG`).

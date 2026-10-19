@@ -600,7 +600,7 @@ function renderRep(){
       var fails=0;if(r.answers)for(var k in r.answers){if(r.answers[k]==='fail')fails++;}
       var sb=fails?'<span class="rc-badge bg-red">❌ '+fails+' ליקויים</span>':'<span class="rc-badge bg-green">✅ תקין</span>';
       h+='<div class="rep-card"><div class="rc-top"><span class="rc-date">'+d+(r.stageLabel?' · '+esc(r.stageLabel):'')+'</span>'+sb+'</div>'
-        +'<div class="rc-meta">'+(r.gps?'📍 '+esc(r.gps):'בדיקת בטיחות חתומה')+'</div></div>';
+        +'<div class="rc-meta">'+(r.gps?'📍 '+esc(r.gps):'בדיקת בטיחות חתומה')+'</div>'+photos(r)+'</div>';
     }
   });
   b.innerHTML=h;
