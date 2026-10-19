@@ -2059,7 +2059,7 @@ function renderIncTypes(){
   g.innerHTML=h;
 }
 function selIncType(k){_incType=k;renderIncTypes();}
-function handleIncPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){_incPhotos.push(ev.target.result);renderIncPhotos();};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
+function handleIncPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){dkAddPhoto(function(){return _incPhotos;},ev.target.result,renderIncPhotos);};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
 function renderIncPhotos(){
   var g=document.getElementById('inc-photos-grid');if(!g)return;var h='';
   for(var i=0;i<_incPhotos.length;i++)h+='<div class="photo-thumb"><img src="'+_incPhotos[i]+'"><button class="photo-del" onclick="_incPhotos.splice('+i+',1);renderIncPhotos()">×</button></div>';
@@ -2164,6 +2164,65 @@ function renderObBrief(){
 // נקרא מהמודול כשמגיעים תדריכים מותאמים מהמשרד
 window._dkOnBriefings=function(obj){saveJSON('dk_briefings',obj||{});var a=document.querySelector('.screen.active');if(a&&a.id==='s-onboard-new')renderObBrief();};
 // דחיסת תמונה לפני שמירה ל-localStorage (מונע חריגת מכסה ~5MB): max 1000px, JPEG 0.6
+// ===== הקטנת צילומי תיעוד: יומן, ליקוי, אירוע, תיקון ליקוי, תיקון בטיחות (19.10.2026) =====
+// צילום מצלמה מקורי הוא 3–5MB. מוקטן לצד ארוך 1600px באיכות JPEG 0.75 (~300–500KB) — חד מספיק לתיעוד בשטח,
+// בערך מה שוואטסאפ שולח. נתוני הצילום (EXIF: תאריך ושעת צילום, מיקום, מכשיר) מועתקים לתמונה המוקטנת —
+// שלא נאבד ראיה. עובדים/כלים נשארים עם dkCompressImage (1000px). רשומות קיימות לא נוגעים בהן.
+var DK_PHOTO_MAX=1600,DK_PHOTO_Q=0.75,_dkShrinkQ=Promise.resolve();
+// מחזיר Promise לתמונה המוקטנת (או למקור, אם אי אפשר / לא חוסך). אחת-אחת, כדי לא לפענח 10 צילומים ענקיים בבת אחת.
+function dkShrinkPhoto(dataUrl){
+  var job=_dkShrinkQ.then(function(){return new Promise(function(res){
+    try{var img=new Image();
+      img.onload=function(){try{
+        var w=img.naturalWidth,h=img.naturalHeight,m=DK_PHOTO_MAX;
+        if(w<=m&&h<=m&&dataUrl.length<=600000){res(dataUrl);return;}           // כבר קטנה — לא לפגוע באיכות
+        if(w>m||h>m){if(w>=h){h=Math.round(h*m/w);w=m;}else{w=Math.round(w*m/h);h=m;}}
+        var c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');
+        x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);       // הדפדפן כבר מיישר לפי כיוון הצילום
+        var out=_dkKeepExif(dataUrl,c.toDataURL('image/jpeg',DK_PHOTO_Q));c.width=c.height=0;
+        res(out&&out.length<dataUrl.length?out:dataUrl);
+      }catch(e){res(dataUrl);}};
+      img.onerror=function(){res(dataUrl);};                                   // פורמט שהדפדפן לא מפענח — נשאר המקור
+      img.src=dataUrl;
+    }catch(e){res(dataUrl);}
+  });});
+  _dkShrinkQ=job.then(null,function(){});
+  return job;
+}
+// הצילום המקורי נכנס מיד (שמירה מהירה לא מאבדת אותו), והגרסה המוקטנת מחליפה אותו רק אם הוא עדיין ברשימה
+function dkAddPhoto(getList,raw,render){
+  getList().push(raw);render();
+  dkShrinkPhoto(raw).then(function(out){if(out===raw)return;var l=getList(),i=l.indexOf(raw);if(i>=0){l[i]=out;render();}});
+}
+function _dkB64Bytes(b64){var s=atob(b64),a=new Uint8Array(s.length);for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a;}
+function _dkBytesB64(a){var s='';for(var i=0;i<a.length;i+=0x8000)s+=String.fromCharCode.apply(null,a.subarray(i,i+0x8000));return btoa(s);}
+// מעתיק את מקטע ה-EXIF (APP1) מהצילום המקורי לתמונה המוקטנת. הכיוון (Orientation) מאופס ל-1 כי הציור כבר יישר.
+function _dkKeepExif(src,out){
+  try{
+    if(src.lastIndexOf('data:image/jpeg;base64,',0)!==0||out.lastIndexOf('data:image/jpeg;base64,',0)!==0)return out;
+    var p=src.indexOf(',')+1,ch=src.substr(p,180000);ch=ch.slice(0,ch.length-ch.length%4);
+    var b=_dkB64Bytes(ch),i=2,ex=null;
+    if(b[0]!==0xFF||b[1]!==0xD8)return out;
+    while(i+4<=b.length&&b[i]===0xFF){
+      var mk=b[i+1];if(mk===0xDA||mk===0xD9)break;
+      var len=(b[i+2]<<8)|b[i+3];
+      if(mk===0xE1&&i+2+len<=b.length&&b[i+4]===0x45&&b[i+5]===0x78&&b[i+6]===0x69&&b[i+7]===0x66&&b[i+8]===0&&b[i+9]===0){ex=b.slice(i,i+2+len);break;}
+      i+=2+len;
+    }
+    if(!ex)return out;
+    var t=10,le=ex[t]===0x49;
+    var r16=function(o){return le?ex[o]|(ex[o+1]<<8):(ex[o]<<8)|ex[o+1];};
+    var r32=function(o){return (le?(ex[o]|(ex[o+1]<<8)|(ex[o+2]<<16)|(ex[o+3]<<24)):((ex[o]<<24)|(ex[o+1]<<16)|(ex[o+2]<<8)|ex[o+3]))>>>0;};
+    var ifd=t+r32(t+4);
+    if(ifd+2<=ex.length){var n=r16(ifd);for(var e=0;e<n;e++){var en=ifd+2+e*12;if(en+12>ex.length)break;
+      if(r16(en)===0x0112){if(le){ex[en+8]=1;ex[en+9]=0;}else{ex[en+8]=0;ex[en+9]=1;}}}}
+    var ob=_dkB64Bytes(out.slice(out.indexOf(',')+1));
+    if(ob[0]!==0xFF||ob[1]!==0xD8)return out;
+    var at=2;if(ob[2]===0xFF&&ob[3]===0xE0)at=4+((ob[4]<<8)|ob[5]);            // אחרי JFIF
+    var nb=new Uint8Array(ob.length+ex.length);nb.set(ob.subarray(0,at),0);nb.set(ex,at);nb.set(ob.subarray(at),at+ex.length);
+    return 'data:image/jpeg;base64,'+_dkBytesB64(nb);
+  }catch(e){return out;}
+}
 function dkCompressImage(dataUrl,cb){
   try{var img=new Image();
     img.onload=function(){var max=1000,w=img.width,h=img.height;
@@ -2609,7 +2668,7 @@ function renderJnlPhotos(){
   h+='<div class="photo-add" onclick="document.getElementById(\'jnl-photo-input\').click()"><span class="photo-add-icon">📷</span><span>+</span></div>';
   g.innerHTML=h;
 }
-function handleJnlPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){APP.jnlPhotos.push(ev.target.result);renderJnlPhotos();};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
+function handleJnlPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){dkAddPhoto(function(){return APP.jnlPhotos;},ev.target.result,renderJnlPhotos);};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
 function removeJnlPhoto(i){APP.jnlPhotos.splice(i,1);renderJnlPhotos();}
 function getWorkers(){
   var d=[];
@@ -2936,7 +2995,7 @@ function renderDefectPhotos(){
   h+='<div class="photo-add" onclick="document.getElementById(\'defect-photo-input\').click()"><span class="photo-add-icon">📷</span><span>+</span></div>';
   g.innerHTML=h;
 }
-function handleDefectPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){APP.defectPhotos.push(ev.target.result);renderDefectPhotos();};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
+function handleDefectPhotos(e){var fs=e.target.files;for(var i=0;i<fs.length;i++){(function(f){var r=new FileReader();r.onload=function(ev){dkAddPhoto(function(){return APP.defectPhotos;},ev.target.result,renderDefectPhotos);};r.readAsDataURL(f);})(fs[i]);}e.target.value='';}
 function removeDefPhoto(i){APP.defectPhotos.splice(i,1);renderDefectPhotos();}
 function populateContractorSelect(){
   var sel=document.getElementById('def-contractor');if(!sel)return;
@@ -2986,7 +3045,8 @@ function handleFixPhoto(input){
   var f=input.files[0];if(!f)return;
   var r=new FileReader();
   r.onload=function(e){
-    _fixPhoto=e.target.result;
+    var raw=_fixPhoto=e.target.result;
+    dkShrinkPhoto(raw).then(function(out){if(out!==raw&&_fixPhoto===raw){_fixPhoto=out;var im=document.querySelector('#fix-photo-preview img');if(im)im.src=out;}});
     document.getElementById('fix-photo-preview').innerHTML='<div style="position:relative;display:inline-block;width:100%;"><img src="'+_fixPhoto+'" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;"><button onclick="_fixPhoto=null;document.getElementById(\'fix-photo-preview\').innerHTML=\'\'" style="position:absolute;top:6px;left:6px;background:rgba(231,76,60,.9);color:white;border:none;border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;">✕</button></div>';
   };
   r.readAsDataURL(f);input.value='';
@@ -3482,7 +3542,8 @@ function handleSafetyFixPhoto(input){
   var f=input.files[0];if(!f)return;
   var r=new FileReader();
   r.onload=function(e){
-    _sfPhoto=e.target.result;
+    var raw=_sfPhoto=e.target.result;
+    dkShrinkPhoto(raw).then(function(out){if(out!==raw&&_sfPhoto===raw){_sfPhoto=out;var im=document.querySelector('#sf-photo-preview img');if(im)im.src=out;}});
     document.getElementById('sf-photo-preview').innerHTML='<div style="position:relative;display:inline-block;width:100%;"><img src="'+_sfPhoto+'" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;"><button onclick="_sfPhoto=null;document.getElementById(\'sf-photo-preview\').innerHTML=\'\'" style="position:absolute;top:6px;left:6px;background:rgba(231,76,60,.9);color:white;border:none;border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;">✕</button></div>';
   };
   r.readAsDataURL(f);input.value='';
