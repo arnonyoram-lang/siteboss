@@ -1314,12 +1314,20 @@ function _freeSpace(){
   colls.forEach(function(kk){try{
     var list=JSON.parse(localStorage.getItem(kk)||'[]');var ch=false;
     // רוקן base64 רק מרשומות שכבר עלו לענן (photoUrls) — אחרת זו המחיקה היחידה והראיה תאבד
-    for(var i=0;i<list.length;i++){var r=list[i];if(r&&r.photos&&r.photos.length&&r.photoUrls&&r.photoUrls.length){r.photos=[];r._photosOffloaded=true;ch=true;freed=true;}}
+    // (תמונות שכבר בכספת הן רק הפניה קצרה — אין מה לפנות בהן)
+    for(var i=0;i<list.length;i++){var r=list[i];if(r&&r.photos&&r.photos.some(_dkvIsData)&&r.photoUrls&&r.photoUrls.length){r.photos=[];r._photosOffloaded=true;ch=true;freed=true;}}
     if(ch)localStorage.setItem(kk,JSON.stringify(list));
   }catch(e){}});
   return freed;
 }
 function saveJSON(k,v){
+  // יומנים/ליקויים/בטיחות/אירועים/היתרים: התמונות והחתימות לכספת, לאחסון המקומי רק הפניות (ראה _dkvSave)
+  var vc=DKV_KEYS&&DKV_KEYS[k];
+  if(vc&&DKV&&DKV.ok){
+    if(_dkvSave(k,vc,v))return true;
+    try{toast(APP.lang==='ar'?'⚠️ الذاكرة ممتلئة — احذف تقارير قديمة':'⚠️ הזיכרון מלא — מחק דוחות ישנים',5000);}catch(_){}
+    return false;
+  }
   try{localStorage.setItem(k,JSON.stringify(v));return true;}
   catch(e){
     if(_freeSpace()){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e2){}}
@@ -1327,7 +1335,7 @@ function saveJSON(k,v){
     return false;
   }
 }
-function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){
+function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?((DKV_KEYS&&DKV_KEYS[k])?_dkvHydrate(v):JSON.parse(v)):d;}catch(e){
   // אוסף פגום ב-localStorage: גבה את הגלם לפני שפעולה הבאה תדרוס אותו, והתרע — שלא ייעלם בשקט
   try{var raw=localStorage.getItem(k);if(raw&&!localStorage.getItem(k+'_corrupt'))localStorage.setItem(k+'_corrupt',raw);}catch(_){}
   try{toast(APP.lang==='ar'?'⚠️ بيانات تالفة — تم حفظ نسخة احتياطية':'⚠️ נתונים פגומים — נשמר גיבוי',6000);}catch(_){}
@@ -1337,7 +1345,10 @@ function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):
 // localStorage מוגבל ל-~5MB לכל האפליקציה, וכל עובד נקלט עם 2 צילומי מסמכים (~250KB) → אחרי כמה עשרות עובדים
 // "הזיכרון מלא" ואי אפשר לקלוט עוד. כאן התמונות נשמרות ב-IndexedDB (מכסה גדולה פי מאות), ובאחסון המקומי נשאר
 // רק <שדה>Ref. המטמון בזיכרון (DKV.cache) שומר על הצגה סינכרונית: getOnboarded/getEquipment מחזירים רשומות מלאות.
-var DKV={cache:{},ok:false,db:null};
+var DKV={cache:{},ok:false,db:null,keys:{},pending:{},missing:{},want:{},inflight:{},soon:{},q:Promise.resolve(),slots:0,waitq:[]};
+// תמונות שטח (יומנים/ליקויים/בטיחות/אירועים/היתרים) לא נטענות כולן בהפעלה — צילומי מצלמה מלאים (כמה MB כל אחד)
+// היו מפילים את הזיכרון בטלפון. הן נטענות לפי דרישה (_dkvWant). עובדים/כלים — כמו קודם, הכל למטמון.
+var DKV_LAZY=/^(journals|defects|safety|incidents|permits)_/;
 DKV.ready=new Promise(function(res){
   try{
     if(!window.indexedDB){res(false);return;}
@@ -1347,9 +1358,17 @@ DKV.ready=new Promise(function(res){
     rq.onsuccess=function(){
       DKV.db=rq.result;
       DKV.db.onversionchange=function(){try{DKV.db.close();}catch(e){}DKV.ok=false;}; // לא לחסום טאב/גרסה חדשה
-      try{var cur=DKV.db.transaction('photos','readonly').objectStore('photos').openCursor();
-        cur.onsuccess=function(){var c=cur.result;if(c){DKV.cache[c.key]=c.value;c.continue();}else{DKV.ok=true;res(true);}};
-        cur.onerror=function(){res(false);};
+      try{var tx=DKV.db.transaction('photos','readonly'),st=tx.objectStore('photos');
+        tx.oncomplete=function(){DKV.ok=true;res(true);};
+        tx.onerror=tx.onabort=function(){res(false);};
+        if(st.getAllKeys){
+          var ak=st.getAllKeys();
+          ak.onsuccess=function(){(ak.result||[]).forEach(function(k){DKV.keys[k]=1;
+            if(!DKV_LAZY.test(k)){var g=st.get(k);g.onsuccess=function(){DKV.cache[k]=g.result;};}});};
+        }else{
+          var cur=st.openCursor();
+          cur.onsuccess=function(){var c=cur.result;if(c){DKV.keys[c.key]=1;if(!DKV_LAZY.test(c.key))DKV.cache[c.key]=c.value;c.continue();}};
+        }
       }catch(e){res(false);}
     };
   }catch(e){res(false);}
@@ -1402,6 +1421,141 @@ function dkVaultMigrate(){
     if(need)dkSaveVaulted(p[0],p[1],list.map(dkVaultIn));
   });
 }
+// ===== כספת לרשומות שטח: יומנים, ליקויים, בטיחות, אירועים, היתרים (19.10.2026) =====
+// שכבה שקופה בתוך loadJSON/saveJSON — אף מסך לא צריך לדעת עליה. כל מחרוזת base64 גדולה ברשומה (תמונה, חתימת מנהל,
+// חתימת פיקוח, תמונת תיקון) נשמרת בכספת, ובאחסון המקומי נשאר במקומה 'dkv:<מפתח>'. loadJSON מחזיר את הרשומה עם
+// התמונות מהמטמון — תוכן היומן זהה בדיוק, משתנה רק איפה הבייטים יושבים. הפניה שעוד לא נטענה נשארת 'dkv:...'
+// (dkPhotosOf/dkImg מבקשים אותה ומרעננים את המסך), ונשמרת כמו שהיא — כך ששום שמירה לא מוחקת תמונה.
+var DKV_KEYS={sb_journals:'journals',sb_defects:'defects',sb_safety:'safety',dk_incidents:'incidents',dk_permits:'permits'};
+function _dkvIsData(v){return typeof v==='string'&&v.length>=512&&v.lastIndexOf('data:',0)===0;}
+function _dkvIsRef(v){return typeof v==='string'&&v.lastIndexOf('dkv:',0)===0&&DKV_LAZY.test(v.slice(4));}
+function _dkvScan(o,fn){if(typeof o==='string'){fn(o);return;}if(!o||typeof o!=='object')return;for(var k in o)if(Object.prototype.hasOwnProperty.call(o,k))_dkvScan(o[k],fn);}
+function _dkvMap(o,fn){if(typeof o==='string')return fn(o);if(!o||typeof o!=='object')return o;var out=Array.isArray(o)?[]:{};for(var k in o)if(Object.prototype.hasOwnProperty.call(o,k))out[k]=_dkvMap(o[k],fn);return out;}
+function _dkvHydrate(raw){
+  if(raw.indexOf('"dkv:')<0)return JSON.parse(raw);
+  return JSON.parse(raw,function(k,v){if(_dkvIsRef(v)){var c=DKV.cache[v.slice(4)];if(c!==undefined)return c;}return v;});
+}
+// רשימה → מחרוזת לאחסון המקומי. ערך שכבר בכספת (של אותו אוסף) → הפניה. ערך חדש: puts=null → נשאר בתוך הרשומה;
+// puts={} → מקבל שם חדש ונאסף ל-puts (הכתיבה לכספת על הקורא). inline = כמה ערכים כבדים נשארו בפנים.
+function _dkvLean(coll,v,puts){
+  var pre=coll+'_',rev=null,inline=0,rid='x';
+  var s=JSON.stringify(v,function(k,val){
+    if(this===v&&val&&typeof val==='object'&&val.id!=null)rid=val.id;   // רשומה ברמה העליונה — לשם ההפניה
+    if(!_dkvIsData(val))return val;
+    if(!rev){rev=new Map();for(var r in DKV.cache)if(r.lastIndexOf(pre,0)===0)rev.set(DKV.cache[r],r);
+      if(puts)for(var p in puts)rev.set(puts[p],p);}
+    var ref=rev.get(val);
+    if(!ref&&puts){var base=pre+rid+'_'+k,i=0;ref=base;
+      while(DKV.keys[ref]||DKV.cache[ref]!==undefined||puts[ref]!==undefined)ref=base+'~'+(++i);
+      puts[ref]=val;rev.set(val,ref);}
+    if(ref)return 'dkv:'+ref;
+    inline++;return val;
+  });
+  return {s:s,inline:inline};
+}
+// שמירה (מתוך saveJSON). 1) מה שכבר בכספת → הפניות; תמונה חדשה נכתבת קודם כמו שהיא (בטוח מיד), ועוברת לכספת
+// ברקע (_dkvSoon). 2) לא נכנס (צילום ענק / אחסון מלא) → התמונות החדשות לכספת עכשיו, ולאחסון המקומי רק הפניות.
+function _dkvSave(k,coll,v){
+  var a=_dkvLean(coll,v,null);
+  try{localStorage.setItem(k,a.s);_dkvSoon(k);return true;}catch(e){}
+  if(!a.inline)return false;
+  var puts={},b=_dkvLean(coll,v,puts);
+  try{localStorage.setItem(k,b.s);}catch(e2){return false;}
+  for(var p in puts){DKV.cache[p]=puts[p];DKV.keys[p]=1;DKV.pending[p]=1;}
+  _dkvWrite(function(st){for(var x in puts)st.put(puts[x],x);}).then(function(){
+    for(var x in puts)delete DKV.pending[x];
+  },function(){                                          // נשאר בזיכרון ומסומן לניסיון חוזר בשמירה הבאה
+    for(var x in puts)if(DKV.pending[x])DKV.pending[x]=2;
+    try{toast(APP.lang==='ar'?'⚠️ الصور لم تُحفظ بعد على الجهاز — لا تغلق التطبيق':'⚠️ התמונות עוד לא נשמרו במכשיר — אל תסגור את האפליקציה',6000);}catch(_){}
+  });
+  _dkvSoon(k);
+  return true;
+}
+function _dkvSoon(k){
+  if(!DKV.ok||DKV.soon[k])return;DKV.soon[k]=1;
+  DKV.q=DKV.q.then(function(){delete DKV.soon[k];return _dkvFlush(k);}).then(null,function(){});
+}
+// ברקע: base64 שנשאר באחסון המקומי → כספת → הפניות. ואז ניקוי תמונות שאף רשומה כבר לא מפנה אליהן.
+// הסדר מבטיח שבכל רגע האחסון המקומי מחזיק או את התמונה עצמה או הפניה לתמונה שכבר נכתבה לכספת.
+function _dkvFlush(k){
+  var coll=DKV_KEYS[k],pre=coll+'_',raw=null,puts={},n=0,p;
+  try{raw=localStorage.getItem(k);}catch(e){}
+  if(raw==null)return;
+  for(p in DKV.pending)if(DKV.pending[p]===2&&p.lastIndexOf(pre,0)===0&&DKV.cache[p]!==undefined)puts[p]=DKV.cache[p];   // ניסיון חוזר
+  if(raw.indexOf('"data:')>=0){try{_dkvLean(coll,JSON.parse(raw),puts);}catch(e){}}
+  for(p in puts)n++;
+  var w=n?_dkvWrite(function(st){for(var x in puts)st.put(puts[x],x);}):Promise.resolve();
+  return w.then(function(){
+    for(var x in puts){DKV.cache[x]=puts[x];DKV.keys[x]=1;delete DKV.pending[x];delete DKV.missing[x];}
+    var cur=localStorage.getItem(k);if(cur==null)return;
+    if(cur.indexOf('"data:')>=0){var a=_dkvLean(coll,JSON.parse(cur),null);if(a.s.length<cur.length){try{localStorage.setItem(k,a.s);cur=a.s;}catch(e){}}}
+    return _dkvClean(k,pre,cur);
+  },function(){});                                       // הכספת נכשלה → התמונות נשארות באחסון המקומי (כמו קודם)
+}
+function _dkvClean(k,pre,cur){
+  var used={},grab=function(s){if(s)s.replace(/"dkv:([^"\\]+)"/g,function(m,r){used[r]=1;return m;});};
+  grab(cur);try{grab(localStorage.getItem(k+'_corrupt'));}catch(e){}   // גיבוי של אוסף פגום — לא למחוק לו תמונות
+  var gone=[];for(var r in DKV.keys)if(r.lastIndexOf(pre,0)===0&&!used[r]&&!DKV.pending[r])gone.push(r);
+  if(!gone.length)return;
+  gone.forEach(function(r){delete DKV.keys[r];delete DKV.cache[r];});
+  return _dkvWrite(function(st){gone.forEach(function(r){st.delete(r);});}).then(null,function(){});
+}
+// מיגרציה בהפעלה: base64 ישן של חמשת האוספים → כספת. משחרר מיד את האחסון המקומי אצל מי שכבר נתקע.
+function _dkvMigrate(){for(var k in DKV_KEYS)_dkvSoon(k);}
+function _dkvGet(refs){return new Promise(function(res){
+  var out={};if(!DKV.ok||!refs.length){res(out);return;}
+  try{var tx=DKV.db.transaction('photos','readonly'),st=tx.objectStore('photos');
+    refs.forEach(function(r){var g=st.get(r);g.onsuccess=function(){if(g.result!==undefined)out[r]=g.result;};});
+    tx.oncomplete=function(){res(out);};tx.onerror=tx.onabort=function(){res(out);};
+  }catch(e){res(out);}
+});}
+// הצגה: הפניות שעוד לא במטמון → טעינה מהכספת ורענון המסך הפתוח (פעם אחת, בלי לולאה)
+function _dkvWant(vals){
+  var add=0;(vals||[]).forEach(function(v){if(!_dkvIsRef(v))return;var r=v.slice(4);
+    if(DKV.cache[r]!==undefined||DKV.missing[r]||DKV.want[r]||DKV.inflight[r])return;DKV.want[r]=1;add++;});
+  if(!add||DKV.wantT)return;
+  DKV.wantT=setTimeout(function(){DKV.ready.then(function(){
+    DKV.wantT=null;var refs=Object.keys(DKV.want);DKV.want={};
+    refs.forEach(function(r){DKV.inflight[r]=1;});
+    return _dkvGet(refs).then(function(got){var n=0;
+      refs.forEach(function(r){delete DKV.inflight[r];if(got[r]!==undefined){DKV.cache[r]=got[r];n++;}else DKV.missing[r]=1;});
+      if(n)_dkvRerender();});
+  });},0);
+}
+function _dkvRerender(){
+  var a=document.querySelector('.screen.active');if(!a)return;
+  try{
+    if(a.id==='s-defects')renderDefects();
+    else if(a.id==='s-incidents-history')renderIncidentsHistory();
+    else if(a.id==='s-permits-history')renderPermitsHistory();
+    else if(a.id==='s-report'){var cr=window._currentReport;if(cr&&cr.entry){if(cr.type==='journal')showJournalReportById(cr.entry.id);else showSafetyReportById(cr.entry.id);}}
+  }catch(e){}
+}
+// תמונה/חתימה בודדת להצגה ('' עד שנטענת מהכספת)
+function dkImg(v){if(_dkvIsRef(v)){_dkvWant([v]);return '';}return v||'';}
+// לענן: רשומה עם הפניות → עותק מלא (שליפה מהכספת בלי למלא את המטמון). עד 3 במקביל — כדי שגיבוי כל
+// ההיסטוריה (אחרי אימות SMS) לא יטען מאות MB לזיכרון בבת אחת.
+function _dkvFull(entry){
+  var need={};_dkvScan(entry,function(s){if(_dkvIsRef(s)&&DKV.cache[s.slice(4)]===undefined)need[s.slice(4)]=1;});
+  return Promise.race([DKV.ready,new Promise(function(r){setTimeout(r,5000);})])
+    .then(function(){return _dkvGet(Object.keys(need));})
+    .then(function(got){return _dkvMap(entry,function(s){if(!_dkvIsRef(s))return s;var r=s.slice(4);
+      return DKV.cache[r]!==undefined?DKV.cache[r]:(got[r]!==undefined?got[r]:s);});});
+}
+function _dkvLimit(fn){return new Promise(function(res,rej){
+  function run(){DKV.slots++;var done=false,t=setTimeout(rel,60000);
+    function rel(){if(done)return;done=true;clearTimeout(t);DKV.slots--;var nx=DKV.waitq.shift();if(nx)nx();}
+    Promise.resolve().then(fn).then(function(v){rel();res(v);},function(e){rel();rej(e);});}
+  if(DKV.slots<3)run();else DKV.waitq.push(run);
+});}
+// הפניה שלא נמצאה בכספת לא נשלחת לענן (merge משאיר שם את הערך הקודם)
+function _dkvNoRefs(o){
+  var has=false;_dkvScan(o,function(s){if(_dkvIsRef(s))has=true;});if(!has)return o;
+  var strip=function(x){if(Array.isArray(x))return x.filter(function(v){return !_dkvIsRef(v);}).map(strip);
+    if(!x||typeof x!=='object')return x;var out={};
+    for(var k in x)if(Object.prototype.hasOwnProperty.call(x,k)&&!_dkvIsRef(x[k]))out[k]=strip(x[k]);return out;};
+  return strip(o);
+}
 // מראה רשומה ל-Firebase (ללא תמונות כבדות — אלו יעברו ל-Storage בהמשך). חתימות נשמרות.
 // מיפוי שם-אוסף-ענן → מפתח localStorage (כדי לעדכן את הרשומה המקומית עם כתובות הענן)
 var DK_COLL_KEY={journals:'sb_journals',defects:'sb_defects',safety:'sb_safety',incidents:'dk_incidents',onboard:'dk_onboard',permits:'dk_permits'};
@@ -1445,27 +1599,40 @@ function cloudSave(coll,entry){
   if(!entry)return Promise.resolve(false);
   // אין קליטה / Firebase עדיין לא מוכן → לתור, יישלח כשחוזרת רשת (בלי לאבד, בלי ✅ כוזב)
   if(navigator.onLine===false||!window._dkSaveDoc){_dkEnqueueSync(coll,entry.id);return Promise.resolve(false);}
-  if(!window._dkSaveDoc)return Promise.resolve(false);
+  // תמונות/חתימות שיושבות בכספת (הפניות dkv:) נשלפות לפני שליחה — הענן וה-Storage מקבלים את ה-base64 האמיתי
+  var refs=false;_dkvScan(entry,function(x){if(_dkvIsRef(x))refs=true;});
+  if(refs)return _dkvLimit(function(){return _dkvFull(entry).then(function(full){return _cloudSaveNow(coll,full);});});
+  return _cloudSaveNow(coll,entry);
+}
+function _cloudSaveNow(coll,entry){
   var s=APP.settings||{};var owner=(s.managerPhone||'').replace(/\D/g,'');
   var docId=(owner||'x')+'_'+entry.id;
   // השמט שדות base64 כבדים מהמסמך בענן (מגבלת 1MB ל-doc): מערך photos, וכן שדות photo/*Photo (כלים)
   entry=dkVaultIn(entry);                                   // רשומה מהתור/מיגרציה מחזיקה הפניות לכספת → להחזיר את החתימה לפני שליחה
   var copy={};for(var k in entry){if(k==='photos'||k==='photo'||/Photo$/.test(k)||(/Ref$/.test(k)&&_dkIsVaultField(k.slice(0,-3))))continue;copy[k]=entry[k];}
+  copy=_dkvNoRefs(copy);
   if(entry.photos)copy.photoCount=entry.photos.length;
   copy.owner=owner;copy.ownerName=s.managerName||'';copy.project=s.projectName||'';
   copy.cloudAt=new Date().toISOString();
   try{window._dkSaveDoc(coll,docId,copy);}catch(e){}
   // העלאת תמונות ל-Storage (אסינכרוני) ועדכון הכתובות במסמך ובמקומי. מחזיר Promise כדי שמיגרציה תדע מתי באמת הסתיים.
-  if(entry.photos&&entry.photos.length&&window._dkUploadPhotos){
-    try{return window._dkUploadPhotos('photos/'+(owner||'x')+'/'+coll+'/'+entry.id,entry.photos).then(function(urls){
+  var up=(entry.photos||[]).filter(function(p){return !_dkvIsRef(p);});   // תמונה שאבדה מהכספת — לא נשלחת
+  if(up.length&&window._dkUploadPhotos){
+    try{return window._dkUploadPhotos('photos/'+(owner||'x')+'/'+coll+'/'+entry.id,up).then(function(urls){
       if(urls&&urls.length){window._dkSaveDoc(coll,docId,{photoUrls:urls});_dkStorePhotoUrls(coll,entry.id,urls);}
       return true;
     });}catch(e){return Promise.reject(e);}
   }
   return Promise.resolve(true);
 }
-// מחזיר את התמונות להצגה: base64 מקומי אם קיים, אחרת כתובות הענן (אחרי פינוי מקום)
-function dkPhotosOf(entry){return (entry&&entry.photos&&entry.photos.length)?entry.photos:((entry&&entry.photoUrls)||[]);}
+// מחזיר את התמונות להצגה: base64 מקומי אם קיים, אחרת כתובות הענן (אחרי פינוי מקום).
+// תמונה שעוד בכספת → נטענת ברקע והמסך מתרענן; בינתיים מהענן אם יש.
+function dkPhotosOf(entry){
+  var ph=(entry&&entry.photos)||[],urls=(entry&&entry.photoUrls)||[];
+  var ok=ph.filter(function(p){return !_dkvIsRef(p);});
+  if(ok.length<ph.length){_dkvWant(ph);if(urls.length)return urls;}
+  return ok.length?ok:urls;
+}
 function cloudDelete(coll,entry){
   if(!window._dkDeleteDoc||!entry)return;
   var owner=((APP.settings&&APP.settings.managerPhone)||'').replace(/\D/g,'');
@@ -2168,7 +2335,7 @@ function renderPermitsHistory(){
     h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:800;">'+permLabel(e.type)+'</span><span class="'+(active?'':'')+'" style="font-size:12px;font-weight:700;color:'+(active?'var(--green)':'var(--red)')+';">'+(active?T('permActive'):T('permExpired'))+'</span></div>'
       +'<div style="font-size:14px;">👷 '+esc(e.worker)+(e.location?' · 📍 '+esc(e.location):'')+'</div>'
       +(e.validUntil?'<div style="font-size:12px;color:var(--sub);margin-top:4px;">'+T('permValidUntil')+new Date(e.validUntil).toLocaleString('he-IL')+'</div>':'')
-      +(e.signature?'<img src="'+e.signature+'" style="height:36px;margin-top:8px;border:1px solid var(--border);border-radius:6px;background:#fff;">':'')
+      +(dkImg(e.signature)?'<img src="'+dkImg(e.signature)+'" style="height:36px;margin-top:8px;border:1px solid var(--border);border-radius:6px;background:#fff;">':'')
       +'</div>';
   });
   if(shown<list.length)h+='<button class="btn btn-outline" style="margin:8px 0;" onclick="APP.permPage=(APP.permPage||1)+1;renderPermitsHistory();">'+T('loadMore')+' ('+(list.length-shown)+')</button>';
@@ -2627,14 +2794,14 @@ function showJournalReport(entryOrStr){
   // חתימת מנהל עבודה
   h+='<div style="flex:1;min-width:140px;text-align:center;">'
     +'<div style="font-size:12px;color:var(--sub);font-weight:700;margin-bottom:4px;">'+T('reportManagerSign')+'</div>'
-    +(entry.managerSign?'<img src="'+entry.managerSign+'" style="max-width:100%;height:70px;object-fit:contain;border:1px solid #dce3e9;border-radius:8px;background:#fff;">':'<div style="height:70px;border:1px dashed #dce3e9;border-radius:8px;"></div>')
+    +(dkImg(entry.managerSign)?'<img src="'+dkImg(entry.managerSign)+'" style="max-width:100%;height:70px;object-fit:contain;border:1px solid #dce3e9;border-radius:8px;background:#fff;">':'<div style="height:70px;border:1px dashed #dce3e9;border-radius:8px;"></div>')
     +'<div style="font-size:12px;margin-top:4px;font-weight:700;">'+esc(entry.manager||s.managerName||'')+'</div></div>';
   // חתימת מפקח
   h+='<div style="flex:1;min-width:140px;text-align:center;">'
     +'<div style="font-size:12px;color:var(--sub);font-weight:700;margin-bottom:4px;">'+T('reportSupervisorSign')+'</div>';
   if(entry.supervisorApproval){
     var aw=new Date(entry.supervisorApproval.ts).toLocaleString('he-IL');
-    h+='<img src="'+entry.supervisorApproval.sign+'" style="max-width:100%;height:70px;object-fit:contain;border:1px solid #27ae60;border-radius:8px;background:#fff;">'
+    h+='<img src="'+dkImg(entry.supervisorApproval.sign)+'" style="max-width:100%;height:70px;object-fit:contain;border:1px solid #27ae60;border-radius:8px;background:#fff;">'
       +'<div style="font-size:12px;margin-top:4px;font-weight:700;color:var(--green);">'+esc(entry.supervisorApproval.name)+'</div>'
       +'<div style="font-size:10px;color:var(--sub);">'+aw+'</div>';
   } else {
@@ -2718,7 +2885,7 @@ function renderDefects(){
       if(fdt)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedAt')+'</span><span>'+fdt+'</span></div>';
       if(d.floor||d.area)h+='<div class="fix-row"><span class="fix-lbl">📍</span><span>'+esc((d.floor||'')+(d.area?' / '+d.area:''))+'</span></div>';
       if(d.fix.notes)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedNote')+'</span><span>'+esc(d.fix.notes)+'</span></div>';
-      if(d.fix.photo)h+='<div style="margin-top:8px;"><img src="'+d.fix.photo+'" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;"></div>';
+      if(dkImg(d.fix.photo))h+='<div style="margin-top:8px;"><img src="'+dkImg(d.fix.photo)+'" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;"></div>';
       h+='</div>';
     }
     h+='<div class="defect-actions">';
@@ -2998,7 +3165,7 @@ function showSafetyReport(entryOrStr){
         if(fix.by)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedBy')+'</span><span>'+esc(fix.by)+'</span></div>';
         if(fdt)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedAt')+'</span><span>'+fdt+'</span></div>';
         if(fix.notes)h+='<div class="fix-row"><span class="fix-lbl">'+T('fixedNote')+'</span><span>'+esc(fix.notes)+'</span></div>';
-        if(fix.photo)h+='<div style="margin-top:6px;"><img src="'+fix.photo+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;"></div>';
+        if(dkImg(fix.photo))h+='<div style="margin-top:6px;"><img src="'+dkImg(fix.photo)+'" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;"></div>';
         h+='</div>';
       } else {
         h+='<div style="margin-bottom:6px;"><button class="btn-fix-sm no-print" onclick="openSafetyFix('+entry.id+',\''+q.qKey+'\')">🔧 '+(APP.lang==='ar'?'إصلاح':'תוקן')+'</button></div>';
@@ -3006,7 +3173,7 @@ function showSafetyReport(entryOrStr){
     }
   }
   h+='<div style="text-align:center;padding:12px;font-size:15px;font-weight:800;color:'+(fails?'var(--red)':'var(--green)')+';">'+(fails?'❌ '+fails+' ליקויים':'✅ '+T('reportSafetyStatus0'))+'</div>';
-  if(entry.signature)h+='<div class="report-section-title">'+T('reportSafetySignature')+'</div><div style="border:2px solid #dce3e9;border-radius:10px;padding:10px;margin-top:8px;"><img src="'+entry.signature+'" style="max-width:100%;"></div>';
+  if(entry.signature)h+='<div class="report-section-title">'+T('reportSafetySignature')+'</div><div style="border:2px solid #dce3e9;border-radius:10px;padding:10px;margin-top:8px;"><img src="'+dkImg(entry.signature)+'" style="max-width:100%;"></div>';
   h+='<div class="report-footer">'+T('reportFooter')+'<br>'+T('reportGenerated')+new Date().toLocaleString('he-IL')+'</div>';
   el.innerHTML=h;showScreen('s-report');
 }
@@ -3494,6 +3661,7 @@ function init(){
     if(!ok)return;
     try{ if(navigator.storage&&navigator.storage.persist)navigator.storage.persist(); }catch(_){}
     dkVaultMigrate();
+    _dkvMigrate();
     var a=document.querySelector('.screen.active');if(!a)return;
     if(a.id==='s-onboard')renderOnboardList();
     if(a.id==='s-equipment')renderEquipment();
