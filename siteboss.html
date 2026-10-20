@@ -163,7 +163,7 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 .sq-btn{flex:1;min-height:56px;border-radius:11px;border:2px solid var(--border);background:white;font-size:17px;font-weight:800;cursor:pointer;}
 .sq-btn.ok{background:var(--green);border-color:var(--green);color:white;}
 .sq-btn.fail{background:var(--red);border-color:var(--red);color:white;}
-#sign-canvas,#jnl-sign-canvas,#sup-sign-canvas,#ob-sign-canvas,#perm-sign-canvas{border:2px solid var(--border);border-radius:12px;width:100%;height:110px;background:white;cursor:crosshair;touch-action:none;}
+#sign-canvas,#jnl-sign-canvas,#sup-sign-canvas,#ob-sign-canvas,#perm-sign-canvas,#pb-sign-canvas{border:2px solid var(--border);border-radius:12px;width:100%;height:110px;background:white;cursor:crosshair;touch-action:none;}
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#2c3e50;color:white;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;max-width:90%;text-align:center;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center;}
@@ -869,6 +869,35 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 </div>
 
 <!-- SUPERVISOR APPROVAL MODAL -->
+<!-- הדרכה תקופתית: תאריך (היום כברירת מחדל) + תדריך בשפת העובד + חתימת העובד -->
+<div class="modal-overlay hidden" id="modal-periodic">
+  <div class="modal-sheet">
+    <div class="modal-title">🗓️ <span data-t="pbTitleOne"></span></div>
+    <div id="pb-worker" style="font-weight:800;font-size:17px;margin-bottom:10px;"></div>
+    <div class="form-group">
+      <label data-t="pbDate"></label>
+      <input id="pb-date" type="date">
+    </div>
+    <div class="form-group">
+      <label data-t="pbNotes"></label>
+      <input id="pb-notes" type="text" data-tp="pbNotesPh">
+    </div>
+    <details id="pb-brief-wrap" style="background:#fff8e8;border:1px solid var(--accent);border-radius:12px;padding:10px 12px;margin-bottom:14px;">
+      <summary style="cursor:pointer;font-weight:700;" data-t="pbShowBrief"></summary>
+      <div id="pb-brief" style="font-size:15px;line-height:1.8;margin-top:10px;"></div>
+    </details>
+    <div class="form-group">
+      <label data-t="pbSign"></label>
+      <div id="pb-decl" dir="auto" style="font-size:14px;font-weight:700;margin-bottom:8px;"></div>
+      <canvas id="pb-sign-canvas"></canvas>
+      <button class="btn btn-gray" style="margin-top:8px;min-height:38px;font-size:13px;" onclick="clearPbSign()"><span data-t="clearSign"></span></button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" style="flex:1" onclick="closeModal('modal-periodic')"><span data-t="cancel"></span></button>
+      <button class="btn btn-green" style="flex:2" onclick="savePeriodicBrief()"><span data-t="pbSave"></span></button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay hidden" id="modal-supervisor">
   <div class="modal-sheet">
     <div class="modal-title" data-t="supervisorTitle"></div>
@@ -1059,7 +1088,7 @@ btn7Title:'קליטת עובדים',btn7Desc:'זר או ישראלי ← מסמ�
 obTitle:'קליטת עובדים',obAddBtn:'➕ קלוט עובד חדש',obListTitle:'עובדים שנקלטו',obEmpty:'עדיין לא נקלטו עובדים',obTypeTitle:'סוג העובד',obTypeForeign:'עובד זר',obTypeIsraeli:'עובד ישראלי',obDocIsraeli:'תעודה / ת"ז',obDocIsraeliPh:'מספר ת"ז / תעודה',obDocIsraeliPhoto:'צילום תעודה / ת"ז',obCardTitle:'כרטיס עובד',obDeleteBtn:'מחק עובד',
 obNewTitle:'קליטת עובד חדש',obName:'שם העובד',obNamePh:'שם מלא',obPermit:'מספר אישור עבודה / דרכון',obPermitPh:'מספר מסמך',
 obPermitPhoto:'צילום האישור / דרכון',obHeightTitle:'אישור עבודה בגובה',obHeightHint:'צלם את האישור או הוסף מסמך קיים (תמונה)',obHeightExp:'תוקף עד (אופציונלי)',obHeightShort:'אישור גובה',obLang:'שפת האם של העובד',obBriefTitle:'תדריך בטיחות — הצג לעובד בשפתו',
-obSignTitle:'חתימת העובד — הבנתי את הוראות הבטיחות',obBriefSigned:'זה הנוסח שהוצג לעובד בקליטה ועליו חתם',obBriefCurrent:'נוסח התדריך הנוכחי',obSignHint:'העובד חותם לאישור שהבין את התדריך',
+obSignTitle:'חתימת העובד — הבנתי את הוראות הבטיחות',obBriefSigned:'זה הנוסח שהוצג לעובד בקליטה ועליו חתם',obBriefCurrent:'נוסח התדריך הנוכחי',pbTitle:'הדרכות תקופתיות',pbTitleOne:'הדרכה תקופתית',pbAdd:'הדרכה תקופתית',pbNone:'עדיין לא תועדה הדרכה תקופתית לעובד זה',pbDate:'תאריך ההדרכה',pbNotes:'נושא / הערות (לא חובה)',pbNotesPh:'למשל: רענון עבודה בגובה',pbShowBrief:'📖 תדריך הבטיחות בשפת העובד — להצגה לעובד',pbSign:'חתימת העובד — קיבלתי הדרכה תקופתית',pbSave:'שמור הדרכה',pbSaved:'✅ ההדרכה התקופתית נשמרה',pbNeedSign:'העובד צריך לחתום',pbNeedDate:'בחר תאריך',pbBy:'הדריך: ',pbLast:'הדרכה תקופתית אחרונה: ',pbDelAlso:' (כולל {n} הדרכות תקופתיות)',obSignHint:'העובד חותם לאישור שהבין את התדריך',
 obSave:'✅ סיים קליטה ושמור',obSaved:'✅ העובד נקלט בהצלחה',obNeedName:'יש להזין שם עובד',obNeedSign:'העובד צריך לחתום',
 obSignedOn:'נקלט: ',obLangLabel:'שפה: ',
 btn8Title:'קבלני משנה',btn8Desc:'כרטיס ביצועים — ליקויים, מהירות תיקון, אמינות',
@@ -1195,7 +1224,7 @@ btn7Title:'استقبال العمال',btn7Desc:'أجنبي أو إسرائيل
 obTitle:'استقبال العمال',obAddBtn:'➕ استقبل عاملاً جديداً',obListTitle:'العمال المستقبَلون',obEmpty:'لم يتم استقبال عمال بعد',obTypeTitle:'نوع العامل',obTypeForeign:'عامل أجنبي',obTypeIsraeli:'عامل إسرائيلي',obDocIsraeli:'شهادة / هوية',obDocIsraeliPh:'رقم الهوية / الشهادة',obDocIsraeliPhoto:'صورة الشهادة / الهوية',obCardTitle:'بطاقة العامل',obDeleteBtn:'حذف العامل',
 obNewTitle:'استقبال عامل جديد',obName:'اسم العامل',obNamePh:'الاسم الكامل',obPermit:'رقم تصريح العمل / جواز السفر',obPermitPh:'رقم المستند',
 obPermitPhoto:'صورة التصريح / الجواز',obHeightTitle:'تصريح العمل على ارتفاع',obHeightHint:'صوّر التصريح أو أضف مستنداً موجوداً (صورة)',obHeightExp:'صالح حتى (اختياري)',obHeightShort:'تصريح ارتفاع',obLang:'اللغة الأم للعامل',obBriefTitle:'تعليمات السلامة — اعرضها على العامل بلغته',
-obSignTitle:'توقيع العامل — فهمت تعليمات السلامة',obBriefSigned:'هذا هو النص الذي عُرض على العامل عند الاستقبال ووقّع عليه',obBriefCurrent:'نص تعليمات السلامة الحالي',obSignHint:'يوقّع العامل لتأكيد فهمه التعليمات',
+obSignTitle:'توقيع العامل — فهمت تعليمات السلامة',obBriefSigned:'هذا هو النص الذي عُرض على العامل عند الاستقبال ووقّع عليه',obBriefCurrent:'نص تعليمات السلامة الحالي',pbTitle:'التدريبات الدورية',pbTitleOne:'تدريب دوري',pbAdd:'تدريب دوري',pbNone:'لم يُوثَّق بعد تدريب دوري لهذا العامل',pbDate:'تاريخ التدريب',pbNotes:'الموضوع / ملاحظات (اختياري)',pbNotesPh:'مثلاً: تجديد العمل على ارتفاع',pbShowBrief:'📖 تعليمات السلامة بلغة العامل — لعرضها على العامل',pbSign:'توقيع العامل — تلقيت تدريباً دورياً',pbSave:'حفظ التدريب',pbSaved:'✅ تم حفظ التدريب الدوري',pbNeedSign:'يجب أن يوقّع العامل',pbNeedDate:'اختر تاريخاً',pbBy:'المدرِّب: ',pbLast:'آخر تدريب دوري: ',pbDelAlso:' (بما في ذلك {n} تدريبات دورية)',obSignHint:'يوقّع العامل لتأكيد فهمه التعليمات',
 obSave:'✅ أنهِ الاستقبال واحفظ',obSaved:'✅ تم استقبال العامل بنجاح',obNeedName:'يرجى إدخال اسم العامل',obNeedSign:'يجب أن يوقّع العامل',
 obSignedOn:'استُقبل: ',obLangLabel:'اللغة: ',
 btn8Title:'مقاولو الباطن',btn8Desc:'بطاقة أداء — العيوب، سرعة الإصلاح، الموثوقية',
@@ -1348,7 +1377,7 @@ function loadJSON(k,d){try{var v=localStorage.getItem(k);return v?((DKV_KEYS&&DK
 var DKV={cache:{},ok:false,db:null,keys:{},pending:{},missing:{},want:{},inflight:{},soon:{},q:Promise.resolve(),slots:0,waitq:[]};
 // תמונות שטח (יומנים/ליקויים/בטיחות/אירועים/היתרים) לא נטענות כולן בהפעלה — צילומי מצלמה מלאים (כמה MB כל אחד)
 // היו מפילים את הזיכרון בטלפון. הן נטענות לפי דרישה (_dkvWant). עובדים/כלים — כמו קודם, הכל למטמון.
-var DKV_LAZY=/^(journals|defects|safety|incidents|permits)_/;
+var DKV_LAZY=/^(journals|defects|safety|incidents|permits|trainings)_/;
 DKV.ready=new Promise(function(res){
   try{
     if(!window.indexedDB){res(false);return;}
@@ -1426,7 +1455,7 @@ function dkVaultMigrate(){
 // חתימת פיקוח, תמונת תיקון) נשמרת בכספת, ובאחסון המקומי נשאר במקומה 'dkv:<מפתח>'. loadJSON מחזיר את הרשומה עם
 // התמונות מהמטמון — תוכן היומן זהה בדיוק, משתנה רק איפה הבייטים יושבים. הפניה שעוד לא נטענה נשארת 'dkv:...'
 // (dkPhotosOf/dkImg מבקשים אותה ומרעננים את המסך), ונשמרת כמו שהיא — כך ששום שמירה לא מוחקת תמונה.
-var DKV_KEYS={sb_journals:'journals',sb_defects:'defects',sb_safety:'safety',dk_incidents:'incidents',dk_permits:'permits'};
+var DKV_KEYS={sb_journals:'journals',sb_defects:'defects',sb_safety:'safety',dk_incidents:'incidents',dk_permits:'permits',dk_trainings:'trainings'};
 function _dkvIsData(v){return typeof v==='string'&&v.length>=512&&v.lastIndexOf('data:',0)===0;}
 function _dkvIsRef(v){return typeof v==='string'&&v.lastIndexOf('dkv:',0)===0&&DKV_LAZY.test(v.slice(4));}
 function _dkvScan(o,fn){if(typeof o==='string'){fn(o);return;}if(!o||typeof o!=='object')return;for(var k in o)if(Object.prototype.hasOwnProperty.call(o,k))_dkvScan(o[k],fn);}
@@ -1528,6 +1557,7 @@ function _dkvRerender(){
     if(a.id==='s-defects')renderDefects();
     else if(a.id==='s-incidents-history')renderIncidentsHistory();
     else if(a.id==='s-permits-history')renderPermitsHistory();
+    else if(a.id==='s-onboard-view'&&APP._obViewId)viewOnboard(APP._obViewId);   // חתימות הדרכות תקופתיות מהכספת
     else if(a.id==='s-report'){var cr=window._currentReport;if(cr&&cr.entry){if(cr.type==='journal')showJournalReportById(cr.entry.id);else showSafetyReportById(cr.entry.id);}}
   }catch(e){}
 }
@@ -1558,7 +1588,9 @@ function _dkvNoRefs(o){
 }
 // מראה רשומה ל-Firebase (ללא תמונות כבדות — אלו יעברו ל-Storage בהמשך). חתימות נשמרות.
 // מיפוי שם-אוסף-ענן → מפתח localStorage (כדי לעדכן את הרשומה המקומית עם כתובות הענן)
-var DK_COLL_KEY={journals:'sb_journals',defects:'sb_defects',safety:'sb_safety',incidents:'dk_incidents',onboard:'dk_onboard',permits:'dk_permits'};
+var DK_COLL_KEY={journals:'sb_journals',defects:'sb_defects',safety:'sb_safety',incidents:'dk_incidents',onboard:'dk_onboard',permits:'dk_permits',trainings:'dk_trainings'};
+// אוסף מקומי → אוסף בענן כשהם שונים: הדרכות תקופתיות נשמרות בענן באוסף onboard (שכבר מותר בכללים)
+var DK_CLOUD_COLL={trainings:'onboard'};
 // שומר את כתובות התמונות בענן על הרשומה המקומית — כך שכשמפנים מקום (_freeSpace), עדיין אפשר להציג מהענן
 function _dkStorePhotoUrls(coll,entryId,urls){
   var key=DK_COLL_KEY[coll];if(!key||!urls||!urls.length)return;
@@ -1611,16 +1643,17 @@ function _cloudSaveNow(coll,entry){
   entry=dkVaultIn(entry);                                   // רשומה מהתור/מיגרציה מחזיקה הפניות לכספת → להחזיר את החתימה לפני שליחה
   var copy={};for(var k in entry){if(k==='photos'||k==='photo'||/Photo$/.test(k)||(/Ref$/.test(k)&&_dkIsVaultField(k.slice(0,-3))))continue;copy[k]=entry[k];}
   copy=_dkvNoRefs(copy);
-  if(coll==='onboard'&&copy.briefId&&!copy.brief){var _bt=obBriefById(copy.briefId);if(_bt)copy.brief=_bt;}   // בענן — הנוסח המלא שנחתם
+  if((coll==='onboard'||coll==='trainings')&&copy.briefId&&!copy.brief){var _bt=obBriefById(copy.briefId);if(_bt)copy.brief=_bt;}   // בענן — הנוסח המלא שנחתם
+  var cc=DK_CLOUD_COLL[coll]||coll;
   if(entry.photos)copy.photoCount=entry.photos.length;
   copy.owner=owner;copy.ownerName=s.managerName||'';copy.project=s.projectName||'';
   copy.cloudAt=new Date().toISOString();
-  try{window._dkSaveDoc(coll,docId,copy);}catch(e){}
+  try{window._dkSaveDoc(cc,docId,copy);}catch(e){}
   // העלאת תמונות ל-Storage (אסינכרוני) ועדכון הכתובות במסמך ובמקומי. מחזיר Promise כדי שמיגרציה תדע מתי באמת הסתיים.
   var up=(entry.photos||[]).filter(function(p){return !_dkvIsRef(p);});   // תמונה שאבדה מהכספת — לא נשלחת
   if(up.length&&window._dkUploadPhotos){
     try{return window._dkUploadPhotos('photos/'+(owner||'x')+'/'+coll+'/'+entry.id,up).then(function(urls){
-      if(urls&&urls.length){window._dkSaveDoc(coll,docId,{photoUrls:urls});_dkStorePhotoUrls(coll,entry.id,urls);}
+      if(urls&&urls.length){window._dkSaveDoc(cc,docId,{photoUrls:urls});_dkStorePhotoUrls(coll,entry.id,urls);}
       return true;
     });}catch(e){return Promise.reject(e);}
   }
@@ -1637,7 +1670,7 @@ function dkPhotosOf(entry){
 function cloudDelete(coll,entry){
   if(!window._dkDeleteDoc||!entry)return;
   var owner=((APP.settings&&APP.settings.managerPhone)||'').replace(/\D/g,'');
-  try{window._dkDeleteDoc(coll,(owner||'x')+'_'+entry.id);}catch(e){}
+  try{window._dkDeleteDoc(DK_CLOUD_COLL[coll]||coll,(owner||'x')+'_'+entry.id);}catch(e){}
 }
 // מיגרציה חד-פעמית: העלאת תמונות ישנות (base64 מקומי) ל-Storage — שכלום מהעבר לא יאבד
 window._dkMigratePhotos=function(){
@@ -1960,7 +1993,7 @@ function cloudSavePresence(){
 // גיבוי-לאחור לענן: דוחף את כל הנתונים המקומיים שנשמרו לפני אימות הטלפון (ולכן לא הגיעו לענן). נקרא אחרי אימות SMS מוצלח.
 function _dkResyncAll(){
   if(!window._dkSaveDoc)return 0;
-  var map={journals:'sb_journals',defects:'sb_defects',safety:'sb_safety',incidents:'dk_incidents',onboard:'dk_onboard',permits:'dk_permits',equipment:'dk_equipment'};
+  var map={journals:'sb_journals',defects:'sb_defects',safety:'sb_safety',incidents:'dk_incidents',onboard:'dk_onboard',permits:'dk_permits',equipment:'dk_equipment',trainings:'dk_trainings'};
   var n=0;
   for(var coll in map){try{var list=loadJSON(map[coll],[]);if(list&&list.length)list.forEach(function(rec){if(rec&&rec.id){cloudSave(coll,rec);n++;}});}catch(e){}}
   try{if(getPresenceToday().length){cloudSavePresence();n++;}}catch(e){}
@@ -2704,6 +2737,7 @@ function saveOnboard(){
 // כרטיס עובד מלא — נפתח בלחיצה על שורה ברשימה
 function viewOnboard(id){
   var e=getOnboarded().find(function(x){return x.id===id;});if(!e)return;
+  APP._obViewId=id;
   showScreen('s-onboard-view');
   var el=document.getElementById('ob-view');if(!el)return;
   var isr=e.workerType==='israeli',ar=APP.lang==='ar';
@@ -2716,27 +2750,90 @@ function viewOnboard(id){
       +'<div style="font-size:16px;line-height:1.8;">'+obBriefHtml(bl,sb||obBriefText(bl))+'</div>'
       +'<div style="font-size:12px;color:var(--sub);margin-top:8px;">'+T(sb?'obBriefSigned':'obBriefCurrent')+'</div></div>';}
   if(e.signature){h+='<div class="card"><div class="card-title">'+T('obSignTitle')+'</div><img src="'+e.signature+'" style="height:70px;background:#fff;border:1px solid var(--border);border-radius:8px;"></div>';}
+  // הדרכות תקופתיות — אחרי ההדרכה הראשונית; כל הדרכה עם תאריך וחתימת העובד, בלי הגבלה
+  var tr=trainingsOf(e.id);
+  h+='<div class="card"><div class="card-title">🗓️ '+T('pbTitle')+(tr.length?' ('+tr.length+')':'')+'</div>';
+  if(!tr.length)h+='<div style="font-size:13px;color:var(--sub);">'+T('pbNone')+'</div>';
+  tr.forEach(function(t){var sg=dkImg(t.sign);
+    h+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">'
+      +'<div style="flex:1;min-width:0;"><div style="font-weight:700;">📅 '+esc(pbFmtDate(t.date))+'</div>'
+      +((t.by||t.notes)?'<div style="font-size:12px;color:var(--sub);">'+(t.by?T('pbBy')+esc(t.by):'')+(t.by&&t.notes?' · ':'')+esc(t.notes||'')+'</div>':'')+'</div>'
+      +(sg?'<img src="'+sg+'" style="height:40px;max-width:120px;flex-shrink:0;background:#fff;border:1px solid var(--border);border-radius:6px;">':'')
+      +'</div>';});
+  h+='<button class="btn btn-green" style="margin-top:12px;" onclick="openPeriodicBrief('+e.id+')">➕ '+T('pbAdd')+'</button></div>';
   h+='<button class="btn" style="background:var(--red);color:#fff;margin-top:6px;" onclick="delOnboard('+e.id+')">🗑️ '+T('obDeleteBtn')+'</button>';
   el.innerHTML=h;
 }
 function delOnboard(id){
   var list=getOnboarded();var e=list.find(function(x){return x.id===id;});if(!e)return;
-  if(!confirm((APP.lang==='ar'?'حذف العامل ':'למחוק את העובד ')+(e.name||'')+'?'))return;
+  var mine=trainingsOf(id);   // הדרכות תקופתיות של העובד נמחקות איתו
+  if(!confirm((APP.lang==='ar'?'حذف العامل ':'למחוק את העובד ')+(e.name||'')+(mine.length?T('pbDelAlso').replace('{n}',mine.length):'')+'?'))return;
   dkSaveVaulted('dk_onboard','onboard',list.filter(function(x){return x.id!==id;})).then(function(ok){
     if(!ok){toast(T('saveFailFull'),6000);return;}
     cloudDelete('onboard',{id:id});
+    if(mine.length&&saveJSON('dk_trainings',getTrainings().filter(function(t){return t.workerId!==id;})))mine.forEach(function(t){cloudDelete('trainings',t);});
     showScreen('s-onboard');renderOnboardList();toast(T('deleted'));
   });
 }
 function obLangLabel(k){for(var i=0;i<OB_LANGS.length;i++)if(OB_LANGS[i].k===k)return (APP.lang==='ar'?OB_LANGS[i].l:OB_LANGS[i].he);return k;}
+// ===================== הדרכות תקופתיות (20.10.2026) =====================
+// כל הדרכה היא רשומה נפרדת ב-dk_trainings: {id, workerId, workerName, date, ts, sign, by, lang, briefId, notes}.
+// החתימות עוברות לכספת אוטומטית (dk_trainings ב-DKV_KEYS) — אפשר כמה הדרכות שרוצים בלי למלא את הזיכרון.
+// בענן הן נשמרות באוסף onboard (kind:'training', ראה DK_CLOUD_COLL) — כך לא צריך לפרסם כללי הרשאה חדשים.
+var PB_DECL={
+  he:'אני מאשר/ת שקיבלתי הדרכת בטיחות תקופתית בתאריך הרשום.',
+  ar:'أؤكد أنني تلقيت تدريب سلامة دورياً في التاريخ المذكور.',
+  ru:'Подтверждаю, что прошёл(-ла) периодический инструктаж по технике безопасности в указанную дату.',
+  am:'በተጠቀሰው ቀን ወቅታዊ የደህንነት ሥልጠና እንደወሰድኩ አረጋግጣለሁ።',
+  hi:'मैं पुष्टि करता/करती हूँ कि मैंने उल्लिखित तारीख को आवधिक सुरक्षा प्रशिक्षण प्राप्त किया है।',
+  zh:'我确认已于所注明的日期接受定期安全培训。',
+  th:'ข้าพเจ้ายืนยันว่าได้รับการอบรมความปลอดภัยตามระยะในวันที่ระบุไว้',
+  tr:'Belirtilen tarihte periyodik iş güvenliği eğitimi aldığımı onaylıyorum.'
+};
+function getTrainings(){return loadJSON('dk_trainings',[]);}
+function trainingsOf(wid){return getTrainings().filter(function(t){return t&&t.workerId===wid;}).sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||((b.ts||0)-(a.ts||0));});}
+function pbFmtDate(d){return d?String(d).split('-').reverse().join('.'):'';}
+var pbSignPad=null,_pbWorkerId=null;
+// לחיצה על "הדרכה תקופתית": נפתח עם התאריך של היום, התדריך בשפת העובד (להצגה), והעובד חותם
+function openPeriodicBrief(wid){
+  var w=getOnboarded().find(function(x){return x.id===wid;});if(!w)return;
+  _pbWorkerId=wid;var lang=w.lang||'he';
+  document.getElementById('pb-worker').textContent=w.name||'';
+  document.getElementById('pb-date').value=isoDate();
+  document.getElementById('pb-notes').value='';
+  document.getElementById('pb-brief').innerHTML=obBriefHtml(lang,obBriefText(lang));
+  var bw=document.getElementById('pb-brief-wrap');if(bw)bw.open=false;
+  document.getElementById('pb-decl').textContent=PB_DECL[lang]||PB_DECL.he;
+  openModal('modal-periodic');
+  setTimeout(function(){pbSignPad=attachSignPad(document.getElementById('pb-sign-canvas'));},50);
+}
+function clearPbSign(){if(pbSignPad)pbSignPad.clear();}
+function savePeriodicBrief(){
+  var w=getOnboarded().find(function(x){return x.id===_pbWorkerId;});if(!w)return;
+  var date=document.getElementById('pb-date').value;
+  if(!date){toast(T('pbNeedDate'));return;}
+  if(!pbSignPad||pbSignPad.isEmpty()){toast(T('pbNeedSign'));return;}
+  if(!dkOnce('pb'))return;
+  var s=APP.settings||{},lang=w.lang||'he';
+  var t={id:Date.now(),ts:Date.now(),kind:'training',workerId:w.id,workerName:w.name||'',date:date,
+    notes:document.getElementById('pb-notes').value.trim(),lang:lang,sign:pbSignPad.dataURL(),by:s.managerName||'',project:s.projectName||''};
+  var bid=obBriefKeep(obBriefText(lang));if(bid)t.briefId=bid;   // איזה נוסח תדריך הוצג לעובד
+  var list=getTrainings();list.unshift(t);
+  if(!saveJSON('dk_trainings',list)){APP._b_pb=false;toast(T('saveFailFull'),6000);return;}
+  cloudSave('trainings',t);
+  closeModal('modal-periodic');toast(T('pbSaved'),3000);
+  viewOnboard(w.id);
+}
 function renderOnboardList(){
   var el=document.getElementById('ob-list');var list=getOnboarded();
   if(!list.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--sub);">'+T('obEmpty')+'</div>';return;}
+  var lastPb={};getTrainings().forEach(function(t){if(t&&t.date&&(!lastPb[t.workerId]||t.date>lastPb[t.workerId]))lastPb[t.workerId]=t.date;});
   var PAGE=20;var shown=Math.min((APP.obPage||1)*PAGE,list.length);var h='';list.slice(0,shown).forEach(function(e){
     var meta=(e.workerType==='israeli')?T('obTypeIsraeli'):(T('obLangLabel')+obLangLabel(e.lang));
     h+='<div onclick="viewOnboard('+e.id+')" style="display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--border);cursor:pointer;">'
       +'<span style="font-size:22px;">'+(e.workerType==='israeli'?'🇮🇱':'🌍')+'</span>'
       +'<div style="flex:1;min-width:0;"><div style="font-weight:700;">'+esc(e.name)+'</div><div style="font-size:12px;color:var(--sub);">'+meta+(e.permit?' · '+esc(e.permit):'')+' · '+new Date(e.ts).toLocaleDateString('he-IL')+'</div>'
+      +(lastPb[e.id]?'<div style="font-size:12px;margin-top:3px;color:var(--sub);">🗓️ '+T('pbLast')+pbFmtDate(lastPb[e.id])+'</div>':'')
       +((e.heightPhoto||e.heightPhotoRef)?'<div style="font-size:12px;margin-top:3px;color:'+(function(st){return st==='expired'?'var(--red)':st==='soon'?'var(--orange)':'var(--green)';})(eqExpStatus(e.heightExp))+';font-weight:700;">🪜 '+T('obHeightShort')+(e.heightExp?' · '+esc(e.heightExp):'')+'</div>':'')
       +'</div>'
       +'<span style="color:var(--sub);font-size:22px;flex-shrink:0;">'+(APP.lang==='ar'?'‹':'›')+'</span>'
