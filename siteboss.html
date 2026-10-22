@@ -547,6 +547,19 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
   <div class="screen-body">
     <div class="card"><div class="card-title" data-t="obTypeTitle"></div><div class="stage-chips" id="ob-type-chips"></div></div>
     <div class="card"><div class="card-title" data-t="obName"></div><input id="ob-name" type="text" data-tp="obNamePh"></div>
+    <div class="card">
+      <div class="card-title">📸 <span data-t="obFace"></span></div>
+      <div id="ob-face-grid"></div>
+      <input type="file" id="ob-face-input" accept="image/*" style="display:none" onchange="handleObFace(event)">
+    </div>
+    <div class="card">
+      <div class="card-title" data-t="obDetails"></div>
+      <label class="card-title" style="font-size:13px;color:var(--sub);">📞 <span data-t="obPhone"></span></label>
+      <input id="ob-phone" type="tel" inputmode="tel" dir="ltr" data-tp="obPhonePh">
+      <label class="card-title" style="font-size:13px;margin-top:10px;color:var(--sub);">🏗️ <span data-t="obContractor"></span></label>
+      <input id="ob-contractor" type="text" list="ob-contractor-list" data-tp="obContractorPh">
+      <datalist id="ob-contractor-list"></datalist>
+    </div>
     <div class="card"><div class="card-title"><span id="ob-permit-title"></span></div><input id="ob-permit" type="text"></div>
     <div class="card">
       <div class="card-title"><span id="ob-permit-photo-title"></span></div>
@@ -869,6 +882,30 @@ label{display:block;font-size:14px;font-weight:700;color:var(--text);margin-bott
 </div>
 
 <!-- SUPERVISOR APPROVAL MODAL -->
+<!-- עריכת פרטי עובד: תמונה, טלפון, קבלן (גם לעובדים שנקלטו לפני שהשדות נוספו) -->
+<div class="modal-overlay hidden" id="modal-ob-edit">
+  <div class="modal-sheet">
+    <div class="modal-title">✏️ <span data-t="obEditTitle"></span></div>
+    <div id="obe-name" style="font-weight:800;font-size:17px;margin-bottom:10px;"></div>
+    <div class="form-group">
+      <label>📸 <span data-t="obFace"></span></label>
+      <div id="obe-face-grid"></div>
+      <input type="file" id="obe-face-input" accept="image/*" style="display:none" onchange="handleObEditFace(event)">
+    </div>
+    <div class="form-group">
+      <label>📞 <span data-t="obPhone"></span></label>
+      <input id="obe-phone" type="tel" inputmode="tel" dir="ltr" data-tp="obPhonePh">
+    </div>
+    <div class="form-group">
+      <label>🏗️ <span data-t="obContractor"></span></label>
+      <input id="obe-contractor" type="text" list="ob-contractor-list" data-tp="obContractorPh">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" style="flex:1" onclick="closeModal('modal-ob-edit')"><span data-t="cancel"></span></button>
+      <button class="btn btn-green" style="flex:2" onclick="saveObEdit()"><span data-t="save"></span></button>
+    </div>
+  </div>
+</div>
 <!-- הדרכה תקופתית: תאריך (היום כברירת מחדל) + תדריך בשפת העובד + חתימת העובד -->
 <div class="modal-overlay hidden" id="modal-periodic">
   <div class="modal-sheet">
@@ -1088,7 +1125,7 @@ btn7Title:'קליטת עובדים',btn7Desc:'זר או ישראלי ← מסמ�
 obTitle:'קליטת עובדים',obAddBtn:'➕ קלוט עובד חדש',obListTitle:'עובדים שנקלטו',obEmpty:'עדיין לא נקלטו עובדים',obTypeTitle:'סוג העובד',obTypeForeign:'עובד זר',obTypeIsraeli:'עובד ישראלי',obDocIsraeli:'תעודה / ת"ז',obDocIsraeliPh:'מספר ת"ז / תעודה',obDocIsraeliPhoto:'צילום תעודה / ת"ז',obCardTitle:'כרטיס עובד',obDeleteBtn:'מחק עובד',
 obNewTitle:'קליטת עובד חדש',obName:'שם העובד',obNamePh:'שם מלא',obPermit:'מספר אישור עבודה / דרכון',obPermitPh:'מספר מסמך',
 obPermitPhoto:'צילום האישור / דרכון',obHeightTitle:'אישור עבודה בגובה',obHeightHint:'צלם את האישור או הוסף מסמך קיים (תמונה)',obHeightExp:'תוקף עד (אופציונלי)',obHeightShort:'אישור גובה',obLang:'שפת האם של העובד',obBriefTitle:'תדריך בטיחות — הצג לעובד בשפתו',
-obSignTitle:'חתימת העובד — הבנתי את הוראות הבטיחות',obBriefSigned:'זה הנוסח שהוצג לעובד בקליטה ועליו חתם',obBriefCurrent:'נוסח התדריך הנוכחי',pbTitle:'הדרכות תקופתיות',pbTitleOne:'הדרכה תקופתית',pbAdd:'הדרכה תקופתית',pbNone:'עדיין לא תועדה הדרכה תקופתית לעובד זה',pbDate:'תאריך ההדרכה',pbNotes:'נושא / הערות (לא חובה)',pbNotesPh:'למשל: רענון עבודה בגובה',pbShowBrief:'📖 תדריך הבטיחות בשפת העובד — להצגה לעובד',pbSign:'חתימת העובד — קיבלתי הדרכה תקופתית',pbSave:'שמור הדרכה',pbSaved:'✅ ההדרכה התקופתית נשמרה',pbNeedSign:'העובד צריך לחתום',pbNeedDate:'בחר תאריך',pbBy:'הדריך: ',pbLast:'הדרכה תקופתית אחרונה: ',pbDelAlso:' (כולל {n} הדרכות תקופתיות)',obSignHint:'העובד חותם לאישור שהבין את התדריך',
+obSignTitle:'חתימת העובד — הבנתי את הוראות הבטיחות',obBriefSigned:'זה הנוסח שהוצג לעובד בקליטה ועליו חתם',obBriefCurrent:'נוסח התדריך הנוכחי',pbTitle:'הדרכות תקופתיות',pbTitleOne:'הדרכה תקופתית',pbAdd:'הדרכה תקופתית',pbNone:'עדיין לא תועדה הדרכה תקופתית לעובד זה',pbDate:'תאריך ההדרכה',pbNotes:'נושא / הערות (לא חובה)',pbNotesPh:'למשל: רענון עבודה בגובה',pbShowBrief:'📖 תדריך הבטיחות בשפת העובד — להצגה לעובד',pbSign:'חתימת העובד — קיבלתי הדרכה תקופתית',pbSave:'שמור הדרכה',pbSaved:'✅ ההדרכה התקופתית נשמרה',pbNeedSign:'העובד צריך לחתום',pbNeedDate:'בחר תאריך',pbBy:'הדריך: ',pbLast:'הדרכה תקופתית אחרונה: ',obFace:'תמונת העובד',obDetails:'פרטי קשר וקבלן',obPhone:'טלפון העובד',obPhonePh:'050-0000000',obContractor:'אצל איזה קבלן עובד',obContractorPh:'שם הקבלן',obPhoneBad:'מספר הטלפון לא תקין',obEditBtn:'עריכת פרטים',obEditTitle:'עריכת פרטי העובד',obContractorLbl:'קבלן: ',pbDelAlso:' (כולל {n} הדרכות תקופתיות)',obSignHint:'העובד חותם לאישור שהבין את התדריך',
 obSave:'✅ סיים קליטה ושמור',obSaved:'✅ העובד נקלט בהצלחה',obNeedName:'יש להזין שם עובד',obNeedSign:'העובד צריך לחתום',
 obSignedOn:'נקלט: ',obLangLabel:'שפה: ',
 btn8Title:'קבלני משנה',btn8Desc:'כרטיס ביצועים — ליקויים, מהירות תיקון, אמינות',
@@ -1224,7 +1261,7 @@ btn7Title:'استقبال العمال',btn7Desc:'أجنبي أو إسرائيل
 obTitle:'استقبال العمال',obAddBtn:'➕ استقبل عاملاً جديداً',obListTitle:'العمال المستقبَلون',obEmpty:'لم يتم استقبال عمال بعد',obTypeTitle:'نوع العامل',obTypeForeign:'عامل أجنبي',obTypeIsraeli:'عامل إسرائيلي',obDocIsraeli:'شهادة / هوية',obDocIsraeliPh:'رقم الهوية / الشهادة',obDocIsraeliPhoto:'صورة الشهادة / الهوية',obCardTitle:'بطاقة العامل',obDeleteBtn:'حذف العامل',
 obNewTitle:'استقبال عامل جديد',obName:'اسم العامل',obNamePh:'الاسم الكامل',obPermit:'رقم تصريح العمل / جواز السفر',obPermitPh:'رقم المستند',
 obPermitPhoto:'صورة التصريح / الجواز',obHeightTitle:'تصريح العمل على ارتفاع',obHeightHint:'صوّر التصريح أو أضف مستنداً موجوداً (صورة)',obHeightExp:'صالح حتى (اختياري)',obHeightShort:'تصريح ارتفاع',obLang:'اللغة الأم للعامل',obBriefTitle:'تعليمات السلامة — اعرضها على العامل بلغته',
-obSignTitle:'توقيع العامل — فهمت تعليمات السلامة',obBriefSigned:'هذا هو النص الذي عُرض على العامل عند الاستقبال ووقّع عليه',obBriefCurrent:'نص تعليمات السلامة الحالي',pbTitle:'التدريبات الدورية',pbTitleOne:'تدريب دوري',pbAdd:'تدريب دوري',pbNone:'لم يُوثَّق بعد تدريب دوري لهذا العامل',pbDate:'تاريخ التدريب',pbNotes:'الموضوع / ملاحظات (اختياري)',pbNotesPh:'مثلاً: تجديد العمل على ارتفاع',pbShowBrief:'📖 تعليمات السلامة بلغة العامل — لعرضها على العامل',pbSign:'توقيع العامل — تلقيت تدريباً دورياً',pbSave:'حفظ التدريب',pbSaved:'✅ تم حفظ التدريب الدوري',pbNeedSign:'يجب أن يوقّع العامل',pbNeedDate:'اختر تاريخاً',pbBy:'المدرِّب: ',pbLast:'آخر تدريب دوري: ',pbDelAlso:' (بما في ذلك {n} تدريبات دورية)',obSignHint:'يوقّع العامل لتأكيد فهمه التعليمات',
+obSignTitle:'توقيع العامل — فهمت تعليمات السلامة',obBriefSigned:'هذا هو النص الذي عُرض على العامل عند الاستقبال ووقّع عليه',obBriefCurrent:'نص تعليمات السلامة الحالي',pbTitle:'التدريبات الدورية',pbTitleOne:'تدريب دوري',pbAdd:'تدريب دوري',pbNone:'لم يُوثَّق بعد تدريب دوري لهذا العامل',pbDate:'تاريخ التدريب',pbNotes:'الموضوع / ملاحظات (اختياري)',pbNotesPh:'مثلاً: تجديد العمل على ارتفاع',pbShowBrief:'📖 تعليمات السلامة بلغة العامل — لعرضها على العامل',pbSign:'توقيع العامل — تلقيت تدريباً دورياً',pbSave:'حفظ التدريب',pbSaved:'✅ تم حفظ التدريب الدوري',pbNeedSign:'يجب أن يوقّع العامل',pbNeedDate:'اختر تاريخاً',pbBy:'المدرِّب: ',pbLast:'آخر تدريب دوري: ',obFace:'صورة العامل',obDetails:'بيانات الاتصال والمقاول',obPhone:'هاتف العامل',obPhonePh:'050-0000000',obContractor:'لدى أي مقاول يعمل',obContractorPh:'اسم المقاول',obPhoneBad:'رقم الهاتف غير صحيح',obEditBtn:'تعديل التفاصيل',obEditTitle:'تعديل تفاصيل العامل',obContractorLbl:'المقاول: ',pbDelAlso:' (بما في ذلك {n} تدريبات دورية)',obSignHint:'يوقّع العامل لتأكيد فهمه التعليمات',
 obSave:'✅ أنهِ الاستقبال واحفظ',obSaved:'✅ تم استقبال العامل بنجاح',obNeedName:'يرجى إدخال اسم العامل',obNeedSign:'يجب أن يوقّع العامل',
 obSignedOn:'استُقبل: ',obLangLabel:'اللغة: ',
 btn8Title:'مقاولو الباطن',btn8Desc:'بطاقة أداء — العيوب، سرعة الإصلاح، الموثوقية',
@@ -2581,8 +2618,10 @@ var SAFETY_BRIEF={
 };
 var _obLang='ar',_obType='foreign',_obPhoto=null,_obHeightPhoto=null,obSignPad=null;
 function initOnboard(){
-  _obLang='ar';_obType='foreign';_obPhoto=null;_obHeightPhoto=null;
+  _obLang='ar';_obType='foreign';_obPhoto=null;_obHeightPhoto=null;_obFace=null;
   document.getElementById('ob-name').value='';document.getElementById('ob-permit').value='';
+  document.getElementById('ob-phone').value='';document.getElementById('ob-contractor').value='';
+  obFillContractors();renderObFace();
   var he=document.getElementById('ob-height-exp');if(he)he.value='';
   document.getElementById('ob-sign-hint').textContent=T('obSignHint');
   renderObType();renderObLangs();renderObPhoto();renderObHeightPhoto();renderObBrief();
@@ -2700,6 +2739,47 @@ function dkCompressImage(dataUrl,cb){
     img.onerror=function(){cb(dataUrl);};img.src=dataUrl;
   }catch(e){cb(dataUrl);}
 }
+// ===== תמונת העובד + טלפון + קבלן (22.10.2026) =====
+// תמונת העובד נשמרת בשדה facePhoto — עוברת לכספת כמו שאר צילומי העובד (dkSaveVaulted), ולא עולה לענן (כמו מסמכי העובד)
+var _obFace=null,_obeFace=null,_obEditId=null;
+// הצעות לשם הקבלן מרשימת הקבלנים שבהגדרות (אפשר גם לכתוב שם אחר)
+function obFillContractors(){
+  var dl=document.getElementById('ob-contractor-list');if(!dl)return;
+  dl.innerHTML=((APP.settings&&APP.settings.contractors)||[]).map(function(c){return '<option value="'+esc(c.name||'')+'">';}).join('');
+}
+function obFaceHtml(src,delJs,inputId){
+  return src
+    ?'<div style="position:relative;width:110px;height:110px;"><img src="'+src+'" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:2px solid var(--border);"><button class="photo-del" onclick="'+delJs+'">×</button></div>'
+    :'<div class="photo-add" style="width:110px;height:110px;border-radius:50%;aspect-ratio:1;" onclick="document.getElementById(\''+inputId+'\').click()"><span class="photo-add-icon">📸</span><span>+</span></div>';
+}
+function renderObFace(){var g=document.getElementById('ob-face-grid');if(g)g.innerHTML=obFaceHtml(_obFace,'_obFace=null;renderObFace()','ob-face-input');}
+function handleObFace(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){dkCompressImage(ev.target.result,function(out){_obFace=out;renderObFace();});};r.readAsDataURL(f);e.target.value='';}
+// טלפון לא חובה; אם הוזן — 9 עד 15 ספרות
+function obPhoneOk(p){var d=(p||'').replace(/\D/g,'');return !p||(d.length>=9&&d.length<=15);}
+function obWA(id){var w=getOnboarded().find(function(x){return x.id===id;});if(w&&w.phone)openWhatsApp(w.phone,'');}
+// עריכת פרטים בכרטיס העובד — תמונה, טלפון, קבלן (לא נוגע בחתימות ובתדריך)
+function openObEdit(id){
+  var w=getOnboarded().find(function(x){return x.id===id;});if(!w)return;
+  _obEditId=id;_obeFace=w.facePhoto||null;
+  document.getElementById('obe-name').textContent=w.name||'';
+  document.getElementById('obe-phone').value=w.phone||'';
+  document.getElementById('obe-contractor').value=w.contractor||'';
+  obFillContractors();renderObEditFace();openModal('modal-ob-edit');
+}
+function renderObEditFace(){var g=document.getElementById('obe-face-grid');if(g)g.innerHTML=obFaceHtml(_obeFace,'_obeFace=null;renderObEditFace()','obe-face-input');}
+function handleObEditFace(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){dkCompressImage(ev.target.result,function(out){_obeFace=out;renderObEditFace();});};r.readAsDataURL(f);e.target.value='';}
+function saveObEdit(){
+  var phone=document.getElementById('obe-phone').value.trim();
+  if(!obPhoneOk(phone)){toast(T('obPhoneBad'));return;}
+  if(!dkOnce('obe'))return;
+  var list=getOnboarded(),w=list.find(function(x){return x.id===_obEditId;});if(!w)return;
+  w.phone=phone;w.contractor=document.getElementById('obe-contractor').value.trim();
+  if(_obeFace)w.facePhoto=_obeFace;else{w.facePhoto=null;delete w.facePhotoRef;}   // בלי ההפניה — אחרת התמונה הישנה חוזרת מהכספת
+  dkSaveVaulted('dk_onboard','onboard',list).then(function(ok){
+    if(!ok){APP._b_obe=false;toast(T('saveFailFull'),6000);return;}
+    cloudSave('onboard',w);closeModal('modal-ob-edit');toast(T('saved'));viewOnboard(w.id);
+  });
+}
 function handleObPhoto(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){dkCompressImage(ev.target.result,function(out){_obPhoto=out;renderObPhoto();});};r.readAsDataURL(f);e.target.value='';}
 function renderObPhoto(){
   var g=document.getElementById('ob-photo-grid');if(!g)return;
@@ -2719,12 +2799,15 @@ function saveOnboard(){
   var name=document.getElementById('ob-name').value.trim();
   if(!name){toast(T('obNeedName'));return;}
   if(!obSignPad||obSignPad.isEmpty()){toast(T('obNeedSign'));return;}
+  var phone=document.getElementById('ob-phone').value.trim();
+  if(!obPhoneOk(phone)){toast(T('obPhoneBad'));return;}
   if(!dkOnce('ob'))return;
   var s=APP.settings||{};
   var entry={id:Date.now(),ts:Date.now(),date:new Date().toISOString(),name:name,workerType:_obType,
     permit:document.getElementById('ob-permit').value.trim(),permitPhoto:_obPhoto||null,
     heightPhoto:_obHeightPhoto||null,heightExp:document.getElementById('ob-height-exp').value||'',
-    lang:_obLang,signature:obSignPad.dataURL(),project:s.projectName||'',by:s.managerName||''};
+    lang:_obLang,signature:obSignPad.dataURL(),project:s.projectName||'',by:s.managerName||'',
+    phone:phone,contractor:document.getElementById('ob-contractor').value.trim(),facePhoto:_obFace||null};
   // הנוסח שהעובד ראה וחתם עליו: נשמר פעם אחת ב-dk_briefs, ובעובד רק המזהה (briefId). אם לא הצליח — הטקסט עצמו (brief)
   var _bt=obBriefText(_obLang),_bid=obBriefKeep(_bt);if(_bid)entry.briefId=_bid;else entry.brief=_bt;
   var list=getOnboarded();list.unshift(entry);
@@ -2741,7 +2824,16 @@ function viewOnboard(id){
   showScreen('s-onboard-view');
   var el=document.getElementById('ob-view');if(!el)return;
   var isr=e.workerType==='israeli',ar=APP.lang==='ar';
-  var h='<div class="card"><div style="display:flex;align-items:center;gap:10px;"><span style="font-size:30px;">'+(isr?'🇮🇱':'🌍')+'</span><div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:19px;">'+esc(e.name)+'</div><div style="font-size:13px;color:var(--sub);">'+(isr?T('obTypeIsraeli'):T('obTypeForeign'))+' · '+new Date(e.ts).toLocaleDateString(ar?'ar-IL':'he-IL')+'</div></div></div></div>';
+  // כותרת: תמונת העובד (אם צולם), שם, קבלן, טלפון לחיוג/וואטסאפ, ועריכת פרטים
+  var tel=(e.phone||'').replace(/[^\d+]/g,'');
+  var h='<div class="card"><div style="display:flex;align-items:center;gap:12px;">'
+    +(e.facePhoto?'<img src="'+e.facePhoto+'" style="width:76px;height:76px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border);">':'<span style="font-size:30px;">'+(isr?'🇮🇱':'🌍')+'</span>')
+    +'<div style="flex:1;min-width:0;"><div style="font-weight:800;font-size:19px;">'+esc(e.name)+'</div><div style="font-size:13px;color:var(--sub);">'+(e.facePhoto?(isr?'🇮🇱 ':'🌍 '):'')+(isr?T('obTypeIsraeli'):T('obTypeForeign'))+' · '+new Date(e.ts).toLocaleDateString(ar?'ar-IL':'he-IL')+'</div>'
+    +(e.contractor?'<div style="font-size:14px;margin-top:4px;">🏗️ '+T('obContractorLbl')+esc(e.contractor)+'</div>':'')
+    +'</div></div>'
+    +(tel?'<div style="display:flex;gap:8px;margin-top:12px;"><a class="btn btn-outline" style="flex:2;text-decoration:none;" href="tel:'+esc(tel)+'"><span dir="ltr">📞 '+esc(e.phone)+'</span></a><button class="btn btn-gray" style="flex:1;white-space:nowrap;font-size:14px;padding-left:8px;padding-right:8px;" onclick="obWA('+e.id+')">💬 '+(ar?'واتساب':'וואטסאפ')+'</button></div>':'')
+    +'<button class="btn btn-gray" style="margin-top:10px;min-height:40px;font-size:14px;" onclick="openObEdit('+e.id+')">✏️ '+T('obEditBtn')+'</button>'
+    +'</div>';
   if(e.permit||e.permitPhoto){h+='<div class="card"><div class="card-title">'+(isr?T('obDocIsraeli'):T('obPermit'))+'</div>';if(e.permit)h+='<div style="font-size:15px;">'+esc(e.permit)+'</div>';if(e.permitPhoto)h+='<img src="'+e.permitPhoto+'" style="width:100%;border-radius:8px;margin-top:8px;">';h+='</div>';}
   if(e.heightPhoto||e.heightExp){var st=eqExpStatus(e.heightExp);var col=st==='expired'?'var(--red)':st==='soon'?'var(--orange)':'var(--green)';h+='<div class="card"><div class="card-title">🪜 '+T('obHeightTitle')+'</div>';if(e.heightExp)h+='<div style="font-weight:700;color:'+col+';">'+T('obHeightExp')+': '+esc(e.heightExp)+'</div>';if(e.heightPhoto)h+='<img src="'+e.heightPhoto+'" style="width:100%;border-radius:8px;margin-top:8px;">';h+='</div>';}
   // תדריך הבטיחות עצמו — כדי שאפשר להציג לעובד שוב מהכרטיס. נוסח שנשמר בקליטה (מה שחתם עליו), ואם נקלט לפני כן — הנוסח הנוכחי
@@ -2830,8 +2922,9 @@ function renderOnboardList(){
   var lastPb={};getTrainings().forEach(function(t){if(t&&t.date&&(!lastPb[t.workerId]||t.date>lastPb[t.workerId]))lastPb[t.workerId]=t.date;});
   var PAGE=20;var shown=Math.min((APP.obPage||1)*PAGE,list.length);var h='';list.slice(0,shown).forEach(function(e){
     var meta=(e.workerType==='israeli')?T('obTypeIsraeli'):(T('obLangLabel')+obLangLabel(e.lang));
+    if(e.contractor)meta='🏗️ '+esc(e.contractor)+' · '+meta;
     h+='<div onclick="viewOnboard('+e.id+')" style="display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--border);cursor:pointer;">'
-      +'<span style="font-size:22px;">'+(e.workerType==='israeli'?'🇮🇱':'🌍')+'</span>'
+      +(e.facePhoto?'<img src="'+e.facePhoto+'" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;">':'<span style="font-size:22px;">'+(e.workerType==='israeli'?'🇮🇱':'🌍')+'</span>')
       +'<div style="flex:1;min-width:0;"><div style="font-weight:700;">'+esc(e.name)+'</div><div style="font-size:12px;color:var(--sub);">'+meta+(e.permit?' · '+esc(e.permit):'')+' · '+new Date(e.ts).toLocaleDateString('he-IL')+'</div>'
       +(lastPb[e.id]?'<div style="font-size:12px;margin-top:3px;color:var(--sub);">🗓️ '+T('pbLast')+pbFmtDate(lastPb[e.id])+'</div>':'')
       +((e.heightPhoto||e.heightPhotoRef)?'<div style="font-size:12px;margin-top:3px;color:'+(function(st){return st==='expired'?'var(--red)':st==='soon'?'var(--orange)':'var(--green)';})(eqExpStatus(e.heightExp))+';font-weight:700;">🪜 '+T('obHeightShort')+(e.heightExp?' · '+esc(e.heightExp):'')+'</div>':'')
